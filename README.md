@@ -1,2 +1,2 @@
 # MetaCast
-A package for broadcasting epidimiological and ecological models over metapopulations.
+A package for broadcasting epidemiological and ecological models over meta-populations.

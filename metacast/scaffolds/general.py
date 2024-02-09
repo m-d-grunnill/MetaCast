@@ -2,15 +2,17 @@
 Creation:
     Author: mdgru 
     Date: 2023-01-03
-Description: Function for generating a meta_pop_transfer list for clusters and vaccine groups.
+Description: Function for generating scaffolds  meta_pop_transfer list for clusters and vaccine groups.
     
 """
 
 import json
+from varname import nameof
+from .error_checks import list_of_strs, list_of_strs_or_all
 
 def age_and_vaccine(age_groups, vaccine_groups, vaccinable_states, json_file_name=None):
     """
-    Generates list of dicts outlining population structure for use in initialising child classes of Base2DMetaPopModel.
+    Create age group and vaccination group transfer list outlining population flows for child classes of MetaCaster.
 
     Parameters
     ----------
@@ -20,16 +22,25 @@ def age_and_vaccine(age_groups, vaccine_groups, vaccinable_states, json_file_nam
     vaccine_groups : list of strings
         Names of vaccine groups in population. NOTE order matters it will be assumed that the population from the first
         vaccine group transfers into the second vaccine group, and so on.
-    vaccinable_states : list of strings
+    vaccinable_states : list of strings or string 'all'
     json_file_name : string, optional
-        If given generated list is saved into json file using this string.
+        If given generated transfer list is saved into json file using this string.
+
 
     Returns
     -------
-    list of dicts
-    Outlining population structure for use in initialising child classes of Base2DMetaPopModel.
+    transfer_list : list of dicts
+        transfer_list acts as a scafold used in initialising child classes of MetaCaster. transfer_list instructs child
+        classes of MetaCaster on what classes flow between subpopulations.
+        If json_file_name is None the transfer_list is returned. If json_file_name is not None the transfer_list is
+        saved as a json file.
 
     """
+    # Error checks
+    list_of_strs(age_groups, nameof(age_groups))
+    list_of_strs(vaccine_groups, nameof(vaccine_groups))
+    list_of_strs_or_all(vaccinable_states, nameof(vaccinable_states))
+
     for argument in [age_groups, vaccine_groups, vaccinable_states]:
         if not isinstance(argument,(list,tuple)):
             raise TypeError('First three arguments to this function should be a list or tuple.')

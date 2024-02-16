@@ -14,18 +14,17 @@ Base2DMetaPopModel
     First dimension is members are referred to clusters.
     Second dimension clusters are referred to vaccination groups.
 """
+from inspect import getargspec
+from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 from numbers import Number
 import scipy
 
-# Libraries that will need to be imported if sections of code are un-silenced.
-# import json
-# import functools
-
 
 def _nested_dict_values(d):
     return [index for sub_d in d.values() for index in sub_d.values()]
+
 
 def _unionise_dict_of_lists(dict_of_lists):
     """
@@ -43,6 +42,29 @@ def _unionise_dict_of_lists(dict_of_lists):
     return list(set().union(*dict_of_lists.values()))
 
 
+def _is_iterable_of_unique_elements(object):
+    if not isinstance(object, Iterable):
+        return False
+    elif len(object) > len(set(object)):
+        return False
+    else:
+        return True
+
+
+def _is_set_like_of_strings(thing):
+    if not _is_iterable_of_unique_elements(thing):
+        return False
+    elif isinstance(thing, (dict, str)):
+        return False
+    elif any(not isinstance(element, str) for element in thing):
+        return False
+    else:
+        return True
+
+def select_dict_items_in_list(dictionary, lst):
+    return {key: value for key, value in dictionary.items() if key in lst}
+
+
 class MetaCaster:
     """
     Base class for setting up and simulating two-dimensional metapopulation models.
@@ -51,7 +73,7 @@ class MetaCaster:
 
     Parameters
     ----------
-    group_structure : dictionary, list or tuple
+    scaffold : dictionary, list or tuple
         If dictionary group_structure must contain the key values pairs:
             clusters: list of strings'
                 Names given to clusters.
@@ -192,31 +214,71 @@ class MetaCaster:
         A wrapper on top of :mod:`odeint <scipy.integrate.odeint>`
         Modified method from the pygom method `DeterministicOde <pygom.model.DeterministicOde>`.
     """
-    states = []
-    observed_states = []
-    infected_states = []
-    hospitalised_states = []
-    infectious_states = []
-    symptomatic_states = []
-    isolating_states = []
+    states = None
+    infected_states = None
+    infectious_states = infected_states
+    symptomatic_states = infected_states
+    observed_states = infected_states
+    hospitalised_states = None
+    isolating_states = None
     transmission_term = 'beta'
     population_term = 'N'
     transmission_cluster_specific = False
     isolation_modifier = None
     isolation_cluster_specific = False
     asymptomatic_transmission_modifier = None
-    non_transmission_universal_params = []
-    non_transmission_cluster_specific_params = []  # does not include transmission term beta.
-    vaccine_specific_params = []
-    ode = None
+    non_transmission_universal_params = None
+    non_transmission_cluster_specific_params = None  # does not include transmission term beta.
+    vaccine_specific_params = None
+    _sub_pop_model = None
 
-    def __init__(self, group_structure):
+    def _check_model_attributes(self):
+        if self.states is None:
+            raise AssertionError('Model attribute "states" needs to be defined at initialisation of MetaCaster,' +
+                                 ' or given as an attribute of a child class of MetaCaster.')
+        if not _is_set_like_of_strings(self.states):
+            raise TypeError('Model attribute "states" should be a collection of unique strings.')
+        for model_attribute in ['infected_states',
+                                'infectious_states',
+                                'symptomatic_states',
+                                'observed_states',
+                                'hospitalised_states',
+                                'isolating_states',
+                                'non_transmission_universal_params',
+                                'non_transmission_cluster_specific_params',
+                                'vaccine_specific_params']:
+            if eval('self.' + model_attribute) is not None:
+                if not _is_set_like_of_strings(eval('self.' + model_attribute)):
+                    raise TypeError('Model attribute "' +
+                                    model_attribute +
+                                    '" should be a collection of unique strings.')
+        for model_attribute in ['transmission_cluster_specific',
+                                'isolation_cluster_specific']:
+            if not isinstance('self.' + model_attribute, bool):
+                raise TypeError('Model attribute "' +
+                                model_attribute +
+                                '" should be a bool value.')
+
+    def _set_model_attributes(self,
+                              model_attributes,
+                              ):
+        for name, value in model_attributes.items():
+            if not hasattr(self, name):
+                raise AssertionError(name + 'is not a model attribute.')
+            setattr(self, name, value)
+
+    def __init__(self, scaffold, model_attributes=None, sub_pop_model=None):
+        if model_attributes is not None:
+            self._set_model_attributes(model_attributes)
+
+        self._check_model_attributes()
+        if sub_pop_model is not None:
+            self.sub_pop_model = sub_pop_model
+
         if type(self) == MetaCaster:
             raise TypeError('Base2DMetaPopModel is not meant to run models, only its children.' +
                             '\nIf unfamiliar with class inheritance look  up:\n' +
                             ' https://www.w3schools.com/python/python_inheritance.asp.')
-        if self.ode is None:
-            raise AssertionError('Child class of Base2DMetaPopModel must have ode method to function.')
         self.all_parameters = set(self.non_transmission_universal_params)
         for transmission_modifier in [self.isolation_modifier,
                                       self.asymptomatic_transmission_modifier]:
@@ -224,7 +286,7 @@ class MetaCaster:
                 self.all_parameters.add(transmission_modifier)
         if self.asymptomatic_transmission_modifier is not None:
             self.all_parameters.add(self.asymptomatic_transmission_modifier)
-        self._gen_group_structure(group_structure)
+        self._gen_structure(scaffold)
         self.all_parameters.update([param + '_' + vaccine_group
                                     for vaccine_group in self.vaccine_groups
                                     for param in self.vaccine_specific_params
@@ -264,28 +326,13 @@ class MetaCaster:
             self.all_parameters.update([self.isolation_modifier + '_' + cluster
                                         for cluster in self.clusters])
         self.all_parameters = sorted(self.all_parameters)
-        non_piece_wise_params_names = set(self.all_parameters)-set(self.params_estimated_via_piecewise_method)
+        non_piece_wise_params_names = set(self.all_parameters) - set(self.params_estimated_via_piecewise_method)
         self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
         self._sorting_states()
         self._parameters = None
         self.num_param = len(self.all_parameters)
         self.piecewise_est_param_values = None
-        
-        # Following silenced code was for use in fitting procedures. This was never developed, but would have used code
-        # modified from pygom.
-        # self.ode_calls_dict = {}
-        # self.jacobian_calls_dict = {}
-        # self.dok_jacobian = None
-        # self.dok_diff_jacobian = None
-        # self.dok_gradient = None
-        # self.dok_gradients_jacobian = None
-        # self._lossObj = None
-        # self._initial_values = None
-        # self._initial_time = None
-        # self._observations = None
-        # self._observation_state_index = None
-        # self._targetParam = None
-        # self._time_frame = None
+
 
     def get_transmission_terms_between(self, clusters):
         """
@@ -317,13 +364,13 @@ class MetaCaster:
         transmission_terms_dict = {self.transmission_term: transmission_terms, self.population_term: population_terms}
         return transmission_terms_dict
 
-    def _gen_group_structure(self, group_structure):
+    def _gen_structure(self, scaffold):
         """
-        Sets up group structure for running of model
+        Sets up structure of flow between sub-population models.
 
         Parameters
         ----------
-        group_structure : dictionary, list or tuple
+        scaffold : dictionary, list or tuple
             If dictionary group_structure must contain the key values pairs:
                 clusters: list of strings'
                     Names given to clusters.
@@ -356,32 +403,41 @@ class MetaCaster:
         Nothing.
         """
         self.params_estimated_via_piecewise_method = []
-        self.group_transfer_dict = {}
-        self.group_transition_params_dict = {}
+        self.subpop_transfer_dict = {}
+        self.sub_pop_transition_params_dict = {}
+        self.vaccine_groups = set()
+        self.clusters = set()
+        self.one_dimensional_metapopulation = True
 
-        if isinstance(group_structure, dict):
-            self.vaccine_groups = group_structure['vaccine groups']
-            self.clusters = group_structure['clusters']
-        elif isinstance(group_structure, (list, tuple)):
-            self.vaccine_groups = []
-            self.clusters = []
-            for group_transfer in group_structure:
+
+        if isinstance(scaffold, dict):
+            self.clusters.update(scaffold['clusters'])
+            if 'vaccine_group' in scaffold:
+                self.vaccine_groups.update(scaffold['vaccine groups'])
+        elif isinstance(scaffold, (list, tuple)):
+            for count, group_transfer in enumerate(scaffold):
                 cluster = group_transfer['from_cluster']
-                if cluster not in self.clusters:
-                    self.clusters.append(cluster)
-                if cluster not in self.group_transfer_dict:
-                    self.group_transfer_dict[cluster] = {}
-                vaccine_group = group_transfer['from_vaccine_group']
-                if vaccine_group not in self.vaccine_groups:
-                    self.vaccine_groups.append(vaccine_group)
-                if vaccine_group not in self.group_transfer_dict[cluster]:
-                    self.group_transfer_dict[cluster][vaccine_group] = []
+                self.clusters.add(cluster)
+                if cluster not in self.subpop_transfer_dict:
+                    self.subpop_transfer_dict[cluster] = {}
+                if 'from_vaccine_group' in group_transfer:
+                    if 'to_vaccine_group' not in group_transfer:
+                        raise AssertionError("If 'from_vaccine_group' is in scaffold 'to_vaccine_group' must be given.")
+                    if count == 0:
+                        self.one_dimensional_metapopulation = False
+                    else:
+                        raise AssertionError('Either all scaffold entries should have a' +
+                                             ' "from_vaccine_group" entry of none should.')
+                    vaccine_group = group_transfer['from_vaccine_group']
+                    self.vaccine_groups.add(vaccine_group)
+                    if vaccine_group not in self.subpop_transfer_dict[cluster]:
+                        self.subpop_transfer_dict[cluster][vaccine_group] = []
+
                 to_cluster = group_transfer['to_cluster']
-                if to_cluster not in self.clusters:
-                    self.clusters.append(to_cluster)
-                to_vaccine_group = group_transfer['to_vaccine_group']
-                if to_vaccine_group not in self.vaccine_groups:
-                    self.vaccine_groups.append(to_vaccine_group)
+                self.clusters.add(to_cluster)
+                if 'to_vaccine_group' in group_transfer:
+                    to_vaccine_group = group_transfer['to_vaccine_group']
+                    self.vaccine_groups.add(to_vaccine_group)
 
                 if group_transfer['states'] == 'all':
                     group_transfer['states'] = self.states
@@ -394,31 +450,38 @@ class MetaCaster:
                 parameter = group_transfer['parameter']
                 if not isinstance(parameter, str):
                     raise TypeError(str(parameter) + ' should be of type string.')
-                if parameter not in self.group_transition_params_dict:
-                    self.group_transition_params_dict[parameter] = []
+                if parameter not in self.sub_pop_transition_params_dict:
+                    self.sub_pop_transition_params_dict[parameter] = []
                 entry = {key: value for key, value in
                          group_transfer.items()
                          if key != 'parameter'}
-                self.group_transition_params_dict[parameter].append(entry)
+                self.sub_pop_transition_params_dict[parameter].append(entry)
                 self.all_parameters.add(parameter)
                 if 'piecewise targets' in group_transfer:
                     self.params_estimated_via_piecewise_method.append(parameter)
                     if isinstance(group_transfer['piecewise targets'], pd.Series):
                         group_transfer['piecewise targets'] = group_transfer['piecewise targets'].tolist()
-                entry = {key: value
-                         for key, value in group_transfer.items()
-                         if key not in ['from_cluster', 'from_vaccine_group']}
-                self.group_transfer_dict[cluster][vaccine_group].append(entry)
+
+                if self.one_dimensional_metapopulation:
+                    entry = {key: value
+                             for key, value in group_transfer.items()
+                             if key != 'from_cluster'}
+                    self.subpop_transfer_dict[cluster].append(entry)
+                else:
+                    entry = {key: value
+                             for key, value in group_transfer.items()
+                             if key not in ['from_cluster', 'from_vaccine_group']}
+                    self.subpop_transfer_dict[cluster][vaccine_group].append(entry)
         else:
             raise TypeError('group_structure must be a dictionary, list or tuple.')
 
-    def group_transfer(self, y, y_deltas, t,
-                       from_cluster,
-                       from_vaccine_group,
-                       parameters
-                       ):
+    def sub_pop_transfer(self, y, y_deltas, t,
+                         from_cluster,
+                         from_vaccine_group,
+                         parameters
+                         ):
         """
-        Calculates the transfers of people from clusters and vaccination groups.
+        Calculates the transfers of people between subpopulation.
 
         Parameters
         ----------
@@ -437,12 +500,13 @@ class MetaCaster:
 
         Returns
         -------
-        No object is returned y_deltas is modified with result of calculations.
+        y_deltas : numpy.array
+            Store of delta (derivative) of variables in y which this method adds/subtracts to.
 
         """
-        if from_cluster in self.group_transfer_dict:
-            if from_vaccine_group in self.group_transfer_dict[from_cluster]:
-                group_transfers = self.group_transfer_dict[from_cluster][from_vaccine_group]
+        if from_cluster in self.subpop_transfer_dict:
+            if from_vaccine_group in self.subpop_transfer_dict[from_cluster]:
+                group_transfers = self.subpop_transfer_dict[from_cluster][from_vaccine_group]
                 from_index_dict = self.state_index[from_cluster][from_vaccine_group]
                 for group_transfer in group_transfers:
                     parameter = group_transfer['parameter']
@@ -478,34 +542,58 @@ class MetaCaster:
                         y_deltas[from_index] -= transferring
                         y_deltas[to_index] += transferring
 
-    def setup_child_ode_method(self, y, parameters):
-        """
-        Wrapper function for setting ode method in child classes.
+        return y_deltas
 
-        FIRST LINE OF CHILD ODE METHOD SHOULD BE:
-        'parameters, y_deltas, fois = super().setup_child_ode_method(y, parameters)'
+    def ode(self, y, t, parameters):
+        """
+        Evaluate the ODE given states (y), time (t) and parameters
+
 
         Parameters
         ----------
         y : numpy.array
             State variables.
+        t : float
+            Time.
         parameters : dict
             Parameter values.
 
         Returns
         -------
-        parameters : dict
-            Parameter values sorted for use.
-        y_deltas : numpy.array
-            An array for zeroes for storing derivative calculations on.
-        fois : float of dictionary of floats
-            If transmission is cluster specific keys are clusters values are the force of infection to that cluster.
-            If float value this is the force of infection experienced by entire population.
+        y_delta: `numpy.ndarray`
+            Deltas of state variables at time point t.
         """
-        parameters = self._sorting_params(parameters)
-        y_deltas = np.zeros(self.num_state)
-        fois = self.calculate_fois(y, parameters)
-        return parameters, y_deltas, fois
+        if self.sub_pop_model is None:
+            raise AssertionError('sub_pop_model needs to set before simulations can run.')
+
+        sub_pop_model = self.sub_pop_model
+        sub_pop_model_arg_names = getargspec(sub_pop_model)[0]
+        sub_pop_model_args = {'y': y,
+                              'parameters': self._sorting_params(parameters)}
+        if self.infectious_states is not None:
+            fois = self.calculate_fois(**sub_pop_model_args)
+
+        sub_pop_model_args['t'] = t
+        sub_pop_model_args['y_deltas'] = np.zeros(self.num_state)
+        for cluster in self.clusters:
+            sub_pop_model_args['cluster'] = cluster
+            if self.infectious_states is not None:
+                sub_pop_model_args['foi'] = fois[cluster]  # force of infection experienced by this specific cluster.
+
+            if len(self.vaccine_groups)==0:
+                sub_pop_model_args['y_deltas'] = self.sub_pop_transfer(**sub_pop_model_args)
+                sub_pop_model_args['states_index'] = self.state_index[cluster]  # Dictionary of state indexes for this cluster
+                sub_pop_model_args = select_dict_items_in_list(sub_pop_model_args, sub_pop_model_arg_names)
+                y_deltas = sub_pop_model(**sub_pop_model_args)
+            else:
+                for vaccine_group in self.vaccine_groups:
+                    sub_pop_model_args['vaccine_group'] = vaccine_group
+                    sub_pop_model_args['y_deltas'] = self.sub_pop_transfer(**sub_pop_model_args)
+                    sub_pop_model_args['states_index'] = self.state_index[cluster][vaccine_group]  # Dictionary of state indexes for this cluster
+                    sub_pop_model_args = select_dict_items_in_list(sub_pop_model_args, sub_pop_model_arg_names)
+                    y_deltas = sub_pop_model(**sub_pop_model_args)
+
+        return y_deltas
 
     def _check_string_in_list_strings(self, string, list_strings):
         if not isinstance(string, str):
@@ -611,7 +699,7 @@ class MetaCaster:
             index += 1
 
         self.num_state = index
-        for transfer_info in self.group_transition_params_dict.values():
+        for transfer_info in self.sub_pop_transition_params_dict.values():
             for transfer_info_entry in transfer_info:
                 cluster = transfer_info_entry['from_cluster']
                 vaccine_group = transfer_info_entry['from_vaccine_group']
@@ -668,7 +756,7 @@ class MetaCaster:
                 if vaccine_group in vaccine_groups:
                     indexes += [sub_dict.values()]
         return indexes
-        
+
     def calculate_fois(self, y, parameters):
         """
         Calculates the Forces of Infection (FOI) given variables in y and parameters.
@@ -736,9 +824,9 @@ class MetaCaster:
             isolating_symptomatic_indexes = _unionise_dict_of_lists(self.isolating_symptomatic_indexes)
             total_asymptomatic = asymptomatic_transmission_modifier * y[infectious_and_asymptomatic_indexes].sum()
             total_symptomatic = y[infectious_symptomatic_indexes].sum()
-            total_isolating_asymptomatic = (isolation_modifier*asymptomatic_transmission_modifier
+            total_isolating_asymptomatic = (isolation_modifier * asymptomatic_transmission_modifier
                                             * y[isolating_asymptomatic_indexes].sum())
-            total_isolating_symptomatic = isolation_modifier*y[isolating_symptomatic_indexes].sum()
+            total_isolating_symptomatic = isolation_modifier * y[isolating_symptomatic_indexes].sum()
             full_contribution = sum([total_asymptomatic, total_symptomatic,
                                      total_isolating_asymptomatic, total_isolating_symptomatic])
             foi = parameters[self.transmission_term] * full_contribution / parameters[self.population_term]
@@ -777,6 +865,16 @@ class MetaCaster:
             return -np.log(1 - proportion_by_t)
 
     @property
+    def sub_pop_model(self):
+        return self._sub_pop_model
+
+    @sub_pop_model.setter
+    def sub_pop_model(self, sub_pop_model):
+        if not callable(sub_pop_model):
+            raise TypeError('sub_pop_model should be a callable function.')
+        self._sub_pop_model = sub_pop_model
+
+    @property
     def parameters(self):
         """
         Returns
@@ -790,7 +888,7 @@ class MetaCaster:
     @parameters.setter
     def parameters(self, parameters):
         """
-        Set parameter values for simulation.
+        Set parameter values for simulations.
 
         Parameters
         ----------
@@ -901,21 +999,21 @@ class MetaCaster:
                                                   x0, t, args=args,
                                                   full_output=True,
                                                   **kwargs_to_pass_to_odeint)
-        solution = self._results_array_to_df(solution, t)
+        solution = self.results_array_to_df(solution, t)
         if full_output:
             # have both
             return solution, output
         else:
             return solution
 
-    def _results_array_to_df(self, results, t):
+    def results_array_to_df(self, results, t):
         """
         Converts array of results into a dataframe with multi-index columns reflecting meta-population structure.
 
         Parameters
         ----------
         results : np.array
-            Results from simulation of model.
+            Results from simulations of model.
         t : np.array
             Time over which model was simulated.
 
@@ -938,596 +1036,3 @@ class MetaCaster:
         results_df = pd.DataFrame(results, index=t)
         results_df.columns = pd.MultiIndex.from_tuples(multi_columns)
         return results_df
-
-    #%% JACOBIAN MATRICES ETC OF MODELS
-    # This section of code is from an earlier time in the mass gathering project.
-    # It dealt with storing jacobian matrices as D.O.K matrices in json files.
-    # A D.O.K. matrix is a way of storing large sparse matrices as a
-    # dictionary of coordinates and values, if the value at that coordinate is none-zero.
-    # This saves on memory and speeds up some computations.
-    # See https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html.
-    # See https://scipy-lectures.org/advanced/scipy_sparse/dok_matrix.html
-    # The hope was that this would be similar enough to pygoms API. That the
-    # second silenced section could easily be adapted for fitting models using
-    # Maximum likelihood methods.
-    #
-    # def load_dok_jacobian(self, json_file):
-    #     with open(json_file) as json_file:
-    #         self.dok_jacobian = json.load(json_file)
-    #
-    #
-    # def jacobian(self, y, t, *parameters):
-    #     if self.dok_jacobian is None:
-    #         raise AssertionError('Dictionary of Keys (DOK) version of jacobian needs to be loaded first.' +
-    #                              'Call method load_dok_jacobian.')
-    #     parameters = self._sorting_params(parameters)
-    #     y_jacobian = np.zeros(self.num_state, self.num_state)
-    #     for coord, value in self.dok_jacobian.items():
-    #         y_jacobian[eval(coord)] = eval(value)
-    #
-    #     return y_jacobian
-    #
-    # def load_dok_diff_jacobian(self, json_file):
-    #     with open(json_file) as json_file:
-    #         self.dok_diff_jacobian = json.load(json_file)
-    #
-    #
-    # def diff_jacobian(self, y, t, parameters):
-    #     if self.dok_diff_jacobian is None:
-    #         raise AssertionError('Dictionary of Keys (DOK) version of matrix needs to be loaded first.' +
-    #                              'Call method load_dok_diff_jacobian.')
-    #     parameters = self._sorting_params(parameters)
-    #     y_diff_jacobian = np.zeros(self.num_state ** 2, self.num_state)
-    #     for coord, value in self.dok_diff_jacobian.items():
-    #         y_diff_jacobian[eval(coord)] = eval(value)
-    #
-    #     return y_diff_jacobian
-    #
-    # def load_dok_gradient(self, json_file):
-    #     with open(json_file) as json_file:
-    #         self.dok_gradient = json.load(json_file)
-    #
-    # def gradient(self, y, t, parameters):
-    #     if self.dok_gradient is None:
-    #         raise AssertionError('Dictionary of Keys (DOK) version of matrix needs to be loaded first.' +
-    #                              'Call method load_dok_gradient.')
-    #     parameters = self._sorting_params(parameters)
-    #     y_gradient = np.zeros(self.num_state, self.num_param)
-    #     for coord, value in self.dok_gradient.items():
-    #         y_gradient[eval(coord)] = eval(value)
-    #     return y_gradient
-    #
-    # def load_dok_grad_jacobian(self, json_file):
-    #     with open(json_file) as json_file:
-    #         self.dok_grad_jacobian = json.load(json_file)
-    #
-    # def grad_jacobian(self, y, t, parameters):
-    #     if self.dok_grad_jacobian is None:
-    #         raise AssertionError('Dictionary of Keys (DOK) version of matrix needs to be loaded first.' +
-    #                              'Call method load_dok_grad_jacobian.')
-    #     parameters = self._sorting_params(parameters)
-    #     y_gradient_jacobian = np.zeros(self.num_state, self.num_param)
-    #     # see script deriving_MG_model_jacobian.py for where dok_matrix is derived and saved into json formate.
-    #
-    #     for coord, value in self.dok_gradients_jacobian.items():
-    #         y_gradient_jacobian[eval(coord)] = eval(value)
-    #     return y_gradient_jacobian
-
-
-    #%% Fitting through maximum likelihood stuff below.
-    # The code in this section was taken from the PHE package pygom.
-    # It was meant to be adapted so models created using this base class
-    # could be fitted to data using Maximum likelihood methods.
-
-
-    #
-    # def cost(self, params=None, apply_weighting = True):
-    #     """
-    #     Find the cost/loss given time points and the corresponding
-    #     observations.
-    #
-    #     Parameters
-    #     ----------
-    #     params: array like
-    #         input value of the parameters
-    #     apply_weighting: boolean
-    #         If True multiplies array of residuals by weightings, else raw
-    #         residuals are used.
-    #
-    #     Returns
-    #     -------
-    #     numeric
-    #         sum of the residuals squared
-    #
-    #     Notes
-    #     -----
-    #     Only works with a single target (state)
-    #
-    #     See also
-    #     --------
-    #     :meth:`diff_loss`
-    #
-    #     """
-    #     if self._lossObj is None:
-    #         raise AssertionError('Loss object not set. Use method "set_loss_object" to set.')
-    #     if self.initial_values is None:
-    #         raise AssertionError('initial variable values object not set.')
-    #     yhat = self._getSolution(params)
-    #     cost = self._lossObj.loss(yhat, apply_weighting = apply_weighting)
-    #
-    #     return np.nan_to_num(cost) if cost == np.inf else cost
-    #
-    # def _getSolution(self, params):
-    #     x0 = self._initial_values
-    #     t = self._time_frame
-    #     params = params
-    #     solution = self.integrate(x0, t, params)
-    #     i = self._observation_state_index
-    #     return solution[:, i]
-    #
-    # @property
-    # def loss_object(self):
-    #     return self._lossObj
-    #
-    # @loss_object.setter
-    # def loss_object(self, loss_object):
-    #     self._lossObj = loss_object
-    #
-    # @property
-    # def initial_values(self):
-    #     return self._initial_values
-    #
-    # @initial_values.setter
-    # def initial_values(self, initial_values):
-    #     self._initial_values = initial_values
-    #
-    # @property
-    # def initial_time(self):
-    #     return self._initial_time
-    #
-    # @initial_time.setter
-    # def initial_time(self, initial_time):
-    #     self._initial_time = initial_time
-    #
-    # @property
-    # def time_frame(self):
-    #     return self._time_frame
-    #
-    # @time_frame.setter
-    # def time_frame(self, time_frame):
-    #     self._time_frame = time_frame
-    #     self.initial_time = time_frame[0]
-    #
-    # @property
-    # def observations(self):
-    #     return self._observations
-    #
-    # @observations.setter
-    # def observations(self, observations):
-    #     self._observations = observations
-    #
-    # @property
-    # def observation_state_index(self):
-    #     return self._observation_state_index
-    #
-    # @observation_state_index.setter
-    # def observation_state_index(self, observation_state_index):
-    #     error_msg = 'observation_state_index must be a single non-negative interger or collection of them.'
-    #     if not isinstance(observation_state_index,(list, tuple, np.array)):
-    #         if isinstance(observation_state_index, int) and observation_state_index >= 0:
-    #             self._observation_state_index = [observation_state_index]
-    #         else:
-    #             raise TypeError(error_msg)
-    #     elif (all(isinstance(item,int) for item in observation_state_index) and
-    #           all(item>=0 for item in observation_state_index)):
-    #         self._observation_state_index = observation_state_index
-    #     else:
-    #         raise TypeError(error_msg)
-    #
-    # @property
-    # def targetParam(self):
-    #     self._targetParam
-    #
-    #
-    # @targetParam.setter
-    # def targetParam(self,param):
-    #     if isinstance(param,str):
-    #         param = [param]
-    #     for item in param:
-    #         if item not in self.all_parameters:
-    #             raise AssertionError(str(item) + ' is not in all_parameters list. I.E. ' ', '.join(self.all_parameters))
-    #     self._targetParam = param
-    #
-    # def cost_sensitivity(self, params=None):
-    #     """
-    #     Obtain the gradient given input parameters using forward
-    #     sensitivity method.
-    #
-    #     Parameters
-    #     ----------
-    #     params: array like
-    #         input value of the parameters
-    #
-    #     Returns
-    #     -------
-    #     grad: :class:`numpy.ndarray`
-    #         array of gradient
-    #
-    #     Notes
-    #     -----
-    #     It calculates the gradient by calling :meth:`jac`
-    #
-    #     """
-    #     sens = self.jacobian_of_loss(params=params)
-    #     i = self._observation_state_index
-    #     diff_loss = self._lossObj.diff_loss(sens[:,i])
-    #     grad = self._sensToGradWithoutIndex(sens, diff_loss)
-    #
-    #     return grad
-    #
-    # def jacobian_of_loss(self, params):
-    #     """
-    #     Obtain the Jacobian of the loss function given input parameters
-    #     using forward sensitivity method.
-    #
-    #     Parameters
-    #     ----------
-    #     params: array like, optional
-    #         input value of the parameters
-    #
-    #     Returns
-    #     -------
-    #     grad: :class:`numpy.ndarray`
-    #         Jacobian of the objective function
-    #     infodict : dict, only returned if full_output=True
-    #         Dictionary containing additional output information
-    #
-    #         ===========  =======================================================
-    #         key          meaning
-    #         ===========  =======================================================
-    #         'sens'       intermediate values over the original ode and all the
-    #                      sensitivities, by state, parameters
-    #         'resid'      residuals given params
-    #         'diff_loss'  derivative of the loss function
-    #         ===========  =======================================================
-    #
-    #     See also
-    #     --------
-    #     :meth:`sensitivity`
-    #
-    #     """
-    #
-    #     # first we want to find out the number of sensitivities required
-    #     # add them to the initial values
-    #     num_sens =  self.num_state*self.num_param
-    #     init_state_sens = np.append(self.initial_values, np.zeros(num_sens))
-    #     if hasattr(self, 'ode_and_sensitivity_jacobian'):
-    #         solution, output = scipy.integrate.odeint(self.ode_and_sensitivity,
-    #                                                   init_state_sens, self._time_frame, args=params,
-    #                                                   Dfun=self.ode_and_sensitivity_jacobian,
-    #                                                   mu=None, ml=None,
-    #                                                   col_deriv=False,
-    #                                                   mxstep=10000,
-    #                                                   full_output=True)
-    #     else:
-    #         solution, output = scipy.integrate.odeint(self.ode_and_sensitivity,
-    #                                                   init_state_sens, self._time_frame, args=params,
-    #                                                   mu=None, ml=None,
-    #                                                   col_deriv=False,
-    #                                                   mxstep=10000,
-    #                                                   full_output=True)
-    #
-    #     return solution
-    #
-    # def _sensToGradWithoutIndex(self, sens, diffLoss):
-    #     """
-    #     forward sensitivities to g where g is the gradient.
-    #     Indicies obtained using information defined here
-    #     """
-    #     index_out = self._getTargetParamSensIndex()
-    #     return self.sens_to_grad(sens[:, index_out], diffLoss)
-    #
-    # def sens_to_grad(self, sens, diff_loss):
-    #     """
-    #     Forward sensitivites to the gradient.
-    #
-    #     Parameters
-    #     ----------
-    #     sens: :class:`numpy.ndarray`
-    #         forward sensitivities
-    #     diff_loss: array like
-    #         derivative of the loss function
-    #
-    #     Returns
-    #     -------
-    #     g: :class:`numpy.ndarray`
-    #         gradient of the loss function
-    #     """
-    #     # the number of states which we will have residuals for
-    #     num_s = len(self._observation_state_index)
-    #
-    #     assert isinstance(sens, np.ndarray), "Expecting an np.ndarray"
-    #     n, p = sens.shape
-    #     assert n == len(diff_loss), ("Length of sensitivity must equal to " +
-    #                                  "the derivative of the loss function")
-    #
-    #     # Divide through to obtain the number of parameters we are inferring
-    #     num_out = int(p/num_s) # number of out parameters
-    #
-    #     sens = np.reshape(sens, (n, num_s, num_out), 'F')
-    #     # For moment we are not giving any weighting to observations.
-    #     # for j in range(num_out):
-    #     #     sens[:, :, j] *= self._weight
-    #
-    #     grad = functools.reduce(np.add, map(np.dot, diff_loss, sens)).ravel()
-    #
-    #     return grad
-    #
-    # def _getTargetParamSensIndex(self):
-    #     # build the indexes to locate the correct parameters
-    #     index_out = list()
-    #     # locate the target indexes
-    #     index_list = self._getTargetParamIndex()
-    #     if isinstance(self._observation_state_index, list):
-    #         for j in self._observation_state_index:
-    #             for i in index_list:
-    #                 # always ignore the first numState because they are
-    #                 # outputs from the actual ode and not the sensitivities.
-    #                 # Hence the +1
-    #                 index_out.append(j + (i + 1) * self.num_state)
-    #     else:
-    #         # else, happy times!
-    #         for i in index_list:
-    #             index_out.append(self._observation_state_index + (i + 1) * self.num_state)
-    #
-    #     return np.sort(np.array(index_out)).tolist()
-    #
-    # def _getTargetParamIndex(self):
-    #     """
-    #     Get the indices of the targeted parameters
-    #     """
-    #     # we assume that all the parameters are targets
-    #     if self._targetParam is None:
-    #         index_list = range(0, len(self.all_parameters))
-    #     else:
-    #         index_list = [self.all_parameters.index(param) for param in self._targetParam]
-    #
-    #     return index_list
-    #
-    # def ode_and_sensitivity(self, state_param, t, params, by_state=False):
-    #     """
-    #     Evaluate the sensitivity given state and time
-    #
-    #     Parameters
-    #     ----------
-    #     state_param: array like
-    #         The current numerical value for the states as well as the
-    #         sensitivities values all in one.  We assume that the state
-    #         values comes first.
-    #     t: double
-    #         The current time
-    #     by_state: bool
-    #         Whether the output vector should be arranged by state or by
-    #         parameters. If False, then it means that the vector of output is
-    #         arranged according to looping i,j from Sensitivity_{i,j} with i
-    #         being the state and j the param. This is the preferred way because
-    #         it leds to a block diagonal Jacobian
-    #
-    #     Returns
-    #     -------
-    #     :class:`list`
-    #         concatenation of 2 element. First contains the ode, second the
-    #         sensitivity. Both are of type :class:`numpy.ndarray`
-    #
-    #     See Also
-    #     --------
-    #     :meth:`.sensitivity`, :meth:`.ode`
-    #
-    #     """
-    #
-    #     if len(state_param) == self.num_state:
-    #         raise AssertionError("You have only inputed the initial condition " +
-    #                          "for the states and not the sensitivity")
-    #
-    #     # unrolling, assuming that we would always put the state first
-    #     # there is no safety checks on this because it is impossible to
-    #     # distinguish what is state and what is sensitivity as they are
-    #     # all numeric value that can take the full range (-\infty,\infty)
-    #     state = state_param[0:self.num_state]
-    #     sens = state_param[self.num_state::]
-    #
-    #     out1 = self.ode(state, t, *params)
-    #     out2 = self.sensitivity(sens, t, state, params, by_state)
-    #     return np.append(out1, out2)
-    #
-    # def sensitivity(self, S, t, state, params, by_state=False):
-    #     """
-    #     Evaluate the sensitivity given state and time
-    #
-    #     Parameters
-    #     ----------
-    #     S: array like
-    #         Which should be :class:`numpy.ndarray`.
-    #         The starting sensitivity of size [number of state x number of
-    #         parameters].  Which are normally zero or one,
-    #         depending on whether the initial conditions are also variables.
-    #     t: double
-    #         The current time
-    #     state: array like
-    #         The current numerical value for the states which can be
-    #         :class:`numpy.ndarray` or :class:`list`
-    #     by_state: bool
-    #         how we want the output to be arranged.  Default is True so
-    #         that we have a block diagonal structure
-    #
-    #     Returns
-    #     -------
-    #     :class:`numpy.ndarray`
-    #
-    #     Notes
-    #     -----
-    #     It is different to :meth:`.eval_ode` and :meth:`.eval_jacobian` in
-    #     that the extra input argument is not a parameter
-    #
-    #     See Also
-    #     --------
-    #     :meth:`.sensitivity`
-    #
-    #     """
-    #
-    #     # jacobian * sensitivities + G
-    #     # where G is the gradient
-    #     J = self.jacobian(state, t, *params)
-    #     G = self.gradient(state, t, *params)
-    #     A = np.dot(J, S) + G
-    #
-    #     if by_state:
-    #         return np.reshape(A, self.num_state*self.num_param)
-    #     else:
-    #         if not hasattr(self, '_SAUtil'):
-    #             self._set_shape_and_adjust_util()
-    #         return self._SAUtil.matToVecSens(A)
-    #
-    # def _set_shape_and_adjust_util(self):
-    #     import pygom
-    #     self._SAUtil = pygom.ode_utils.shapeAdjust(self.num_state, self.num_param)
-    #
-    # def ode_and_sensitivity_jacobian(self, state_param, t, params, by_state=False):
-    #     """
-    #     Evaluate the sensitivity given state and time.  Output a block
-    #     diagonal sparse matrix as default.
-    #
-    #     Parameters
-    #     ----------
-    #     state_param: array like
-    #         The current numerical value for the states as well as the
-    #         sensitivities values all in one.  We assume that the state
-    #         values comes first.
-    #     t: double
-    #         The current time
-    #     by_state: bool
-    #         How the output is arranged, according to the vector of output.
-    #         It can be in terms of state or parameters, where by state means
-    #         that the jacobian is a block diagonal matrix.
-    #
-    #     Returns
-    #     -------
-    #     :class:`numpy.ndarray`
-    #         output of a square matrix of size: number of ode + 1 times number
-    #         of parameters
-    #
-    #     See Also
-    #     --------
-    #     :meth:`.ode_and_sensitivity`
-    #
-    #     """
-    #
-    #     if len(state_param) == self.num_state:
-    #         raise AssertionError("Expecting both the state and the sensitivities")
-    #     else:
-    #         state = state_param[0:self.num_state]
-    #
-    #     # now we start the computation
-    #     J = self.jacobian(state, t, *params)
-    #     # create the block diagonal Jacobian, assuming that whoever is
-    #     # calling this function wants it arranges by state-parameters
-    #
-    #     # Note that none of the ode integrator in scipy allow a sparse Jacobian
-    #     # matrix.  All of them accept a banded matrix in packed format but not
-    #     # an actual sparse, or specifying the number of bands.
-    #     outJ = np.kron(np.eye(self.num_param), J)
-    #     # Jacobian of the gradient
-    #     GJ = self.grad_jacobian(state, t, *params)
-    #     # and now we add the gradient
-    #     sensJacobianOfState = GJ + self.sens_jacobian_state(state_param, t, params)
-    #
-    #     if by_state:
-    #         arrangeVector = np.zeros(self.num_state * self.num_param)
-    #         k = 0
-    #         for j in range(0, self.num_param):
-    #             for i in range(0, self.num_state):
-    #                 if i == 0:
-    #                     arrangeVector[k] = (i*self.num_state) + j
-    #                 else:
-    #                     arrangeVector[k] = (i*(self.num_state - 1)) + j
-    #                 k += 1
-    #
-    #         outJ = outJ[np.array(arrangeVector,int),:]
-    #         idx = np.array(arrangeVector, int)
-    #         sensJacobianOfState = sensJacobianOfState[idx,:]
-    #     # The Jacobian of the ode, then the sensitivities w.r.t state and
-    #     # the sensitivities. In block form.  Theoretically, only the diagonal
-    #     # blocks are important but we output the full matrix for completeness
-    #     return np.asarray(np.bmat([
-    #         [J, np.zeros((self.num_state, self.num_state*self.num_param))],
-    #         [sensJacobianOfState, outJ]
-    #     ]))
-    #
-    # def sens_jacobian_state(self, state_param, t, params):
-    #     """
-    #     Evaluate the jacobian of the sensitivity w.r.t. the
-    #     state given state and time
-    #
-    #     Parameters
-    #     ----------
-    #     state_param: array like
-    #         The current numerical value for the states as
-    #         well as the sensitivities, which can be
-    #         :class:`numpy.ndarray` or :class:`list`
-    #     t: double
-    #         The current time
-    #
-    #     Returns
-    #     -------
-    #     :class:`numpy.ndarray`
-    #         Matrix of dimension [number of state *
-    #         number of parameters x number of state]
-    #
-    #     """
-    #
-    #     state = state_param[0:self.num_state]
-    #     sens = state_param[self.num_state::]
-    #
-    #     return self.eval_sens_jacobian_state(time=t, state=state, sens=sens, params=params)
-    #
-    # def eval_sens_jacobian_state(self, time=None, state=None, sens=None, params=None):
-    #     """
-    #     Evaluate the jacobian of the sensitivities w.r.t the states given
-    #     parameters, state and time. An extension of :meth:`.sens_jacobian_state`
-    #     but now also include the parameters.
-    #
-    #     Parameters
-    #     ----------
-    #     parameters: list
-    #         see :meth:`.parameters`
-    #     time: double
-    #         The current time
-    #     state: array list
-    #         The current numerical value for the states which can be
-    #         :class:`numpy.ndarray` or :class:`list`
-    #
-    #     Returns
-    #     -------
-    #     :class:`numpy.matrix` or :class:`mpmath.matrix`
-    #         Matrix of dimension [number of state x number of state]
-    #
-    #     Notes
-    #     -----
-    #     Name and order of state and time are also different.
-    #
-    #     See Also
-    #     --------
-    #     :meth:`.sens_jacobian_state`
-    #
-    #     """
-    #
-    #     nS = self.num_state
-    #     nP = self.num_param
-    #
-    #     # dot first, then transpose, then reshape
-    #     # basically, some magic
-    #     # don't ask me what is actually going on here, I did it
-    #     # while having my wizard hat on
-    #
-    #     return(np.reshape(self.diff_jacobian(state, time, *params).dot(
-    #         self._SAUtil.vecToMatSens(sens)).transpose(), (nS*nP, nS)))

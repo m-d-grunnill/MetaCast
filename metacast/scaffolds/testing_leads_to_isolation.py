@@ -24,7 +24,7 @@ def wanning_booster_with_ra_pcr(clusters,
     """
     Creates transfer list for vaccination leading to circling between waning and boosting with RA and RT-PCR testing.
 
-    This scafold was used in the simulation in [1].
+    This scafold was used in the simulations in [1].
 
     Parameters
     ----------

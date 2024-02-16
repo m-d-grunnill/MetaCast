@@ -84,7 +84,7 @@ class MassGatheringModel(MetaCaster):
     asymptomatic_transmission_modifier = 'theta'
 
 
-    def ode(self, y, t, *parameters):
+    def sub_pop_model(self, y, y_deltas, t, foi, parameters, states_index, cluster, vaccine_group):
         """
         Calculate derivative of this models state variables for time t.
         This method is for use either:
@@ -108,68 +108,63 @@ class MassGatheringModel(MetaCaster):
         numpy.array
             Derivatives of state variables at time t.
         """
-        parameters, y_deltas, fois = super().setup_child_ode_method(y, parameters)
-        for cluster in self.clusters:
-            foi = fois[cluster] # force of infection experienced by this specific cluster.
-            for vaccine_group in self.vaccine_groups:
-                ve_infection = 'l_'+vaccine_group # vaccine efficacy against infection for this vaccine group.
-                ve_symptoms = 's_' + vaccine_group # vaccine efficacy against symptoms for this vaccine group.
-                ve_hospitalisation = 'h_' + vaccine_group # vaccine efficacy against hospitilisation for this vaccine group.
-                self.group_transfer(y, y_deltas, t, cluster, vaccine_group, parameters)
-                states_index = self.state_index[cluster][vaccine_group] # Dictionary of state indexes for this cluster
-                # and vaccine group.
-                # Infections
-                infections = (1 - parameters[ve_infection]) * foi * y[states_index['S']]
-                # progression to RT-pcr sensitivity
-                prog_rtpcr = parameters['epsilon_1'] * y[states_index['E']]
-                p_s_v = parameters['p_s'] * (1 - parameters[ve_symptoms])
-                prog_symptomatic_path = prog_rtpcr * p_s_v
-                prog_asymptomatic_path = prog_rtpcr * (1-p_s_v)
+
+        ve_infection = 'l_'+vaccine_group # vaccine efficacy against infection for this vaccine group.
+        ve_symptoms = 's_' + vaccine_group # vaccine efficacy against symptoms for this vaccine group.
+        ve_hospitalisation = 'h_' + vaccine_group # vaccine efficacy against hospitilisation for this vaccine group.
+        # and vaccine group.
+        # Infections
+        infections = (1 - parameters[ve_infection]) * foi * y[states_index['S']]
+        # progression to RT-pcr sensitivity
+        prog_rtpcr = parameters['epsilon_1'] * y[states_index['E']]
+        p_s_v = parameters['p_s'] * (1 - parameters[ve_symptoms])
+        prog_symptomatic_path = prog_rtpcr * p_s_v
+        prog_asymptomatic_path = prog_rtpcr * (1-p_s_v)
 
 
-                # progression to lfd/rapid antigen test sensitivity
-                prog_LFD_sensitive_symptomatic_path = parameters['epsilon_2'] * y[states_index['G_I']]
-                prog_LFD_sensitive_asymptomatic_path = parameters['epsilon_2'] * y[states_index['G_A']]
+        # progression to lfd/rapid antigen test sensitivity
+        prog_LFD_sensitive_symptomatic_path = parameters['epsilon_2'] * y[states_index['G_I']]
+        prog_LFD_sensitive_asymptomatic_path = parameters['epsilon_2'] * y[states_index['G_A']]
 
 
-                # progression to mid-infection for symptomatics.
-                prog_symptoms = parameters['epsilon_3'] * y[states_index['P_I']]
-                p_h_v = parameters['p_h_s'] * (1 - parameters[ve_hospitalisation])
-                prog_hospital_path = p_h_v*prog_symptoms
-                prog_not_hospital_path = prog_symptoms-prog_hospital_path
-                # progression to mid-infection for asymptomatics.
-                prog_mid_asymptomatic_stage = parameters['epsilon_3'] * y[states_index['P_A']]
+        # progression to mid-infection for symptomatics.
+        prog_symptoms = parameters['epsilon_3'] * y[states_index['P_I']]
+        p_h_v = parameters['p_h_s'] * (1 - parameters[ve_hospitalisation])
+        prog_hospital_path = p_h_v*prog_symptoms
+        prog_not_hospital_path = prog_symptoms-prog_hospital_path
+        # progression to mid-infection for asymptomatics.
+        prog_mid_asymptomatic_stage = parameters['epsilon_3'] * y[states_index['P_A']]
 
-                # Progression to tate infection
-                prog_late_asymptomatic_stage = parameters['gamma_A_1'] * y[states_index['M_A']]
-                prog_late_symptomatic_stage = parameters['gamma_I_1'] * y[states_index['M_I']]
-                hospitalisation = parameters['epsilon_H'] * y[states_index['M_H']]
+        # Progression to tate infection
+        prog_late_asymptomatic_stage = parameters['gamma_A_1'] * y[states_index['M_A']]
+        prog_late_symptomatic_stage = parameters['gamma_I_1'] * y[states_index['M_I']]
+        hospitalisation = parameters['epsilon_H'] * y[states_index['M_H']]
 
-                # Recovery
-                asymptomatic_recovery = parameters['gamma_A_2'] * y[states_index['F_A']]
-                symptomatic_recovery = parameters['gamma_I_2'] * y[states_index['F_I']]
-                hospital_recovery = parameters['gamma_H'] * y[states_index['F_H']]
+        # Recovery
+        asymptomatic_recovery = parameters['gamma_A_2'] * y[states_index['F_A']]
+        symptomatic_recovery = parameters['gamma_I_2'] * y[states_index['F_I']]
+        hospital_recovery = parameters['gamma_H'] * y[states_index['F_H']]
 
-                # Natural wanning imunity
-                waned_natural_immunity = parameters['alpha'] * y[states_index['R']]
+        # Natural wanning imunity
+        waned_natural_immunity = parameters['alpha'] * y[states_index['R']]
 
-                # Updating y_deltas with derivative calculations from this cluster and vaccine group.
-                y_deltas[states_index['S']] += waned_natural_immunity - infections
-                y_deltas[states_index['E']] += infections - prog_rtpcr
-                y_deltas[states_index['G_I']] += prog_symptomatic_path - prog_LFD_sensitive_symptomatic_path
-                y_deltas[states_index['G_A']] += prog_asymptomatic_path - prog_LFD_sensitive_asymptomatic_path
-                y_deltas[states_index['P_I']] += prog_LFD_sensitive_symptomatic_path - prog_symptoms
-                y_deltas[states_index['P_A']] += prog_LFD_sensitive_asymptomatic_path - prog_mid_asymptomatic_stage
-                y_deltas[states_index['M_A']] += prog_mid_asymptomatic_stage-prog_late_asymptomatic_stage
-                y_deltas[states_index['M_I']] += prog_not_hospital_path-prog_late_symptomatic_stage
-                y_deltas[states_index['M_H']] += prog_hospital_path - hospitalisation
-                y_deltas[states_index['F_A']] += prog_late_asymptomatic_stage-asymptomatic_recovery
-                y_deltas[states_index['F_I']] += prog_late_symptomatic_stage-symptomatic_recovery
-                y_deltas[states_index['F_H']] += hospitalisation - hospital_recovery
-                y_deltas[states_index['R']] += hospital_recovery + asymptomatic_recovery + symptomatic_recovery - waned_natural_immunity
-                y_deltas[-2] += hospitalisation
-                y_deltas[-1] += infections
-                # self.ode_calls_dict[key] = y_deltas
+        # Updating y_deltas with derivative calculations from this cluster and vaccine group.
+        y_deltas[states_index['S']] += waned_natural_immunity - infections
+        y_deltas[states_index['E']] += infections - prog_rtpcr
+        y_deltas[states_index['G_I']] += prog_symptomatic_path - prog_LFD_sensitive_symptomatic_path
+        y_deltas[states_index['G_A']] += prog_asymptomatic_path - prog_LFD_sensitive_asymptomatic_path
+        y_deltas[states_index['P_I']] += prog_LFD_sensitive_symptomatic_path - prog_symptoms
+        y_deltas[states_index['P_A']] += prog_LFD_sensitive_asymptomatic_path - prog_mid_asymptomatic_stage
+        y_deltas[states_index['M_A']] += prog_mid_asymptomatic_stage-prog_late_asymptomatic_stage
+        y_deltas[states_index['M_I']] += prog_not_hospital_path-prog_late_symptomatic_stage
+        y_deltas[states_index['M_H']] += prog_hospital_path - hospitalisation
+        y_deltas[states_index['F_A']] += prog_late_asymptomatic_stage-asymptomatic_recovery
+        y_deltas[states_index['F_I']] += prog_late_symptomatic_stage-symptomatic_recovery
+        y_deltas[states_index['F_H']] += hospitalisation - hospital_recovery
+        y_deltas[states_index['R']] += hospital_recovery + asymptomatic_recovery + symptomatic_recovery - waned_natural_immunity
+        y_deltas[-2] += hospitalisation
+        y_deltas[-1] += infections
+        # self.ode_calls_dict[key] = y_deltas
 
         return y_deltas
 

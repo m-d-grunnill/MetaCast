@@ -131,7 +131,7 @@ def lhs_prcc_serial(parameters_df, sample_size, model_run_method,
     sample_size : int
         Sample size of Latin Hypercube.
     model_run_method : function
-        Method of running model simulation. Must accept parameters as a single dictionary.
+        Method of running model simulations. Must accept parameters as a single dictionary.
     results_csv : string, optional
         If given results are saved to csv instead of being returned as a dataframe.
     LHS_obj : scipy.stats.qmc.LatinHypercube, optional
@@ -204,7 +204,7 @@ def run_samples_in_parallel(sample_df, model_run_method, max_workers=None, retur
     sample_df : pandas.Dataframe
         Parameter samples being run. Column fields are parameters.
     model_run_method : function
-        Method of running model simulation. Must accept parameters as a single dictionary.
+        Method of running model simulations. Must accept parameters as a single dictionary.
     max_workers : int, optional defaults to maximum available.
         Number of workers/cpu/cores used in running simulations.
     return_focused_results : bool, default True
@@ -255,7 +255,7 @@ def lhs_and_prcc_parallel(parameters_df,
     sample_size : int
         Sample size of Latin Hypercube.
     model_run_method : function
-        Method of running model simulation. Must accept parameters as a single dictionary.
+        Method of running model simulations. Must accept parameters as a single dictionary.
     results_csv : string, optional
         If given results are saved to csv instead of being returned as a dataframe.
     LHS_obj : scipy.stats.qmc.LatinHypercube, optional

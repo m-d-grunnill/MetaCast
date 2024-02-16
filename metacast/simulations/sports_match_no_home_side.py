@@ -31,7 +31,7 @@ def _load_parameters(file='Parameters values in LHS Sports Match Sims.xlsx',
     fixed_params = fixed_params.to_dict()
     parameters_df = parameters_df[parameters_df['Fixed Value'].isnull()]
     # No waning immunity or flows of people between clusters and vaccination groups
-    # during international spots matches. This is due to the simulation time of such
+    # during international spots matches. This is due to the simulations time of such
     # matches being short in comparison.
     parameters_held_at_0 = {param: 0
                             for param in
@@ -133,7 +133,7 @@ class SportMatchMGESimulation:
     Methods
     -------
     run_simulation(sampled_parameters, return_full_results=False, save_dir=None)
-        Runs simulation using event_queue and model attributes.
+        Runs simulations using event_queue and model attributes.
 
     """
 
@@ -214,7 +214,7 @@ class SportMatchMGESimulation:
         event_info_dict = {}
 
         # Setup Tests events
-        ra_transfer_info = self.model.group_transition_params_dict['iota_{RA}']
+        ra_transfer_info = self.model.sub_pop_transition_params_dict['iota_{RA}']
         visitor_ra_from_index, visitor_ra_to_index = self._create_transfer_index(ra_transfer_info,
                                                                                  self.visitors_main)
         event_info_dict['Pre-travel RA'] = {'from_index': visitor_ra_from_index,
@@ -228,7 +228,7 @@ class SportMatchMGESimulation:
                                            'times': 2.5,
                                            'type': 'transfer'}
 
-        rtpcr_transfer_info = self.model.group_transition_params_dict['iota_{RTPCR}']
+        rtpcr_transfer_info = self.model.sub_pop_transition_params_dict['iota_{RTPCR}']
         visitor_rtpcr_from_index, visitor_rtpcr_to_index = self._create_transfer_index(rtpcr_transfer_info,
                                                                                        self.visitors_main)
         event_info_dict['Pre-travel RTPCR'] = {'from_index': visitor_rtpcr_from_index,
@@ -321,7 +321,7 @@ class SportMatchMGESimulation:
 
     def run_simulation(self, sampled_parameters, return_full_results=False, save_dir=None):
         """
-        Runs simulation using event_queue and model attributes.
+        Runs simulations using event_queue and model attributes.
 
         Parameters
         ----------
@@ -342,7 +342,7 @@ class SportMatchMGESimulation:
         Optional Returns
         ----------------
         solution : pandas.DataFrame
-            Model simulation results. Multi-index columns are clusters by vaccine groups by states.
+            Model simulations results. Multi-index columns are clusters by vaccine groups by states.
         transfers_df : pandas.DataFrame
             Outlines values transferred between states.
         """

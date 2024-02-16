@@ -61,7 +61,7 @@ class EventQueue:
                        start_time=0, simulation_step=1,
                        full_output=False, return_param_changes=False,
                        **kwargs_to_pass_to_func)
-        Carries out events in queue, running simulation using user defined method between events.
+        Carries out events in queue, running simulations using user defined method between events.
 
 
     """
@@ -201,7 +201,7 @@ class EventQueue:
                        full_output=False, return_param_changes=False,
                        **kwargs_to_pass_to_func):
         """
-        Carries out events in queue, running simulation using user defined method between events.
+        Carries out events in queue, running simulations using user defined method between events.
 
         Parameters
         ----------
@@ -212,16 +212,16 @@ class EventQueue:
         y0 : numpy.array
             Intial values of state varibles.
         end_time : float/int
-            End time of simulation.
+            End time of simulations.
         parameters_attribute : string
             Attribute of model_object that sets parameters (must accept dictionary where keys are strings and values are
             floats/ints).
         parameters : dict {str : floats/ints}
             Parameters being used by model.
         start_time : float/int, default 0
-            Start time of simulation.
+            Start time of simulations.
         simulation_step : float/int, default 1
-            Time steps used in simulation.
+            Time steps used in simulations.
         full_output : bool, default False
             If true an info_dict is returned outlining full_output information given from running of model between
             events.
@@ -270,7 +270,7 @@ class EventQueue:
         earliest_event_time = self._event_queue.earliest_event_time
         while sim_event_queue.not_empty():
             next_time, event = sim_event_queue.poptop()
-            if next_time > end_time: # if the next event is after simulation time break out of loop.
+            if next_time > end_time: # if the next event is after simulations time break out of loop.
                 break
 
             if current_time != next_time:

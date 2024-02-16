@@ -100,7 +100,7 @@ class FluDiagHosp(MetaCaster):
             for vaccine_group in self.vaccine_groups:
                 ve_infection = 'l_'+vaccine_group # vaccine efficacy against infection for this vaccine group.
                 ve_hospitalisation = 'h_' + vaccine_group # vaccine efficacy against symptoms for this vaccine group.
-                self.group_transfer(y, y_deltas, t, cluster, vaccine_group, parameters)
+                self.sub_pop_transfer(y, y_deltas, t, cluster, vaccine_group, parameters)
                 states_index = self.state_index[cluster][vaccine_group] # Dictionary of state indexes for this cluster
                 # and vaccine group.
                 # Infections

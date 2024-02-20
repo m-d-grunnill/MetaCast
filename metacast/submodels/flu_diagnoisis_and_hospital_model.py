@@ -63,9 +63,9 @@ class FluDiagHosp(MetaCaster):
     hospitalised_states = ['H']
     infectious_states = ['I', 'D', 'U']
     isolating_states = ['D']
-    non_transmission_universal_params = ['sigma', 'p_d', 'delta', 'gamma_u',
+    universal_params = ['sigma', 'p_d', 'delta', 'gamma_u',
                                          'gamma_d', 'p_hd', 'gamma_h'
-                                         ]
+                        ]
     isolation_modifier = 'kappa'
     vaccine_specific_params = ['l', 'h']
     transmission_cluster_specific = True

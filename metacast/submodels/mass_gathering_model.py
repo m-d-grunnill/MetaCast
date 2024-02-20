@@ -72,13 +72,13 @@ class MassGatheringModel(MetaCaster):
     hospitalised_states = ['F_H']
     infectious_states = ['P_I', 'P_A',  'M_I', 'M_A', 'M_H',  'F_I', 'F_A']
     symptomatic_states = ['M_I', 'F_I',  'M_H', 'F_H']
-    non_transmission_universal_params = ['epsilon_1', 'epsilon_2', 'epsilon_3', 'epsilon_H',
+    universal_params = ['epsilon_1', 'epsilon_2', 'epsilon_3', 'epsilon_H',
                                          'p_s', 'p_h_s',
                                          'gamma_A_1', 'gamma_A_2',
                                          'gamma_I_1', 'gamma_I_2',
                                          'gamma_H',
                                          'alpha'
-                                         ]
+                        ]
     vaccine_specific_params = ['l', 's', 'h']
     transmission_cluster_specific = True
     asymptomatic_transmission_modifier = 'theta'

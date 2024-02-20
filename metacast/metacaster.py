@@ -9,11 +9,10 @@ Classes
 -------
 Base2DMetaPopModel
     Base class for setting up and simulating two-dimensional metapopulation models.
-    It is intended that two-dimensional models using this modules API should create a class that
-    inherits that is a child of this class and has the method ode.
-    First dimension is members are referred to clusters.
-    Second dimension clusters are referred to vaccination groups.
+    First dimension members are referred to 0_pop.
+    Second dimension members are referred to 1_group.
 """
+import copy
 from inspect import getargspec
 from collections.abc import Iterable
 import numpy as np
@@ -68,45 +67,41 @@ def select_dict_items_in_list(dictionary, lst):
 class MetaCaster:
     """
     Base class for setting up and simulating two-dimensional metapopulation models.
-    First dimension is members are referred to clusters.
+    First dimension of metapopulation is to 0_pop.
     Second dimension clusters are referred to vaccination groups.
 
     Parameters
     ----------
     scaffold : dictionary, list or tuple
         If dictionary group_structure must contain the key values pairs:
-            clusters: list of strings'
-                Names given to clusters.
-            vaccine groups: list of strings'
-                Names given to vaccine groups.
+            0: list of strings'
+                Names given to populations in 0/first dimension.
+            1: list of strings'
+                Names given to populations in 1/2nd dimension.
         If list or tuple each entry must be a dictionary that defines a transition.
         These dictionaries must have the key values pairs:
-            from_cluster: string
-                Cluster from which hosts are leaving.
-            to_cluster: string
-                Cluster to which hosts are going.
-            from_vaccine_group: string
-                Vaccine group from which hosts are leaving.
-            to_vaccine_group: string
-                Vaccine group to which hosts are going.
+            from_0: string
+                0 dimension population from which hosts are leaving.
+            to_0: string
+                0 dimension population to which hosts are going.
+            from_1: string
+                1 dimension population from which hosts are leaving.
+            to_1: string
+                1 dimension population to which hosts are going.
             states: list of strings or string
-                Host states which will transition between clusters and vaccine groups. Single entry of 'all' value
-                means all the available model states transition between clusters and vaccine groups.
+                States which will transition between populations. Single entry of 'all' value
+                means all the available model states transition between populations.
             parameter : string
-                Name given to parameter that is responsible for flow of hosts transitions between clusters and
-                vaccine groups.
+                Name given to parameter that is responsible for flow of hosts transitions between populations.
         Optional key value pairs:
             piecewise targets: list, tuple, numpy.array or pandas.series
                 Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                between clusters and vaccine groups (see method group_transfer).
+                between populations (see method group_transfer).
     
     
     Attributes
     ----------
-    ode: None
-        This is None in base parent class, but must be overridden with a method calculating derivative of state variables
-        at t in child classes.
-    states : list of strings 
+    states : list of strings
         States used in model. Empty in base parent class.
     observed_states : list of strings
         Observed states. Useful for obtaining results or fitting (e.g. Cumulative incidence). Empty in base parent class.
@@ -119,9 +114,6 @@ class MetaCaster:
     symptomatic_states : list of strings
         Symptomatic states. NOTE any state in the list self.infectious_states but NOT in this list has its transmission
         modified by self.asymptomatic_transmission_modifier (see method calculate_fois). Empty in base parent class.
-    isolating_states : list of strings
-        Isolating states.  Empty in base parent class. NOTE any state in this list AND self.infectious_states has its
-        transmission modified by isolation_modifier (see method calculate_fois).
     transmission_term : string
         General transmission term used in calculating forces of infection, default term is 'beta' (see method
         calculate_fois). If  attribute transmission_cluster_specific == False transmission terms are generate of the form
@@ -133,22 +125,16 @@ class MetaCaster:
     transmission_cluster_specific : bool
         Default value is False. If false it is assumed that classes mix homogeneously. If true transmission
         is assumed to be different between each class interaction.
-    isolation_modifier : string or None
-        Factor used to modify transmission from infectious but isolating states. If None a factor of 1 is used in the
-        isolation_modifier's place when using method calculating_fois.
-    isolation_cluster_specific : bool
-        Default value is False. If True isolation is specific to a cluster and isolation_modifier are used in the
-        parameters, taking the form self.isolation_modifier + '_' +cluster_j .
     asymptomatic_transmission_modifier : string or None
         Factor used to modify transmission from infectious but asymptomatic states. If None a factor of 1 is used in the
         asymptomatic_transmission_modifier's place when using method calculating_fois.
-    non_transmission_universal_params : list of strings
+    universal_params : list of strings
         A list of all the parameters that are NOT:
         - directly to do with transmission
         - cluster specific
         - vaccine group specific
         Empty in base parent class.
-    non_transmission_cluster_specific_params : list of strings
+    subpopulation_params : list of strings
          A list of all the parameters that are cluster specific but NOT directly to do with transmission. Empty in base
         parent class.
     vaccine_specific_params : list of strings
@@ -172,22 +158,10 @@ class MetaCaster:
         First level: keys are the cluster names values are another dictionary.
             Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
                           asymptomatic states.
-    isolating_symptomatic_indexes : 2 level nested dictionary.
-        First level: keys are the cluster names values are another dictionary.
-            Second level: keys are the vaccine_group names and values is a list of indexes for isolating symptomatic
-            states.
-    isolating_asymptomatic_indexes : 2 level nested dictionary.
-        First level: keys are the cluster names values are another dictionary.
-            Second level: keys are the vaccine_group names and values is a list of indexes for isolating asymptomatic
-            states.
     infectious_and_symptomatic_states : list of stings
         A list of infectious and symptomatic states.
     infectious_and_asymptomatic_states : list of stings
         A list of infectious and asymptomatic states.
-    isolating_and_symptomatic_states : list of stings
-        A list of isolating and symptomatic states.
-    isolating_and_asymptomatic_states : list of stings
-        A list of isolating and asymptomatic states.
     num_state : int
         Total number of states in model.
     num_param : int
@@ -197,16 +171,15 @@ class MetaCaster:
 
     Methods
     -------
-    get_transmission_terms_between(clusters)
-        Get a dictionary of transmission terms between all clusters in list provided.
-    group_transfer(y, y_deltas, t, from_cluster, from_vaccine_group, parameters)
-        Calculates the transfers of people from clusters and vaccination groups.
+    ode: Evaluate the ODE given states (y), time (t) and parameters
+    get_transmission_terms_between(subpopulation)
+        Get a dictionary of transmission terms between all subpopulation in list provided.
+    group_transfer(y, y_deltas, t, from_0, from_1, parameters)
+        Calculates the transfers of people from population.
     setup_child_ode_method(y, parameters)
         Wrapper function for setting ode method in child classes.
-    get_clusters_indexes(clusters)
-        Returns a list of the indexes for all the states in the clusters given.
-    get_vaccine_group_indexes(vaccine_groups)
-        Returns a list of the indexes for all the states in the vaccine groups given.
+    get_pop_indexes(axis, subpopulation_name)
+        Returns a list of the indexes for all the states in a subpopulation.
     calculate_fois(y, parameters)
         Calculates the Forces of Infection (FOI) given variables in y and parameters.
     integrate(x0, t, full_output=False, called_in_fitting=False, **kwargs_to_pass_to_odeint)
@@ -214,22 +187,19 @@ class MetaCaster:
         A wrapper on top of :mod:`odeint <scipy.integrate.odeint>`
         Modified method from the pygom method `DeterministicOde <pygom.model.DeterministicOde>`.
     """
+    _max_axis_supported = 2
     states = None
     infected_states = None
     infectious_states = infected_states
     symptomatic_states = infected_states
     observed_states = infected_states
     hospitalised_states = None
-    isolating_states = None
     transmission_term = 'beta'
     population_term = 'N'
     transmission_cluster_specific = False
-    isolation_modifier = None
-    isolation_cluster_specific = False
     asymptomatic_transmission_modifier = None
-    non_transmission_universal_params = None
-    non_transmission_cluster_specific_params = None  # does not include transmission term beta.
-    vaccine_specific_params = None
+    universal_params = None
+    subpopulation_params = None  # does not include transmission term beta.
     _sub_pop_model = None
 
     def _check_model_attributes(self):
@@ -243,17 +213,13 @@ class MetaCaster:
                                 'symptomatic_states',
                                 'observed_states',
                                 'hospitalised_states',
-                                'isolating_states',
-                                'non_transmission_universal_params',
-                                'non_transmission_cluster_specific_params',
-                                'vaccine_specific_params']:
+                                'universal_params']:
             if eval('self.' + model_attribute) is not None:
                 if not _is_set_like_of_strings(eval('self.' + model_attribute)):
                     raise TypeError('Model attribute "' +
                                     model_attribute +
                                     '" should be a collection of unique strings.')
-        for model_attribute in ['transmission_cluster_specific',
-                                'isolation_cluster_specific']:
+        for model_attribute in ['transmission_cluster_specific']:
             if not isinstance('self.' + model_attribute, bool):
                 raise TypeError('Model attribute "' +
                                 model_attribute +
@@ -279,27 +245,23 @@ class MetaCaster:
             raise TypeError('Base2DMetaPopModel is not meant to run models, only its children.' +
                             '\nIf unfamiliar with class inheritance look  up:\n' +
                             ' https://www.w3schools.com/python/python_inheritance.asp.')
-        self.all_parameters = set(self.non_transmission_universal_params)
-        for transmission_modifier in [self.isolation_modifier,
-                                      self.asymptomatic_transmission_modifier]:
-            if transmission_modifier is not None:
-                self.all_parameters.add(transmission_modifier)
+        self.all_parameters = set(self.universal_params)
         if self.asymptomatic_transmission_modifier is not None:
             self.all_parameters.add(self.asymptomatic_transmission_modifier)
         self._gen_structure(scaffold)
         self.all_parameters.update([param + '_' + vaccine_group
                                     for vaccine_group in self.vaccine_groups
                                     for param in self.vaccine_specific_params
-                                    if param not in self.non_transmission_cluster_specific_params])
+                                    if param not in self.subpopulation_params])
         self.all_parameters.update([param + '_' + cluster
                                     for cluster in self.clusters
-                                    for param in self.non_transmission_cluster_specific_params
+                                    for param in self.subpopulation_params
                                     if param not in self.vaccine_specific_params])
         self.all_parameters.update([param + '_' + cluster + '_' + vaccine_group
                                     for cluster in self.clusters
                                     for vaccine_group in self.vaccine_groups
                                     for param in self.vaccine_specific_params
-                                    if param in self.non_transmission_cluster_specific_params])
+                                    if param in self.subpopulation_params])
         if self.transmission_cluster_specific:
             self.transmission_to_terms = {cluster_i: {self.transmission_term: [],
                                                       self.population_term: []
@@ -317,14 +279,6 @@ class MetaCaster:
                     self.all_parameters.add(term)
                     self.transmission_to_terms[cluster_i][self.transmission_term].append(term)
                     self.transmission_from_terms[cluster_j][self.transmission_term].append(term)
-        if self.isolation_cluster_specific:
-            if self.isolation_modifier is None:
-                raise AssertionError('isolation_modifier must be specified to be considered cluster specific')
-            if not self.transmission_cluster_specific:
-                raise AssertionError('isolation being cluster specific is only supported when ' +
-                                     'transmission is cluster specific.')
-            self.all_parameters.update([self.isolation_modifier + '_' + cluster
-                                        for cluster in self.clusters])
         self.all_parameters = sorted(self.all_parameters)
         non_piece_wise_params_names = set(self.all_parameters) - set(self.params_estimated_via_piecewise_method)
         self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
@@ -366,19 +320,19 @@ class MetaCaster:
 
     def _gen_structure(self, scaffold):
         """
-        Sets up structure of flow between sub-population models.
+        Sets up structure of flow between subpopulation models.
 
         Parameters
         ----------
         scaffold : dictionary, list or tuple
             If dictionary group_structure must contain the key values pairs:
-                clusters: list of strings'
+                0_pops: list of strings'
                     Names given to clusters.
-                vaccine groups: list of strings'
+                1_groups: list of strings'
                     Names given to vaccine groups.
             If list or tuple each entry must be a dictionary that defines a transition.
             These dictionaries must have the key values pairs:
-                from_cluster: string
+                from_0_pop: string
                     Cluster from which hosts are leaving.
                 to_cluster: string
                     Cluster to which hosts are going.
@@ -405,48 +359,70 @@ class MetaCaster:
         self.params_estimated_via_piecewise_method = []
         self.subpop_transfer_dict = {}
         self.sub_pop_transition_params_dict = {}
-        self.vaccine_groups = set()
-        self.clusters = set()
-        self.one_dimensional_metapopulation = True
 
-
-        if isinstance(scaffold, dict):
-            self.clusters.update(scaffold['clusters'])
-            if 'vaccine_group' in scaffold:
-                self.vaccine_groups.update(scaffold['vaccine groups'])
-        elif isinstance(scaffold, (list, tuple)):
+        if isinstance(scaffold, int):
+            self.subpopulations = [[*range(int)]]
+        elif _is_set_like_of_strings(scaffold):
+            self.subpopulations = [list(scaffold)]
+        elif isinstance(scaffold, (list, tuple)) and all(isinstance(item,dict) for item in scaffold):
+            self.subpopulations = [set()]
             for count, group_transfer in enumerate(scaffold):
-                cluster = group_transfer['from_cluster']
-                self.clusters.add(cluster)
-                if cluster not in self.subpop_transfer_dict:
-                    self.subpop_transfer_dict[cluster] = {}
-                if 'from_vaccine_group' in group_transfer:
-                    if 'to_vaccine_group' not in group_transfer:
-                        raise AssertionError("If 'from_vaccine_group' is in scaffold 'to_vaccine_group' must be given.")
-                    if count == 0:
-                        self.one_dimensional_metapopulation = False
-                    else:
-                        raise AssertionError('Either all scaffold entries should have a' +
-                                             ' "from_vaccine_group" entry of none should.')
-                    vaccine_group = group_transfer['from_vaccine_group']
-                    self.vaccine_groups.add(vaccine_group)
-                    if vaccine_group not in self.subpop_transfer_dict[cluster]:
-                        self.subpop_transfer_dict[cluster][vaccine_group] = []
+                from_axis = 0
+                from_axis_key = 'from_axis_'+str(from_axis)
+                if from_axis_key not in group_transfer:
+                    raise AssertionError('If scaffold is a list of dictionaries it must have a "from_axis_0"' +
+                                         ' entry in every sub-dictionary.')
+                subpop_transfer_dict = self.subpop_transfer_dict
+                to_axis_key = 'to_axis_' + str(from_axis)
+                while from_axis_key in group_transfer and from_axis <= self._max_axis_supported:
+                    from_axis_value = group_transfer[from_axis_key]
+                    if from_axis_value not in self.subpop_transfer_dict:
+                        subpop_transfer_dict[from_axis_value] = {}
+                    subpop_transfer_dict = subpop_transfer_dict[from_axis_value]
+                    if len(self.subpopulations) < from_axis:
+                        self.subpopulations.append(set())
+                    self.subpopulations[from_axis].add(from_axis_value)
+                    if to_axis_key not in group_transfer:
+                        raise AssertionError("If '" + from_axis_key + "' is in scaffold '" + 
+                                             to_axis_key + "' must be given.")
+                    from_axis += 1
+                    from_axis_key = 'from_axis_' + str(from_axis)
+                    to_axis_key = 'to_axis_' + str(from_axis)
 
-                to_cluster = group_transfer['to_cluster']
-                self.clusters.add(to_cluster)
-                if 'to_vaccine_group' in group_transfer:
-                    to_vaccine_group = group_transfer['to_vaccine_group']
-                    self.vaccine_groups.add(to_vaccine_group)
+                num_axis_in_entry = from_axis - 1
+                if count == 0:
+                    axis_on_0th_entry = num_axis_in_entry
+                elif num_axis_in_entry != axis_on_0th_entry:
+                    raise AssertionError('Either all scaffold entries should have a ' +
+                                         from_axis_key + ' entry of none should.')
+
+                if from_axis_key in group_transfer:
+                    raise AssertionError(from_axis_key + ' is in scaffold when MetaCaster only allows for '
+                                         + str(self._max_axis_supported) + ' axis/dimensions.')
+
+                to_axis = 0
+                to_axis_key = 'to_axis_' + str(to_axis)
+                while to_axis_key in group_transfer and to_axis <= self._max_axis_supported:
+                    to_axis_value = group_transfer[to_axis_key]
+                    if len(self.subpopulations) < to_axis:
+                        self.subpopulations[to_axis].add(to_axis_value)
+                    subpop_transfer_dict[to_axis_key] = to_axis_value
+                    to_axis += 1
+                    to_axis_key = 'to_axis_' + str(to_axis)
 
                 if group_transfer['states'] == 'all':
-                    group_transfer['states'] = self.states
+                    subpop_transfer_dict['states'] = self.states
                 else:
-                    if not isinstance(group_transfer['states'], (list, tuple)):
-                        group_transfer['states'] = list(group_transfer['states'])
+                    states = copy.deepcopy(group_transfer['states'])
+                    if isinstance(states, str):
+                        states = list(states)
+                    if not _is_set_like_of_strings(states):
+                        raise TypeError('states entries in scaffold should by unique.')
+                    if any(state not in self.states for state in states):
+                        raise ValueError('All states in listed in a scaffold should be one of those listed in the' +
+                                         ' subpopulation model.')
+                    subpop_transfer_dict['states'] = states
 
-                    for state in group_transfer['states']:
-                        self._check_string_in_list_strings(state, 'states')
                 parameter = group_transfer['parameter']
                 if not isinstance(parameter, str):
                     raise TypeError(str(parameter) + ' should be of type string.')
@@ -457,26 +433,20 @@ class MetaCaster:
                          if key != 'parameter'}
                 self.sub_pop_transition_params_dict[parameter].append(entry)
                 self.all_parameters.add(parameter)
-                if 'piecewise targets' in group_transfer:
-                    self.params_estimated_via_piecewise_method.append(parameter)
-                    if isinstance(group_transfer['piecewise targets'], pd.Series):
-                        group_transfer['piecewise targets'] = group_transfer['piecewise targets'].tolist()
 
-                if self.one_dimensional_metapopulation:
-                    entry = {key: value
-                             for key, value in group_transfer.items()
-                             if key != 'from_cluster'}
-                    self.subpop_transfer_dict[cluster].append(entry)
-                else:
-                    entry = {key: value
-                             for key, value in group_transfer.items()
-                             if key not in ['from_cluster', 'from_vaccine_group']}
-                    self.subpop_transfer_dict[cluster][vaccine_group].append(entry)
+        elif (isinstance(scaffold, (list, tuple)) and
+              len(scaffold) <= self._max_axis_supported and
+              all(isinstance(item, int) for item in scaffold)):
+            self.subpopulations = [[*range(num)] for num in scaffold]
+        elif (isinstance(scaffold, (list, tuple)) and
+              len(scaffold) <= self._max_axis_supported and
+              all(_is_set_like_of_strings(item) for item in scaffold)):
+            self.subpopulations = scaffold
         else:
-            raise TypeError('group_structure must be a dictionary, list or tuple.')
+            raise TypeError('scaffold is not supported.')
 
     def sub_pop_transfer(self, y, y_deltas, t,
-                         from_cluster,
+                         from_0_pop,
                          from_vaccine_group,
                          parameters
                          ):
@@ -491,7 +461,7 @@ class MetaCaster:
             Store of delta (derivative) of variables in y which this method adds/subtracts to.
         t : float
             Time t for which derivative is being calculated.
-        from_cluster : string
+        from_0_pop : string
             Cluster from which transfers are being made.
         from_vaccine_group : string
             Vaccine group from which transfers are being made.
@@ -504,10 +474,10 @@ class MetaCaster:
             Store of delta (derivative) of variables in y which this method adds/subtracts to.
 
         """
-        if from_cluster in self.subpop_transfer_dict:
-            if from_vaccine_group in self.subpop_transfer_dict[from_cluster]:
-                group_transfers = self.subpop_transfer_dict[from_cluster][from_vaccine_group]
-                from_index_dict = self.state_index[from_cluster][from_vaccine_group]
+        if from_0_pop in self.subpop_transfer_dict:
+            if from_vaccine_group in self.subpop_transfer_dict[from_0_pop]:
+                group_transfers = self.subpop_transfer_dict[from_0_pop][from_vaccine_group]
+                from_index_dict = self.state_index[from_0_pop][from_vaccine_group]
                 for group_transfer in group_transfers:
                     parameter = group_transfer['parameter']
                     if 'piecewise targets' in group_transfer:
@@ -634,10 +604,6 @@ class MetaCaster:
             A list of infectious and symptomatic states.
         infectious_and_asymptomatic_states : list of stings
             A list of infectious and asymptomatic states.
-        isolating_and_symptomatic_states : list of stings
-            A list of isolating and symptomatic states.
-        isolating_and_asymptomatic_states : list of stings
-            A list of isolating and asymptomatic states.
         num_state : int
             Total number of states in model.
 
@@ -646,23 +612,13 @@ class MetaCaster:
         Nothing
         """
         self.infectious_and_symptomatic_states = [state for state in self.infectious_states
-                                                  if state in self.symptomatic_states and
-                                                  state not in self.isolating_states]
+                                                  if state in self.symptomatic_states]
         self.infectious_and_asymptomatic_states = [state for state in self.infectious_states
-                                                   if state not in self.symptomatic_states and
-                                                   state not in self.isolating_states]
-        self.isolating_and_symptomatic_states = [state for state in self.infectious_states
-                                                 if state in self.symptomatic_states and
-                                                 state in self.isolating_states]
-        self.isolating_and_asymptomatic_states = [state for state in self.infectious_states
-                                                  if state not in self.symptomatic_states and
-                                                  state in self.isolating_states]
+                                                   if state not in self.symptomatic_states]
         self.all_states_index = {}
         self.state_index = {}
         self.infectious_symptomatic_indexes = {}
         self.infectious_asymptomatic_indexes = {}
-        self.isolating_symptomatic_indexes = {}
-        self.isolating_asymptomatic_indexes = {}
         self.infected_states_index_list = []
         self.hospitalised_states_index_list = []
         # populating index dictionaries
@@ -671,8 +627,6 @@ class MetaCaster:
             self.state_index[cluster] = {}
             self.infectious_symptomatic_indexes[cluster] = []
             self.infectious_asymptomatic_indexes[cluster] = []
-            self.isolating_symptomatic_indexes[cluster] = []
-            self.isolating_asymptomatic_indexes[cluster] = []
             for vaccine_group in self.vaccine_groups:
                 self.state_index[cluster][vaccine_group] = {}
                 for state in self.states:
@@ -682,10 +636,6 @@ class MetaCaster:
                         self.infectious_symptomatic_indexes[cluster].append(index)
                     if state in self.infectious_and_asymptomatic_states:
                         self.infectious_asymptomatic_indexes[cluster].append(index)
-                    if state in self.isolating_and_symptomatic_states:
-                        self.isolating_symptomatic_indexes[cluster].append(index)
-                    if state in self.isolating_and_asymptomatic_states:
-                        self.isolating_asymptomatic_indexes[cluster].append(index)
                     if state in self.infected_states:
                         self.infected_states_index_list.append(index)
                     if state in self.hospitalised_states:
@@ -789,46 +739,24 @@ class MetaCaster:
                 foi = 0
                 contactable_population = parameters[self.population_term + '_' + cluster_i]
                 for cluster_j in self.clusters:
-                    if self.isolation_modifier is not None:
-                        if self.isolation_cluster_specific:
-                            isolation_modifier = parameters[self.isolation_modifier + '_' + cluster_j]
-                        else:
-                            isolation_modifier = parameters[self.isolation_modifier]
-                    else:
-                        isolation_modifier = 1
                     beta = parameters[self.transmission_term + '_' + cluster_i + '_' + cluster_j]
 
                     if beta > 0:
                         total_asymptomatic = (asymptomatic_transmission_modifier *
                                               y[self.infectious_asymptomatic_indexes[cluster_j]].sum())
                         total_symptomatic = y[self.infectious_symptomatic_indexes[cluster_j]].sum()
-                        total_isolating_asymptomatic = (isolation_modifier * asymptomatic_transmission_modifier *
-                                                        y[self.isolating_asymptomatic_indexes[cluster_j]].sum())
-                        total_isolating_symptomatic = (isolation_modifier *
-                                                       y[self.isolating_symptomatic_indexes[cluster_j]].sum())
-                        full_contribution = sum([total_asymptomatic, total_symptomatic,
-                                                 total_isolating_asymptomatic, total_isolating_symptomatic])
+                        full_contribution = sum([total_asymptomatic, total_symptomatic])
 
                         foi += beta * full_contribution / contactable_population
 
                 fois[cluster_i] = foi
             return fois
         else:
-            if self.isolation_modifier is not None:
-                isolation_modifier = parameters[self.isolation_modifier]
-            else:
-                isolation_modifier = 1
             infectious_symptomatic_indexes = _unionise_dict_of_lists(self.infectious_symptomatic_indexes)
             infectious_and_asymptomatic_indexes = _unionise_dict_of_lists(self.infectious_asymptomatic_indexes)
-            isolating_asymptomatic_indexes = _unionise_dict_of_lists(self.isolating_asymptomatic_indexes)
-            isolating_symptomatic_indexes = _unionise_dict_of_lists(self.isolating_symptomatic_indexes)
             total_asymptomatic = asymptomatic_transmission_modifier * y[infectious_and_asymptomatic_indexes].sum()
             total_symptomatic = y[infectious_symptomatic_indexes].sum()
-            total_isolating_asymptomatic = (isolation_modifier * asymptomatic_transmission_modifier
-                                            * y[isolating_asymptomatic_indexes].sum())
-            total_isolating_symptomatic = isolation_modifier * y[isolating_symptomatic_indexes].sum()
-            full_contribution = sum([total_asymptomatic, total_symptomatic,
-                                     total_isolating_asymptomatic, total_isolating_symptomatic])
+            full_contribution = sum([total_asymptomatic, total_symptomatic])
             foi = parameters[self.transmission_term] * full_contribution / parameters[self.population_term]
             return foi
 

@@ -376,6 +376,8 @@ class MetaCaster:
                 to_axis_key = 'to_axis_' + str(from_axis)
                 while from_axis_key in group_transfer and from_axis <= self._max_axis_supported:
                     from_axis_value = group_transfer[from_axis_key]
+                    if not isinstance(from_axis_value, (int, str)):
+                        raise TypeError(from_axis_key + ' entries should be strings or integers.')
                     if from_axis_value not in self.subpop_transfer_dict:
                         subpop_transfer_dict[from_axis_value] = {}
                     subpop_transfer_dict = subpop_transfer_dict[from_axis_value]
@@ -404,6 +406,8 @@ class MetaCaster:
                 to_axis_key = 'to_axis_' + str(to_axis)
                 while to_axis_key in group_transfer and to_axis <= self._max_axis_supported:
                     to_axis_value = group_transfer[to_axis_key]
+                    if not isinstance(to_axis_value, (int, str)):
+                        raise TypeError(to_axis_key + ' entries should be strings or integers.')
                     if len(self.subpopulations) < to_axis:
                         self.subpopulations[to_axis].add(to_axis_value)
                     subpop_transfer_dict[to_axis_key] = to_axis_value

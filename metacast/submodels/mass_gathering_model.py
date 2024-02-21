@@ -80,11 +80,11 @@ class MassGatheringModel(MetaCaster):
                                          'alpha'
                         ]
     vaccine_specific_params = ['l', 's', 'h']
-    transmission_cluster_specific = True
+    transmission_subpopulation_specific = True
     asymptomatic_transmission_modifier = 'theta'
 
 
-    def sub_pop_model(self, y, y_deltas, t, foi, parameters, states_index, cluster, vaccine_group):
+    def subpop_model(self, y, y_deltas, t, foi, parameters, states_index, cluster, vaccine_group):
         """
         Calculate derivative of this models state variables for time t.
         This method is for use either:

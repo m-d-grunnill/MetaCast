@@ -214,7 +214,7 @@ class SportMatchMGESimulation:
         event_info_dict = {}
 
         # Setup Tests events
-        ra_transfer_info = self.model.sub_pop_transition_params_dict['iota_{RA}']
+        ra_transfer_info = self.model.subpop_transition_params_dict['iota_{RA}']
         visitor_ra_from_index, visitor_ra_to_index = self._create_transfer_index(ra_transfer_info,
                                                                                  self.visitors_main)
         event_info_dict['Pre-travel RA'] = {'from_index': visitor_ra_from_index,
@@ -228,7 +228,7 @@ class SportMatchMGESimulation:
                                            'times': 2.5,
                                            'type': 'transfer'}
 
-        rtpcr_transfer_info = self.model.sub_pop_transition_params_dict['iota_{RTPCR}']
+        rtpcr_transfer_info = self.model.subpop_transition_params_dict['iota_{RTPCR}']
         visitor_rtpcr_from_index, visitor_rtpcr_to_index = self._create_transfer_index(rtpcr_transfer_info,
                                                                                        self.visitors_main)
         event_info_dict['Pre-travel RTPCR'] = {'from_index': visitor_rtpcr_from_index,

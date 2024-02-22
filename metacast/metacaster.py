@@ -50,19 +50,22 @@ def _is_iterable_of_unique_elements(object):
     else:
         return True
 
+
 def _collection_of_strings(object):
-    if isinstance(object,(dict, str)):
+    if isinstance(object, (dict, str)):
         return False
     elif any(not isinstance(element, str) for element in object):
         return False
     else:
         return True
 
+
 def _is_set_like_of_strings(object):
     if not _is_iterable_of_unique_elements(object):
         return False
     else:
         return _collection_of_strings(object)
+
 
 def select_dict_items_in_list(dictionary, lst):
     return {key: value for key, value in dictionary.items() if key in lst}
@@ -126,7 +129,7 @@ class MetaCaster:
         General population term used as denominator in calculating force of infection, default term is 'N' (see method
         calculate_fois). If  self.transmission_cluster_specific == False population terms are generate of the form
         self.population_term + '_' + cluster_i + '_' + cluster_j
-    transmission_subpopulation_specific : bool
+    transmission_subpop_specific : bool
         Default value is False. If false it is assumed that classes mix homogeneously. If true transmission
         is assumed to be different between each class interaction.
     asymptomatic_transmission_modifier : string or None
@@ -138,7 +141,7 @@ class MetaCaster:
         - cluster specific
         - vaccine group specific
         Empty in base parent class.
-    subpopulation_params : list of strings, or if axis/dimensions > 1 a dictionary {int: lists of strings}
+    subpop_params : list of strings, or if axis/dimensions > 1 a dictionary {int: lists of strings}
          A list of all the parameters that axis/dimensions specific but NOT directly to do with transmission.
     all_states_index : dictionary
         Keys are all the states values are the associated indexes for use with numpy.arrays.
@@ -173,13 +176,11 @@ class MetaCaster:
     Methods
     -------
     ode: Evaluate the ODE given states (y), time (t) and parameters
-    get_transmission_terms_between(subpopulation)
-        Get a dictionary of transmission terms between all subpopulation in list provided.
     group_transfer(y, y_deltas, t, from_0, from_1, parameters)
         Calculates the transfers of people from population.
     setup_child_ode_method(y, parameters)
         Wrapper function for setting ode method in child classes.
-    get_pop_indexes(axis, subpopulation_name)
+    get_pop_indexes(axis, subpop_name)
         Returns a list of the indexes for all the states in a subpopulation.
     calculate_fois(y, parameters)
         Calculates the Forces of Infection (FOI) given variables in y and parameters.
@@ -188,7 +189,6 @@ class MetaCaster:
         A wrapper on top of :mod:`odeint <scipy.integrate.odeint>`
         Modified method from the pygom method `DeterministicOde <pygom.model.DeterministicOde>`.
     """
-    _max_axis_supported = 2
     states = None
     infected_states = None
     infectious_states = infected_states
@@ -197,11 +197,13 @@ class MetaCaster:
     hospitalised_states = None
     transmission_term_prefix = 'beta'
     population_term_prefix = 'N'
-    transmission_subpopulation_specific = False
+    transmission_subpop_specific = False
     asymptomatic_transmission_modifier = None
     universal_params = None
-    subpopulation_params = None  # does not include transmission term beta.
+    subpops = []
+    subpop_params = None  # does not include transmission term beta.
     _subpop_model = None
+    len = 0
 
     def _check_model_attributes(self):
         if self.states is None:
@@ -251,42 +253,45 @@ class MetaCaster:
         if self.asymptomatic_transmission_modifier is not None:
             self.all_parameters.add(self.asymptomatic_transmission_modifier)
         self._gen_structure(scaffold)
-        self.len = len(self.subpopulations)
         self._sorting_states()
-        if self.subpopulation_params is not None:
-            if all(isinstance(item, (list,tuple)) for item in self.subpopulation_params):
-                if len(self.subpopulations) != len(self):
-                    raise ValueError('If subpopulation_params attribute is a list/tupple of lists/tupple of then it ' +
+        if self.subpop_params is not None:
+            if all(isinstance(item, (list, tuple)) for item in self.subpop_params):
+                if len(self.subpop_params) != len(self):
+                    raise ValueError('If subpop_params attribute is a list/tupple of lists/tupple of then it ' +
                                      ' should have the same length as MetaCaster.')
-                if any(not _collection_of_strings(item) for item in self.subpopulation_params):
-                    raise ValueError('subpopulation_params should all be strings.')
-                self.subpopulation_params = {axis: params for axis, params in enumerate(self.subpopulation_params)}
-            elif _collection_of_strings(self.subpopulation_params):
-                self.subpopulation_params = {0: self.subpopulation_params}
-            elif isinstance(self.subpopulation_params, dict):
-                if any(not isinstance(key, int) for key in self.subpopulation_params.keys()):
-                    raise TypeError('All keys in subpopulation_params should be ints.')
-                if any(key > len(self)-1 for key in self.subpopulation_params.keys()):
-                    raise ValueError('All keys in subpopulation_params should be less than this objects length.')
-                if any(not _collection_of_strings(value) for value in self.subpopulation_params.values()):
-                    raise ValueError('All values in subpopulation_params should be strings.')
+                if any(not _collection_of_strings(item) for item in self.subpop_params):
+                    raise ValueError('subpop_params should all be strings.')
+                self.subpop_params = {axis: params for axis, params in enumerate(self.subpop_params)}
+            elif _collection_of_strings(self.subpop_params):
+                self.subpop_params = {0: self.subpop_params}
+            elif isinstance(self.subpop_params, dict):
+                if any(not isinstance(key, int) for key in self.subpop_params.keys()):
+                    raise TypeError('All keys in subpop_params should be ints.')
+                if any(key > len(self) - 1 for key in self.subpop_params.keys()):
+                    raise ValueError('All keys in subpop_params should be at least one less than the number of' +
+                                     ' axis/dimensions/lengeth of this object.')
+                if any(not _collection_of_strings(value) for value in self.subpop_params.values()):
+                    raise ValueError('All values in subpop_params should be strings.')
             else:
-                raise TypeError('Attribute subpopulation_params is of unrecognised type.')
+                raise TypeError('Attribute subpop_params is of unrecognised type.')
 
         self.all_parameters.update([param + '_' + grouping
+                                    for axis, params in self.subpop_params.items()
+                                    for grouping in self.subpops[axis]
                                     for param in params
-                                    for grouping in self.subpopulations[axis]
-                                    for axis, params in self.subpopulation_params.items()
                                     ])
 
-
-        if self.transmission_subpopulation_specific:
-            self.transmission_terms = [self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + + coordinates_j + ']'
-                                       for coordinates_i in self.subpopulation_suffixes
-                                       for coordinates_j in self.subpopulation_suffixes]
+        if self.transmission_subpop_specific:
+            self.transmission_terms = [
+                self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']'
+                for coordinates_i in self.subpop_suffixes
+                for coordinates_j in self.subpop_suffixes]
             self.all_parameters.update(self.transmission_terms)
+            self.population_terms = [self.population_term_prefix + '_[' + coordinates + ']'
+                                     for coordinates in self.subpop_suffixes]
+            self.all_parameters.update(self.population_terms)
 
-        self.total_subpopulations = len(self.subpopulation_names)
+        self.total_subpopulations = len(self.subpop_names)
         self.all_parameters = sorted(self.all_parameters)
         non_piece_wise_params_names = set(self.all_parameters) - set(self.params_estimated_via_piecewise_method)
         self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
@@ -294,37 +299,6 @@ class MetaCaster:
         self._parameters = None
         self.num_param = len(self.all_parameters)
         self.piecewise_est_param_values = None
-
-
-    def get_transmission_terms_between(self, clusters):
-        """
-        Get a dictionary of transmission terms between all clusters in list provided.
-
-        Parameters
-        ----------
-        clusters : list of strings
-
-        Returns
-        -------
-        transmission_terms_dict: dictionary
-            The first entry of which the key is self.transmission_term the value (default this is beta) is a list of the
-            transmission terms (factors used for multiplying with infectious states in a cluster).
-            The second entry of which the key is self.population_term the value (default this is N)is a list of the
-             population terms (the denominators used when calculating the forces of infections).
-
-
-        """
-        population_terms = []
-        transmission_terms = []
-        for cluster_i in clusters:
-            for cluster_j in clusters:
-                transmission_term = self.transmission_term_prefix + '_' + cluster_i + '_' + cluster_j
-                population_term = self.population_term_prefix + '_' + cluster_i + '_' + cluster_j
-                if transmission_term not in transmission_terms:
-                    transmission_terms.append(transmission_term)
-                    population_terms.append(population_term)
-        transmission_terms_dict = {self.transmission_term_prefix: transmission_terms, self.population_term_prefix: population_terms}
-        return transmission_terms_dict
 
     def _gen_structure(self, scaffold):
         """
@@ -369,86 +343,87 @@ class MetaCaster:
         self.subpop_transition_params_dict = {}
 
         if isinstance(scaffold, int):
-            self.subpopulations = [[*range(int)]]
+            self.subpops += [[*range(int)]]
         elif _is_set_like_of_strings(scaffold):
-            self.subpopulations = [list(scaffold)]
-        elif isinstance(scaffold, (list, tuple)) and all(isinstance(item,dict) for item in scaffold):
-            self.subpopulations = [set()]
+            self.subpops += [list(scaffold)]
+        elif isinstance(scaffold, (list, tuple)) and all(isinstance(item, dict) for item in scaffold):
+            self.subpops += [set()]
             for count, group_transfer in enumerate(scaffold):
-                from_axis = 0
-                from_axis_key = 'from_axis_'+str(from_axis)
-                if from_axis_key not in group_transfer:
-                    raise ValueError('If scaffold is a list of dictionaries it must have a "from_axis_0"' +
-                                     ' entry in every group transfer dictionary,' +
+                if 'from_coordinates' not in group_transfer:
+                    raise ValueError(
+                        'If scaffold is a list of group transfer dictionaries it must have a "from_coordinates"' +
+                        ' entry in every group transfer dictionary,' +
+                        ' check group transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                from_coordinates = group_transfer['from_coordinates']
+                if not isinstance(from_coordinates, (list, tuple)):
+                    raise TypeError(
+                        'If scaffold is a list of group transfer dictionaries values for "from_coordinates"' +
+                        '  entries should be a list or a tuple,' +
+                        ' check group transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if not all(isinstance(coordinate, int) for coordinate in from_coordinates) or \
+                        not all(isinstance(coordinate, str) for coordinate in from_coordinates):
+                    raise TypeError(
+                        'If scaffold is a list of group transfer dictionaries values for "from_coordinates"' +
+                        '  entries should be a list or a tuple of only strings or integers,' +
+                        ' check group transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if count == 0:
+                    self.subpops += [{coordinate} for coordinate in from_coordinates]
+                elif len(from_coordinates) != len(self):
+                    raise ValueError('If scaffold is a list of dictionaries all "from_coordinates"' +
+                                     ' entries in group transfer dictionaries should be of the same length' +
                                      ', check group transfer dictionary [' +
                                      str(count) +
                                      '] of scaffold.')
-                subpop_transfer_dict = self.subpop_transfer_dict
-                to_axis_key = 'to_axis_' + str(from_axis)
-                while from_axis_key in group_transfer and from_axis <= self._max_axis_supported:
-                    from_axis_value = group_transfer[from_axis_key]
-                    if not isinstance(from_axis_value, (int, str)):
-                        raise TypeError(from_axis_key + ' entries should be strings or integers' +
-                                         ', check group transfer dictionary [' +
-                                         str(count) +
-                                         '] of scaffold.')
-                    if from_axis_value not in self.subpop_transfer_dict:
-                        subpop_transfer_dict[from_axis_value] = {}
-                    subpop_transfer_dict = subpop_transfer_dict[from_axis_value]
-                    if len(self.subpopulations) < from_axis:
-                        self.subpopulations.append(set())
-                    self.subpopulations[from_axis].add(from_axis_value)
-                    if to_axis_key not in group_transfer:
-                        raise ValueError("If '" + from_axis_key + "' is in scaffold '" +
-                                         to_axis_key + "' must be given" +
-                                         ', check group transfer dictionary [' +
-                                         str(count) +
-                                         '] of scaffold.'
-                                         )
-                    from_axis += 1
-                    from_axis_key = 'from_axis_' + str(from_axis)
-                    to_axis_key = 'to_axis_' + str(from_axis)
+                else:
+                    for axis, coordinate in enumerate(from_coordinates):
+                        self.subpops[axis].add(coordinate)
 
-                num_axis_in_entry = from_axis - 1
-                if count == 0:
-                    axis_on_0th_entry = num_axis_in_entry
-                elif num_axis_in_entry != axis_on_0th_entry:
-                    raise ValueError('In group transfer dictionary [' +
+                if from_coordinates not in self.subpop_transfer_dict:
+                    self.subpop_transfer_dict[from_coordinates] = []
+
+                entry = {}
+                if 'to_coordinates' not in group_transfer:
+                    raise ValueError(
+                        'If scaffold is a list of group transfer dictionaries it must have a "to_coordinates"' +
+                        ' entry in every group transfer dictionary,' +
+                        ' check group transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                to_coordinates = group_transfer['to_coordinates']
+                if not isinstance(to_coordinates, (list, tuple)):
+                    raise TypeError(
+                        'If scaffold is a list of group transfer dictionaries values for "to_coordinates"' +
+                        '  entries should be a list or a tuple,' +
+                        ' check group transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if not all(isinstance(coordinate, int) for coordinate in to_coordinates) or \
+                        not all(isinstance(coordinate, str) for coordinate in to_coordinates):
+                    raise TypeError(
+                        'If scaffold is a list of group transfer dictionaries values for "to_coordinates"' +
+                        '  entries should be a list or a tuple of only strings or integers,' +
+                        ' check group transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if len(to_coordinates) != len(self):
+                    raise ValueError('If scaffold is a list of dictionaries all "to_coordinates" and' +
+                                     ' "from_coordinates" entries in group transfer dictionaries should be of the' +
+                                     ' same length' +
+                                     ', check "to_coordinates" group transfer dictionary [' +
                                      str(count) +
-                                     '] of scaffold has a from axis key "' + from_axis_key +
-                                     ' that is absent from previous group transfer dictionaries. ' +
-                                     'Either all group transfer dictionaries should have a ' + from_axis_key +
-                                     ' entry of none should.'
-                                     )
+                                     '] of scaffold.')
+                for axis, coordinate in enumerate(to_coordinates):
+                    self.subpops[axis].add(coordinate)
 
-                if from_axis_key in group_transfer:
-                    raise ValueError('In group transfer dictionary [' +
-                                     str(count) +
-                                     '] of scaffold ' + from_axis_key +
-                                     ' has exceeded the number of axis/dimensions MetaCaster currently supports (' +
-                                      str(self._max_axis_supported) + ').')
-
-                to_axis = 0
-                to_axis_key = 'to_axis_' + str(to_axis)
-                while to_axis_key in group_transfer and to_axis <= axis_on_0th_entry:
-                    to_axis_value = group_transfer[to_axis_key]
-                    if not isinstance(to_axis_value, (int, str)):
-                        raise TypeError(to_axis_key + ' entries should be strings or integers.')
-                    self.subpopulations[to_axis].add(to_axis_value)
-                    subpop_transfer_dict[to_axis_key] = to_axis_value
-                    to_axis += 1
-                    to_axis_key = 'to_axis_' + str(to_axis)
-
-                if to_axis_key in group_transfer:
-                    raise ValueError(to_axis_key +
-                                     ' in group transfer dictionary [' +
-                                     str(count) +
-                                     '] of scaffold' +
-                                     ' has exceeded the number of corresponding from axis keys (from_axis_' +
-                                     str(num_axis_in_entry)+ ').')
-
+                entry['to_coordinates'] = to_coordinates
                 if group_transfer['states'] == 'all':
-                    subpop_transfer_dict['states'] = self.states
+                    entry['states'] = self.states
                 else:
                     states = copy.deepcopy(group_transfer['states'])
                     if isinstance(states, str):
@@ -464,13 +439,13 @@ class MetaCaster:
                                              '] of scaffold has an unrecognised state (' + state + ').' +
                                              'All states in listed in a scaffold should be one of those listed in the' +
                                              ' subpopulation model.')
-                    subpop_transfer_dict['states'] = states
+                    entry['states'] = states
 
                 parameter = group_transfer['parameter']
                 if not isinstance(parameter, str):
                     raise TypeError('In group transfer dictionary [' + str(count) +
                                     '] of scaffold ' + str(parameter) + ' should be of type string.')
-                subpop_transfer_dict['parameter'] = parameter
+                entry['parameter'] = parameter
                 if parameter not in self.subpop_transition_params_dict:
                     self.subpop_transition_params_dict[parameter] = []
                 entry = {key: value for key, value in
@@ -481,157 +456,27 @@ class MetaCaster:
                 if 'piecewise targets' in group_transfer:
                     self.params_estimated_via_piecewise_method.append(parameter)
                     if isinstance(group_transfer['piecewise targets'], pd.Series):
-                        subpop_transfer_dict['piecewise targets'] = group_transfer['piecewise targets'].to_numpy()
+                        entry['piecewise targets'] = group_transfer['piecewise targets'].to_numpy()
                     elif isinstance(group_transfer['piecewise targets'], (list, tuple)):
-                        subpop_transfer_dict['piecewise targets'] = np.array(group_transfer['piecewise targets'])
+                        entry['piecewise targets'] = np.array(group_transfer['piecewise targets'])
                     elif isinstance(group_transfer['piecewise targets'], np.ndarray):
-                        subpop_transfer_dict['piecewise targets'] = group_transfer['piecewise targets']
+                        entry['piecewise targets'] = group_transfer['piecewise targets']
 
-                accepted_keys = ['from_axis_' + str(num) for num in range(num_axis_in_entry)] + list(subpop_transfer_dict.keys())
                 for key in group_transfer.keys():
-                    if key not in accepted_keys:
+                    if key not in entry:
                         raise ValueError('Group transfer dictionary [' +
                                          str(count) +
                                          '] of scaffold has an unrecognised entry (' + key + ').')
+
+                self.subpop_transfer_dict[from_coordinates].append(entry)
         elif (isinstance(scaffold, (list, tuple)) and
-              len(scaffold) <= self._max_axis_supported and
               all(isinstance(item, int) for item in scaffold)):
-            self.subpopulations = [[*range(num)] for num in scaffold]
+            self.subpops += [[*range(num)] for num in scaffold]
         elif (isinstance(scaffold, (list, tuple)) and
-              len(scaffold) <= self._max_axis_supported and
               all(_is_set_like_of_strings(item) for item in scaffold)):
-            self.subpopulations = scaffold
+            self.subpops += scaffold
         else:
             raise TypeError('scaffold is not supported.')
-
-    def subpop_transfer(self, y, y_deltas, t,
-                        from_0_pop,
-                        from_vaccine_group,
-                        parameters
-                        ):
-        """
-        Calculates the transfers of people between subpopulation.
-
-        Parameters
-        ----------
-        y : numpy.array
-            Values of variables at time t.
-        y_deltas : numpy.array
-            Store of delta (derivative) of variables in y which this method adds/subtracts to.
-        t : float
-            Time t for which derivative is being calculated.
-        from_0_pop : string
-            Cluster from which transfers are being made.
-        from_vaccine_group : string
-            Vaccine group from which transfers are being made.
-        parameters : dictionary {keys are strings: values are numeric}
-            Dictionary of parameter values used in calculating derivative.
-
-        Returns
-        -------
-        y_deltas : numpy.array
-            Store of delta (derivative) of variables in y which this method adds/subtracts to.
-
-        """
-        if from_0_pop in self.subpop_transfer_dict:
-            if from_vaccine_group in self.subpop_transfer_dict[from_0_pop]:
-                group_transfers = self.subpop_transfer_dict[from_0_pop][from_vaccine_group]
-                from_index_dict = self.state_index[from_0_pop][from_vaccine_group]
-                for group_transfer in group_transfers:
-                    parameter = group_transfer['parameter']
-                    if 'piecewise targets' in group_transfer:
-                        # This section allows for the piecewise estimation of a people being transferred between groups.
-                        # For example say from_vaccine_group=unvaccinated, t=0 and 15 people of this cluster
-                        # got vaccinated on t=1. The code within this if statement calculate rate of change at t
-                        # to get 15 people being transfered to the vaccinated group.
-                        if t in self.piecewise_est_param_values[parameter]:
-                            param_val = self.piecewise_est_param_values[parameter][t]
-                        else:
-                            index_of_t = int(t) + 1
-                            total_being_tranfered = group_transfer['piecewise targets'][index_of_t]
-                            if total_being_tranfered == 0:  # No point in calculations if no one is being vaccinated.
-                                param_val = 0
-                            else:
-                                from_states_index = [from_index_dict[state] for state in group_transfer['states']]
-                                total_avialable = y[from_states_index].sum()
-                                param_val = self._instantaneous_transfer(total_being_tranfered,
-                                                                         total_avialable, t)
-
-                            self.piecewise_est_param_values[parameter][t] = param_val
-                    else:
-                        param_val = parameters[parameter]
-
-                    to_cluster = group_transfer['to_cluster']
-                    to_vaccine_group = group_transfer['to_vaccine_group']
-                    to_index_dict = self.state_index[to_cluster][to_vaccine_group]
-                    for state in group_transfer['states']:
-                        from_index = from_index_dict[state]
-                        to_index = to_index_dict[state]
-                        transferring = param_val * y[from_index]
-                        y_deltas[from_index] -= transferring
-                        y_deltas[to_index] += transferring
-
-        return y_deltas
-
-    def ode(self, y, t, parameters):
-        """
-        Evaluate the ODE given states (y), time (t) and parameters
-
-
-        Parameters
-        ----------
-        y : numpy.array
-            State variables.
-        t : float
-            Time.
-        parameters : dict
-            Parameter values.
-
-        Returns
-        -------
-        y_delta: `numpy.ndarray`
-            Deltas of state variables at time point t.
-        """
-        if self.subpop_model is None:
-            raise AssertionError('subpop_model needs to set before simulations can run.')
-
-        subpop_model = self.subpop_model
-        subpop_model_arg_names = getargspec(subpop_model)[0]
-        subpop_model_args = {'y': y,
-                              'parameters': self._sorting_params(parameters)}
-        if self.infectious_states is not None:
-            fois = self.calculate_fois(**subpop_model_args)
-
-        subpop_model_args['t'] = t
-        subpop_model_args['y_deltas'] = np.zeros(self.num_state)
-        for cluster in self.clusters:
-            subpop_model_args['cluster'] = cluster
-            if self.infectious_states is not None:
-                subpop_model_args['foi'] = fois[cluster]  # force of infection experienced by this specific cluster.
-
-            if len(self.vaccine_groups)==0:
-                subpop_model_args['y_deltas'] = self.subpop_transfer(**subpop_model_args)
-                subpop_model_args['states_index'] = self.state_index[cluster]  # Dictionary of state indexes for this cluster
-                subpop_model_args = select_dict_items_in_list(subpop_model_args, subpop_model_arg_names)
-                y_deltas = subpop_model(**subpop_model_args)
-            else:
-                for vaccine_group in self.vaccine_groups:
-                    subpop_model_args['vaccine_group'] = vaccine_group
-                    subpop_model_args['y_deltas'] = self.subpop_transfer(**subpop_model_args)
-                    subpop_model_args['states_index'] = self.state_index[cluster][vaccine_group]  # Dictionary of state indexes for this cluster
-                    subpop_model_args = select_dict_items_in_list(subpop_model_args, subpop_model_arg_names)
-                    y_deltas = subpop_model(**subpop_model_args)
-
-        return y_deltas
-
-    def _check_string_in_list_strings(self, string, list_strings):
-        if not isinstance(string, str):
-            raise TypeError(str(string) + ' should be of type string.')
-
-        check_list = eval('self.' + list_strings)
-        if string not in check_list:
-            raise ValueError(string + ' is not one of the predefined model ' + list_strings + ': ' +
-                             ','.join(check_list[:-1]) + ' and ' + check_list[:-1] + '.')
 
     def _sorting_states(self):
         """
@@ -683,15 +528,17 @@ class MetaCaster:
         # populating index dictionaries
         index = 0
         self.population_names = []
-        self.subpopulation_suffixes = []
-        for coordinates in itertools.product(*self.subpopulations):
-            subpopulation_suffix = '_'.join([str(coordinate) for coordinate in coordinates])
-            self.subpopulation_suffixes.append(subpopulation_suffix)
+        self.subpop_suffixes = []
+        self.subpop_coordinates = []
+        for coordinates in itertools.product(*self.subpops):
+            self.subpop_coordinates.append(coordinates)
+            subpop_suffix = '_'.join([str(coordinate) for coordinate in coordinates])
+            self.subpop_suffixes.append(subpop_suffix)
             self.state_index[coordinates] = {}
             self.infectious_symptomatic_indexes[coordinates] = []
             self.infectious_asymptomatic_indexes[coordinates] = []
             for state in self.states:
-                self.all_states_index[state + '_[' + subpopulation_suffix +']'] = index
+                self.all_states_index[state + '_[' + subpop_suffix + ']'] = index
                 self.state_index[coordinates][state] = index
                 if state in self.infectious_and_symptomatic_states:
                     self.infectious_symptomatic_indexes[coordinates].append(index)
@@ -703,11 +550,6 @@ class MetaCaster:
                     self.hospitalised_states_index_list.append(index)
                 index += 1
 
-        """
-        Recoding for more than 2 axis/dimensions upto here 2024-02-21
-        
-        """
-
         self.state_index['observed_states'] = {}
         for state in self.observed_states:
             self.all_states_index[state] = index
@@ -715,65 +557,138 @@ class MetaCaster:
             index += 1
 
         self.num_state = index
-        for transfer_info in self.subpop_transition_params_dict.values():
+        for transfer_info in self.group_transition_params_dict.values():
             for transfer_info_entry in transfer_info:
-                cluster = transfer_info_entry['from_cluster']
-                vaccine_group = transfer_info_entry['from_vaccine_group']
-                states_dict = self.state_index[cluster][vaccine_group]
-                to_cluster = transfer_info_entry['to_cluster']
-                to_vaccine_group = transfer_info_entry['to_vaccine_group']
-                to_states_dict = self.state_index[to_cluster][to_vaccine_group]
+                from_coordinates = transfer_info_entry['from_coordinates']
+                from_states_dict = self.state_index[from_coordinates]
+                to_coordinates = transfer_info_entry['to_coordinates']
+                to_states_dict = self.state_index[to_coordinates]
                 state_selection = transfer_info_entry['states']
                 if state_selection == 'all':
-                    transfer_info_entry['from_index'] = [states_dict.values()]
+                    transfer_info_entry['from_index'] = [from_states_dict.values()]
                     transfer_info_entry['to_index'] = [to_states_dict.values()]
                 else:
-                    transfer_info_entry['from_index'] = [states_dict[state] for state in state_selection]
+                    transfer_info_entry['from_index'] = [from_states_dict[state] for state in state_selection]
                     transfer_info_entry['to_index'] = [to_states_dict[state] for state in state_selection]
 
-    def get_clusters_indexes(self, clusters):
+    def subpop_transfer(self, y, y_deltas, t, from_coordinates, parameters):
         """
-        Returns a list of the indexes for all the states in the clusters given.
+        Calculates the transfers of people between subpopulation.
 
         Parameters
         ----------
-        clusters : list of strings or single string
-            A list of clusters.
+        y : numpy.array
+            Values of variables at time t.
+        y_deltas : numpy.Array
+            Store of delta (derivative) of variables in y which this method adds/subtracts to.
+        t : float
+            Time t for which derivative is being calculated.
+        from_coordinates : tuple or list of strings
+            Coordinates for subpopulation being transferred.
+        parameters : dictionary {keys are strings: values are numeric}
+            Dictionary of parameter values used in calculating derivative.
 
         Returns
         -------
-        indexes : list of ints
-            A list of indexes.
-        """
-        indexes = []
-        for cluster in clusters:
-            indexes += _nested_dict_values(self.state_index[cluster])
-        return indexes
+        y_deltas : numpy.array
+            Store of delta (derivative) of variables in y which this method adds/subtracts to.
 
-    def get_vaccine_group_indexes(self, vaccine_groups):
         """
-        Returns a list of the indexes for all the states in the vaccine groups given.
+        if from_coordinates in self.subpop_transfer_dict:
+            from_state_index_dict = self.state_index[from_coordinates]
+            for group_transfer in self.subpop_transfer_dict[from_coordinates]:
+                parameter = group_transfer['parameter']
+                if 'piecewise targets' in group_transfer:
+                    # This section allows for the piecewise estimation of a people being transferred between groups.
+                    # For example say from_vaccine_group=unvaccinated, t=0 and 15 people of this cluster
+                    # got vaccinated on t=1. The code within this if statement calculate rate of change at t
+                    # to get 15 people being transfered to the vaccinated group.
+                    if t in self.piecewise_est_param_values[parameter]:
+                        param_val = self.piecewise_est_param_values[parameter][t]
+                    else:
+                        index_of_t = int(t) + 1
+                        total_being_tranfered = group_transfer['piecewise targets'][index_of_t]
+                        if total_being_tranfered == 0:  # No point in calculations if no one is being vaccinated.
+                            param_val = 0
+                        else:
+                            from_states_index = [from_state_index_dict[state] for state in group_transfer['states']]
+                            total_avialable = y[from_states_index].sum()
+                            param_val = self._instantaneous_transfer(total_being_tranfered,
+                                                                     total_avialable, t)
+
+                        self.piecewise_est_param_values[parameter][t] = param_val
+                else:
+                    param_val = parameters[parameter]
+
+                to_coordinates = group_transfer['to_coordinates']
+                to_state_index_dict = self.state_index[to_coordinates]
+                for state in group_transfer['states']:
+                    from_index = from_state_index_dict[state]
+                    to_index = to_state_index_dict[state]
+                    transferring = param_val * y[from_index]
+                    y_deltas[from_index] -= transferring
+                    y_deltas[to_index] += transferring
+
+        return y_deltas
+
+    def ode(self, y, t, parameters):
+        """
+        Evaluate the ODE given states (y), time (t) and parameters
+
 
         Parameters
         ----------
-        vaccine_groups : list of strings or single string
-            A list of vaccination groups.
+        y : numpy.array
+            State variables.
+        t : float
+            Time.
+        parameters : dict
+            Parameter values.
 
         Returns
         -------
-        indexes : list of ints
-            A list of indexes.
+        y_delta: `numpy.ndarray`
+            Deltas of state variables at time point t.
         """
-        if isinstance(vaccine_groups, str):
-            vaccine_groups = [vaccine_groups]
-        indexes = []
-        for cluster in self.clusters:
-            for vaccine_group, sub_dict in self.state_index[cluster].items():
-                if vaccine_group in vaccine_groups:
-                    indexes += [sub_dict.values()]
-        return indexes
+        if self.subpop_model is None:
+            raise AssertionError('subpop_model needs to set before simulations can run.')
 
-    def calculate_fois(self, y, parameters):
+        subpop_model = self.subpop_model
+        subpop_model_arg_names = getargspec(subpop_model)[0]
+        parameters = self._sorting_params(parameters)
+        if self.infectious_states is not None:
+            fois = self.calculate_fois(y, parameters, t)
+        y_deltas = np.zeros(self.num_state)
+        for coordinates in self.subpop_coordinates:
+            y_deltas = self.subpop_transfer(y, y_deltas, t, coordinates, parameters)
+            if self.infectious_states is not None:
+                if self.transmission_subpop_specific:
+                    foi = fois[coordinates]  # force of infection experienced by this specific cluster.
+                else:
+                    foi = fois
+
+            subpop_model_args = {'y': y,
+                                 'y_deltas': y_deltas,
+                                 't': t,
+                                 'foi': foi,
+                                 'coordinates': coordinates,
+                                 'parameters': parameters,
+                                 'states_index': self.state_index[coordinates]}
+            subpop_model_args = select_dict_items_in_list(subpop_model_args, subpop_model_arg_names)
+            y_deltas = subpop_model(**subpop_model_args)
+
+        return y_deltas
+
+    def _check_string_in_list_strings(self, string, list_strings):
+        if not isinstance(string, str):
+            raise TypeError(str(string) + ' should be of type string.')
+
+        check_list = eval('self.' + list_strings)
+        if string not in check_list:
+            raise ValueError(string + ' is not one of the predefined model ' + list_strings + ': ' +
+                             ','.join(check_list[:-1]) + ' and ' + check_list[:-1] + '.')
+
+    def calculate_fois(self, y, parameters, t):
         """
         Calculates the Forces of Infection (FOI) given variables in y and parameters.
 
@@ -781,14 +696,16 @@ class MetaCaster:
         ----------
         y : numpy.array
             Values of state variables at current time.
-        parameters : dictionary {keys are strings: values are numeric}
+        parameters : dictionary {strings: numeric}
             Dictionary of parameter values used in calculating derivative.
+        t : float
+            Time.
 
         Returns
         -------
         If transmission is cluster specific:
-            fois : dictionary {keys are strings: values are numeric}
-                Dictionary of the FOIs experienced by each cluster.
+            fois : dictionary {tupple of strings or ints: values are numeric}
+                Dictionary of the FOIs experienced at each coordinate.
         Else:
             foi : Numeric
                 FOI experienced by all the population.
@@ -799,23 +716,25 @@ class MetaCaster:
         else:
             asymptomatic_transmission_modifier = 1
 
-        if self.transmission_subpopulation_specific:
+        if self.transmission_subpop_specific:
             fois = {}
-            for cluster_i in self.clusters:
+            for coordinates_i in self.subpop_coordinates:
                 foi = 0
-                contactable_population = parameters[self.population_term_prefix + '_' + cluster_i]
-                for cluster_j in self.clusters:
-                    beta = parameters[self.transmission_term_prefix + '_' + cluster_i + '_' + cluster_j]
-
+                contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
+                if callable(contactable_population):
+                    contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+                for coordinates_j in self.subpop_coordinates:
+                    beta = parameters[
+                        self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']']
                     if beta > 0:
                         total_asymptomatic = (asymptomatic_transmission_modifier *
-                                              y[self.infectious_asymptomatic_indexes[cluster_j]].sum())
-                        total_symptomatic = y[self.infectious_symptomatic_indexes[cluster_j]].sum()
+                                              y[self.infectious_asymptomatic_indexes[coordinates_j]].sum())
+                        total_symptomatic = y[self.infectious_symptomatic_indexes[coordinates_j]].sum()
                         full_contribution = sum([total_asymptomatic, total_symptomatic])
 
                         foi += beta * full_contribution / contactable_population
 
-                fois[cluster_i] = foi
+                fois[coordinates_i] = foi
             return fois
         else:
             infectious_symptomatic_indexes = _unionise_dict_of_lists(self.infectious_symptomatic_indexes)
@@ -823,8 +742,18 @@ class MetaCaster:
             total_asymptomatic = asymptomatic_transmission_modifier * y[infectious_and_asymptomatic_indexes].sum()
             total_symptomatic = y[infectious_symptomatic_indexes].sum()
             full_contribution = sum([total_asymptomatic, total_symptomatic])
-            foi = parameters[self.transmission_term_prefix] * full_contribution / parameters[self.population_term_prefix]
+            foi = parameters[self.transmission_term_prefix] * full_contribution / parameters[
+                self.population_term_prefix]
             return foi
+
+        # TODO: function below
+        def get_indexes_of_coordinate(self, coordinate, axis=0):
+            pass
+
+    #             selected_coordinates = [coordinates
+    #                                     for coordinates in self.subpop_coordinates
+    #                                     if coordinates[axis] == coordinate]
+    # `            _nested_dict_values
 
     def _instantaneous_transfer(self, population_transitioning, population, t=None):
         """
@@ -904,8 +833,17 @@ class MetaCaster:
             if param_name in self.params_estimated_via_piecewise_method:
                 raise AssertionError(param_name + ' was set as a parameter to be estimated via piecewise estimiation ' +
                                      'at the initialization of this model.')
-            if not isinstance(value, Number):
-                raise TypeError(param_name + ' is not a number type.')
+            if callable(value):
+                if param_name not in self.population_terms:
+                    raise ValueError(param_name + ' is a function but not a population_term.' +
+                                     'Only population_terms are aloud to be functions, see attribute population_terms.')
+                function_arg_names = getargspec(value)[0]
+                if any(args not in ['model', 'y', 'parameters', 't'] for args in function_arg_names):
+                    raise ValueError(param_name +
+                                     " is a function but not a population_term but does not have arguments " +
+                                     "'model', 'y', 'parameters' or 't'.")
+            elif not isinstance(value, Number):
+                raise TypeError(param_name + ' should be a number type.')
         params_not_given = [param for param in self.all_parameters
                             if param not in
                             list(parameters.keys()) + self.params_estimated_via_piecewise_method]
@@ -1018,20 +956,13 @@ class MetaCaster:
 
         """
         state_index = self.state_index
-        multi_columns = []
-        for cluster, sub_dict in state_index.items():
-            if cluster != 'observed_states':
-                for vaccine_group, state_dict in sub_dict.items():
-                    for state in state_dict.keys():
-                        multi_columns.append((cluster, vaccine_group, state))
-            else:
-                for state in sub_dict.keys():
-                    multi_columns.append((cluster, None, state))
+        multi_columns = [(','.join(coordinates), state)
+                         for coordinates, sub_dict in self.state_index.items()
+                         for state in sub_dict.keys()
+                         ]
         results_df = pd.DataFrame(results, index=t)
         results_df.columns = pd.MultiIndex.from_tuples(multi_columns)
         return results_df
-
-
 
     def __len__(self):
         """
@@ -1041,4 +972,4 @@ class MetaCaster:
         -------
         int
         """
-        return self.len
+        return len(self.subpops)

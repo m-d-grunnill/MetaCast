@@ -197,6 +197,7 @@ class MetaCaster:
     hospitalised_states = None
     transmission_term_prefix = 'beta'
     population_term_prefix = 'N'
+    foi_population_focus = 'i'
     transmission_subpop_specific = False
     asymptomatic_transmission_modifier = None
     universal_params = None
@@ -227,6 +228,9 @@ class MetaCaster:
                 raise TypeError('Model attribute "' +
                                 model_attribute +
                                 '" should be a bool value.')
+        if self.foi_population_focus not in ['i', 'j']:
+            raise ValueError('foi_population_focus attribute should be either "i" or "j". Value is ' +
+                             str(self.foi_population_focus))
 
     def _set_model_attributes(self,
                               model_attributes,
@@ -717,24 +721,35 @@ class MetaCaster:
             asymptomatic_transmission_modifier = 1
 
         if self.transmission_subpop_specific:
-            fois = {}
-            for coordinates_i in self.subpop_coordinates:
-                foi = 0
-                contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
-                if callable(contactable_population):
-                    contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+            fois = {coordinates: 0 for coordinates in self.subpop_coordinates}
+            if self.foi_population_focus == 'i':
+                for coordinates_i in self.subpop_coordinates:
+                    contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
+                    if callable(contactable_population):
+                        contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+                    for coordinates_j in self.subpop_coordinates:
+                        self._subpop_specific_foi(fois,
+                                                  y,
+                                                  coordinates_i,
+                                                  coordinates_j,
+                                                  parameters,
+                                                  contactable_population,
+                                                  asymptomatic_transmission_modifier)
+
+            else:
                 for coordinates_j in self.subpop_coordinates:
-                    beta = parameters[
-                        self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']']
-                    if beta > 0:
-                        total_asymptomatic = (asymptomatic_transmission_modifier *
-                                              y[self.infectious_asymptomatic_indexes[coordinates_j]].sum())
-                        total_symptomatic = y[self.infectious_symptomatic_indexes[coordinates_j]].sum()
-                        full_contribution = sum([total_asymptomatic, total_symptomatic])
+                    contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_j + ']']
+                    if callable(contactable_population):
+                        contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+                    for coordinates_i in self.subpop_coordinates:
+                        self._subpop_specific_foi(fois,
+                                                  y,
+                                                  coordinates_i,
+                                                  coordinates_j,
+                                                  parameters,
+                                                  contactable_population,
+                                                  asymptomatic_transmission_modifier)
 
-                        foi += beta * full_contribution / contactable_population
-
-                fois[coordinates_i] = foi
             return fois
         else:
             infectious_symptomatic_indexes = _unionise_dict_of_lists(self.infectious_symptomatic_indexes)
@@ -746,14 +761,57 @@ class MetaCaster:
                 self.population_term_prefix]
             return foi
 
-        # TODO: function below
-        def get_indexes_of_coordinate(self, coordinate, axis=0):
-            pass
+    def _subpop_specific_foi(self, fois, y, coordinates_i, coordinates_j, parameters, contactable_population,
+                             asymptomatic_transmission_modifier):
+        beta = parameters[
+            self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']']
+        if beta > 0:
+            total_asymptomatic = (asymptomatic_transmission_modifier *
+                                  y[self.infectious_asymptomatic_indexes[coordinates_j]].sum())
+            total_symptomatic = y[self.infectious_symptomatic_indexes[coordinates_j]].sum()
+            full_contribution = sum([total_asymptomatic, total_symptomatic])
 
-    #             selected_coordinates = [coordinates
-    #                                     for coordinates in self.subpop_coordinates
-    #                                     if coordinates[axis] == coordinate]
-    # `            _nested_dict_values
+            fois[coordinates_i] += beta * full_contribution / contactable_population
+
+    def get_state_indexes_of_coordinate(self, coordinate, axis=0):
+        """
+        Fetch state index dict for given coordinate on axis.
+
+        Parameters
+        ----------
+        coordinate : int or str
+            Coordinate of
+        axis : int default = 0
+            Axis on which coordinate is found.
+
+        Returns
+        -------
+        nested dict: {tuple of int/str: {str: int}}
+        """
+        selected_coordinates = [coordinates
+                                for coordinates in self.subpop_coordinates
+                                if coordinates[axis] == coordinate]
+        return {coordinates: sub_dict
+                for coordinates, sub_dict in self.state_index.items()
+                if coordinates in selected_coordinates}
+
+    def get_indexes_of_coordinate(self, coordinate, axis=0):
+        """
+        Fetch a list of indices for all states for given coordinate on axis.
+
+        Parameters
+        ----------
+        coordinate : int or str
+            Coordinate of
+        axis : int default = 0
+            Axis on which coordinate is found.
+
+        Returns
+        -------
+        list of ints
+        """
+        selected_state_indexes = self.get_state_indexes_of_coordinate(self, coordinate, axis=0)
+        return _nested_dict_values(selected_state_indexes)
 
     def _instantaneous_transfer(self, population_transitioning, population, t=None):
         """

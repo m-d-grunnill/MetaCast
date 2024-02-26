@@ -64,7 +64,7 @@ class FluDiagHosp(MetaCaster):
     infectious_states = ['I', 'D', 'U']
     isolating_states = ['D']
     universal_params = ['sigma', 'p_d', 'delta', 'gamma_u',
-                                         'gamma_d', 'p_hd', 'gamma_h'
+                        'gamma_d', 'p_hd', 'gamma_h'
                         ]
     isolation_modifier = 'kappa'
     vaccine_specific_params = ['l', 'h']

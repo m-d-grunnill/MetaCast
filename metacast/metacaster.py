@@ -13,7 +13,7 @@ Base2DMetaPopModel
     Second dimension members are referred to 1_group.
 """
 import copy
-from inspect import getargspec
+from inspect import getfullargspec
 from collections.abc import Iterable
 import itertools
 import numpy as np
@@ -111,11 +111,9 @@ class MetaCaster:
     states : list of strings
         States used in model. Empty in base parent class.
     observed_states : list of strings
-        Observed states. Useful for obtaining results or fitting (e.g. Cumulative incidence). Empty in base parent class.
+        Observed states. Useful for obtaining results or fitting (e.g. Cumulative incidence).
     infected_states : list of strings
         Infected states (not necessarily infectious). Empty in base parent class.
-    hospitalised_states : list of strings
-        Hospitalised states. Empty in base parent class.
     infectious_states : list of strings
         Infectious states. These states contribute to force of infection. Empty in base parent class.
     symptomatic_states : list of strings
@@ -123,11 +121,11 @@ class MetaCaster:
         modified by self.asymptomatic_transmission_modifier (see method calculate_fois). Empty in base parent class.
     transmission_term_prefix : string
         General transmission term used in calculating forces of infection, default term is 'beta' (see method
-        calculate_fois). If  attribute transmission_cluster_specific == False transmission terms are generate of the form
+        calculate_fois). If  attribute transmission_subpop_specific == False transmission terms are generate of the form
         self.transmission_term + '_' cluster_i + '_' cluster_j.
     population_term_prefix : string
         General population term used as denominator in calculating force of infection, default term is 'N' (see method
-        calculate_fois). If  self.transmission_cluster_specific == False population terms are generate of the form
+        calculate_fois). If  self.transmission_subpop_specific == False population terms are generate of the form
         self.population_term + '_' + cluster_i + '_' + cluster_j
     transmission_subpop_specific : bool
         Default value is False. If false it is assumed that classes mix homogeneously. If true transmission
@@ -152,8 +150,6 @@ class MetaCaster:
                              numpy.arrays.
     infected_states_index_list : list of ints
         A list of the indexes of infected states.
-    hospitalised_states_index_list : list of ints
-        A list of the indexes of hospitalised states.
     infectious_symptomatic_indexes : 2 level nested dictionary.
         First level: keys are the cluster names values are another dictionary.
             Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
@@ -193,9 +189,9 @@ class MetaCaster:
     infected_states = None
     infectious_states = infected_states
     symptomatic_states = infected_states
-    observed_states = infected_states
-    hospitalised_states = None
+    observed_states = None
     transmission_term_prefix = 'beta'
+    population_denominator_in_foi = False
     population_term_prefix = 'N'
     foi_population_focus = 'i'
     transmission_subpop_specific = False
@@ -210,21 +206,26 @@ class MetaCaster:
         if self.states is None:
             raise AssertionError('Model attribute "states" needs to be defined at initialisation of MetaCaster,' +
                                  ' or given as an attribute of a child class of MetaCaster.')
-        if not _is_set_like_of_strings(self.states):
-            raise TypeError('Model attribute "states" should be a collection of unique strings.')
-        for model_attribute in ['infected_states',
+
+        if self.universal_params is None and self.subpop_params is None:
+            raise AssertionError('At least one of the model attributes "universal_params" or "subpop_params" ' +
+                                 'needs to be defined at initialisation of MetaCaster,' +
+                                 ' or given as an attribute of a child class of MetaCaster.')
+
+        for model_attribute in ['states',
+                                'infected_states',
                                 'infectious_states',
                                 'symptomatic_states',
                                 'observed_states',
-                                'hospitalised_states',
-                                'universal_params']:
+                                'universal_params',
+                                'subpop_params']:
             if eval('self.' + model_attribute) is not None:
                 if not _is_set_like_of_strings(eval('self.' + model_attribute)):
                     raise TypeError('Model attribute "' +
                                     model_attribute +
                                     '" should be a collection of unique strings.')
-        for model_attribute in ['transmission_cluster_specific']:
-            if not isinstance('self.' + model_attribute, bool):
+        for model_attribute in ['transmission_subpop_specific', 'population_denominator_in_foi']:
+            if not isinstance(eval('self.' + model_attribute), bool):
                 raise TypeError('Model attribute "' +
                                 model_attribute +
                                 '" should be a bool value.')
@@ -248,6 +249,8 @@ class MetaCaster:
         if subpop_model is not None:
             self.subpop_model = subpop_model
 
+
+
         if type(self) == MetaCaster and model_attributes is None and subpop_model is None:
             raise AssertionError('MetaCaster is not meant to run models without model_attributes and subpop_model.' +
                                  ' Child classes of MetaCaster can if coded with model_attributes and subpop_model.' +
@@ -258,44 +261,26 @@ class MetaCaster:
             self.all_parameters.add(self.asymptomatic_transmission_modifier)
         self._gen_structure(scaffold)
         self._sorting_states()
-        if self.subpop_params is not None:
-            if all(isinstance(item, (list, tuple)) for item in self.subpop_params):
-                if len(self.subpop_params) != len(self):
-                    raise ValueError('If subpop_params attribute is a list/tupple of lists/tupple of then it ' +
-                                     ' should have the same length as MetaCaster.')
-                if any(not _collection_of_strings(item) for item in self.subpop_params):
-                    raise ValueError('subpop_params should all be strings.')
-                self.subpop_params = {axis: params for axis, params in enumerate(self.subpop_params)}
-            elif _collection_of_strings(self.subpop_params):
-                self.subpop_params = {0: self.subpop_params}
-            elif isinstance(self.subpop_params, dict):
-                if any(not isinstance(key, int) for key in self.subpop_params.keys()):
-                    raise TypeError('All keys in subpop_params should be ints.')
-                if any(key > len(self) - 1 for key in self.subpop_params.keys()):
-                    raise ValueError('All keys in subpop_params should be at least one less than the number of' +
-                                     ' axis/dimensions/lengeth of this object.')
-                if any(not _collection_of_strings(value) for value in self.subpop_params.values()):
-                    raise ValueError('All values in subpop_params should be strings.')
-            else:
-                raise TypeError('Attribute subpop_params is of unrecognised type.')
 
-        self.all_parameters.update([param + '_' + grouping
-                                    for axis, params in self.subpop_params.items()
-                                    for grouping in self.subpops[axis]
-                                    for param in params
+        self.all_parameters.update([param + '_[' + coordinates + ']'
+                                    for param in self.subpop_params
+                                    for coordinates in self.subpop_coordinates
                                     ])
 
         if self.transmission_subpop_specific:
             self.transmission_terms = [
                 self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']'
-                for coordinates_i in self.subpop_suffixes
-                for coordinates_j in self.subpop_suffixes]
+                for coordinates_i in self.subpop_coordinates
+                for coordinates_j in self.subpop_coordinates]
             self.all_parameters.update(self.transmission_terms)
-            self.population_terms = [self.population_term_prefix + '_[' + coordinates + ']'
-                                     for coordinates in self.subpop_suffixes]
-            self.all_parameters.update(self.population_terms)
+            if self.population_denominator_in_foi:
+                self.population_terms = [self.population_term_prefix + '_[' + coordinates + ']'
+                                         for coordinates in self.subpop_coordinates]
+                self.all_parameters.update(self.population_terms)
+        else:
+            self.all_parameters.add(self.transmission_term_prefix)
 
-        self.total_subpopulations = len(self.subpop_names)
+        self.total_subpopulations = len(self.subpop_coordinates)
         self.all_parameters = sorted(self.all_parameters)
         non_piece_wise_params_names = set(self.all_parameters) - set(self.params_estimated_via_piecewise_method)
         self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
@@ -497,8 +482,6 @@ class MetaCaster:
                                  numpy.arrays.
         infected_states_index_list : list of ints
             A list of the indexes of infected states.
-        hospitalised_states_index_list : list of ints
-            A list of the indexes of hospitalised states.
         infectious_symptomatic_indexes : 2 level nested dictionary.
             First level: keys are the cluster names values are another dictionary.
                 Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
@@ -528,21 +511,18 @@ class MetaCaster:
         self.infectious_symptomatic_indexes = {}
         self.infectious_asymptomatic_indexes = {}
         self.infected_states_index_list = []
-        self.hospitalised_states_index_list = []
         # populating index dictionaries
         index = 0
         self.population_names = []
-        self.subpop_suffixes = []
         self.subpop_coordinates = []
         for coordinates in itertools.product(*self.subpops):
+            coordinates = '_'.join([str(coordinate) for coordinate in coordinates])
             self.subpop_coordinates.append(coordinates)
-            subpop_suffix = '_'.join([str(coordinate) for coordinate in coordinates])
-            self.subpop_suffixes.append(subpop_suffix)
             self.state_index[coordinates] = {}
             self.infectious_symptomatic_indexes[coordinates] = []
             self.infectious_asymptomatic_indexes[coordinates] = []
             for state in self.states:
-                self.all_states_index[state + '_[' + subpop_suffix + ']'] = index
+                self.all_states_index[state + '_[' + coordinates + ']'] = index
                 self.state_index[coordinates][state] = index
                 if state in self.infectious_and_symptomatic_states:
                     self.infectious_symptomatic_indexes[coordinates].append(index)
@@ -550,8 +530,6 @@ class MetaCaster:
                     self.infectious_asymptomatic_indexes[coordinates].append(index)
                 if state in self.infected_states:
                     self.infected_states_index_list.append(index)
-                if state in self.hospitalised_states:
-                    self.hospitalised_states_index_list.append(index)
                 index += 1
 
         self.state_index['observed_states'] = {}
@@ -561,7 +539,7 @@ class MetaCaster:
             index += 1
 
         self.num_state = index
-        for transfer_info in self.group_transition_params_dict.values():
+        for transfer_info in self.subpop_transition_params_dict.values():
             for transfer_info_entry in transfer_info:
                 from_coordinates = transfer_info_entry['from_coordinates']
                 from_states_dict = self.state_index[from_coordinates]
@@ -658,7 +636,7 @@ class MetaCaster:
             raise AssertionError('subpop_model needs to set before simulations can run.')
 
         subpop_model = self.subpop_model
-        subpop_model_arg_names = getargspec(subpop_model)[0]
+        subpop_model_arg_names = getfullargspec(subpop_model)[0]
         parameters = self._sorting_params(parameters)
         if self.infectious_states is not None:
             fois = self.calculate_fois(y, parameters, t)
@@ -673,11 +651,12 @@ class MetaCaster:
 
             subpop_model_args = {'y': y,
                                  'y_deltas': y_deltas,
-                                 't': t,
-                                 'foi': foi,
                                  'coordinates': coordinates,
                                  'parameters': parameters,
-                                 'states_index': self.state_index[coordinates]}
+                                 'states_index': self.state_index[coordinates],
+                                 't': t,
+                                 'foi': foi
+                                 }
             subpop_model_args = select_dict_items_in_list(subpop_model_args, subpop_model_arg_names)
             y_deltas = subpop_model(**subpop_model_args)
 
@@ -722,7 +701,18 @@ class MetaCaster:
 
         if self.transmission_subpop_specific:
             fois = {coordinates: 0 for coordinates in self.subpop_coordinates}
-            if self.foi_population_focus == 'i':
+            if not self.population_denominator_in_foi:
+                for coordinates_i in self.subpop_coordinates:
+                    contactable_population = 1
+                    for coordinates_j in self.subpop_coordinates:
+                        self._subpop_specific_foi(fois,
+                                                  y,
+                                                  coordinates_i,
+                                                  coordinates_j,
+                                                  parameters,
+                                                  contactable_population,
+                                                  asymptomatic_transmission_modifier)
+            elif self.foi_population_focus == 'i':
                 for coordinates_i in self.subpop_coordinates:
                     contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
                     if callable(contactable_population):
@@ -735,8 +725,7 @@ class MetaCaster:
                                                   parameters,
                                                   contactable_population,
                                                   asymptomatic_transmission_modifier)
-
-            else:
+            elif self.foi_population_focus == 'j':
                 for coordinates_j in self.subpop_coordinates:
                     contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_j + ']']
                     if callable(contactable_population):
@@ -853,6 +842,17 @@ class MetaCaster:
     def subpop_model(self, subpop_model):
         if not callable(subpop_model):
             raise TypeError('subpop_model should be a callable function.')
+        subpop_model_arg_names = getfullargspec(subpop_model)[0]
+        required_args = ['y', 'y_deltas', 'parameters', 'states_index']
+        for arg in required_args:
+            if arg not in subpop_model_arg_names:
+                raise ValueError(arg + ' is missing from subpop_model function.')
+
+        expected_args = ['y', 'y_deltas', 'parameters', 'states_index', 'coordinates', 'foi', 't']
+        for arg in subpop_model_arg_names:
+            if arg not in expected_args:
+                raise ValueError(arg + ' in not a supported argument for the subpop_model function. '+
+                                 'Supported arguments include ' + ', '.join(expected_args))
         self._subpop_model = subpop_model
 
     @property
@@ -895,7 +895,7 @@ class MetaCaster:
                 if param_name not in self.population_terms:
                     raise ValueError(param_name + ' is a function but not a population_term.' +
                                      'Only population_terms are aloud to be functions, see attribute population_terms.')
-                function_arg_names = getargspec(value)[0]
+                function_arg_names = getfullargspec(value)[0]
                 if any(args not in ['model', 'y', 'parameters', 't'] for args in function_arg_names):
                     raise ValueError(param_name +
                                      " is a function but not a population_term but does not have arguments " +

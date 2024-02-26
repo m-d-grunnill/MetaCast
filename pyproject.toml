@@ -11,7 +11,8 @@ dependencies = [
     "scipy>=1.11.4",
     "varname>=0.13.0",
     "pingouin>=0.5.4",
-    "tqdm>=4.66.1"
+    "tqdm>=4.66.1",
+    ""
 ]
 authors = [
   {name="Martin Grunnill", email="m.d.grunnill@gmail.com"},

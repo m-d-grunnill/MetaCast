@@ -262,23 +262,23 @@ class MetaCaster:
         self._gen_structure(scaffold)
         self._sorting_states()
 
-        self.all_parameters.update([param + '_[' + coordinates + ']'
+        self.all_parameters.update([param + subpop_suffix
                                     for param in self.subpop_params
-                                    for coordinates in self.subpop_coordinates
+                                    for subpop_suffix in self.subpop_suffixes
                                     ])
 
         if self.transmission_subpop_specific:
             self.transmission_terms = [
-                self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']'
-                for coordinates_i in self.subpop_coordinates
-                for coordinates_j in self.subpop_coordinates]
-            self.all_parameters.update(self.transmission_terms)
+                self.transmission_term_prefix + subpop_suffix_i + subpop_suffix_j
+                for subpop_suffix_i in self.subpop_suffixes
+                for subpop_suffix_j in self.subpop_suffixes]
             if self.population_denominator_in_foi:
-                self.population_terms = [self.population_term_prefix + '_[' + coordinates + ']'
-                                         for coordinates in self.subpop_coordinates]
+                self.population_terms = [self.population_term_prefix + subpop_suffix
+                                         for subpop_suffix in self.subpop_suffixes]
                 self.all_parameters.update(self.population_terms)
         else:
-            self.all_parameters.add(self.transmission_term_prefix)
+            self.transmission_terms = [self.transmission_term_prefix]
+        self.all_parameters.update(self.transmission_terms)
 
         self.total_subpopulations = len(self.subpop_coordinates)
         self.all_parameters = sorted(self.all_parameters)
@@ -515,14 +515,23 @@ class MetaCaster:
         index = 0
         self.population_names = []
         self.subpop_coordinates = []
+        self.subpop_suffixes = []
+        if len(self)==1:
+            axis_equals_1 = True
+        else:
+            axis_equals_1 = False
         for coordinates in itertools.product(*self.subpops):
-            coordinates = '_'.join([str(coordinate) for coordinate in coordinates])
+            subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
+            self.subpop_suffixes.append(subpop_suffix)
+            if axis_equals_1:
+                coordinates = coordinates[0] 
             self.subpop_coordinates.append(coordinates)
             self.state_index[coordinates] = {}
             self.infectious_symptomatic_indexes[coordinates] = []
             self.infectious_asymptomatic_indexes[coordinates] = []
             for state in self.states:
-                self.all_states_index[state + '_[' + coordinates + ']'] = index
+                all_state_index_key = state + subpop_suffix
+                self.all_states_index[all_state_index_key] = index
                 self.state_index[coordinates][state] = index
                 if state in self.infectious_and_symptomatic_states:
                     self.infectious_symptomatic_indexes[coordinates].append(index)
@@ -613,7 +622,7 @@ class MetaCaster:
 
         return y_deltas
 
-    def ode(self, y, t, parameters):
+    def ode(self, y, t, *parameters):
         """
         Evaluate the ODE given states (y), time (t) and parameters
 
@@ -624,7 +633,7 @@ class MetaCaster:
             State variables.
         t : float
             Time.
-        parameters : dict
+        parameters : floats
             Parameter values.
 
         Returns
@@ -649,9 +658,11 @@ class MetaCaster:
                 else:
                     foi = fois
 
+            subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
             subpop_model_args = {'y': y,
                                  'y_deltas': y_deltas,
                                  'coordinates': coordinates,
+                                 'subpop_suffix': subpop_suffix,
                                  'parameters': parameters,
                                  'states_index': self.state_index[coordinates],
                                  't': t,
@@ -746,8 +757,11 @@ class MetaCaster:
             total_asymptomatic = asymptomatic_transmission_modifier * y[infectious_and_asymptomatic_indexes].sum()
             total_symptomatic = y[infectious_symptomatic_indexes].sum()
             full_contribution = sum([total_asymptomatic, total_symptomatic])
-            foi = parameters[self.transmission_term_prefix] * full_contribution / parameters[
-                self.population_term_prefix]
+            if self.population_denominator_in_foi:
+                foi = parameters[self.transmission_term_prefix] * full_contribution / parameters[
+                    self.population_term_prefix]
+            else:
+                foi = parameters[self.transmission_term_prefix] * full_contribution
             return foi
 
     def _subpop_specific_foi(self, fois, y, coordinates_i, coordinates_j, parameters, contactable_population,
@@ -801,6 +815,21 @@ class MetaCaster:
         """
         selected_state_indexes = self.get_state_indexes_of_coordinate(self, coordinate, axis=0)
         return _nested_dict_values(selected_state_indexes)
+    
+    @staticmethod
+    def coordinates_to_subpop_suffix(coordinates):
+        if isinstance(coordinates, (list,tuple)):
+            if all(isinstance(coordinate, int) for coordinate in coordinates):
+                coordinates = (str(coordinate) for coordinate in coordinates)
+            if any(not isinstance(coordinate, str) for coordinate in coordinates):
+                raise TypeError('All coordinates must be either string or integers, or lists/tuples of those types.')
+            return '_[' + ','.join(coordinates) + ']'
+        elif isinstance(coordinates, str):
+            return '_[' + coordinates + ']'
+        elif isinstance(coordinates, int):
+            return '_[' + str(coordinates) + ']'
+        else:
+            raise TypeError('All coordinates must be either string or integers, or lists/tuples of those types.')
 
     def _instantaneous_transfer(self, population_transitioning, population, t=None):
         """
@@ -848,7 +877,7 @@ class MetaCaster:
             if arg not in subpop_model_arg_names:
                 raise ValueError(arg + ' is missing from subpop_model function.')
 
-        expected_args = ['y', 'y_deltas', 'parameters', 'states_index', 'coordinates', 'foi', 't']
+        expected_args = ['y', 'y_deltas', 'parameters', 'states_index', 'coordinates', 'subpop_suffix', 'foi', 't']
         for arg in subpop_model_arg_names:
             if arg not in expected_args:
                 raise ValueError(arg + ' in not a supported argument for the subpop_model function. '+
@@ -1014,10 +1043,16 @@ class MetaCaster:
 
         """
         state_index = self.state_index
-        multi_columns = [(','.join(coordinates), state)
-                         for coordinates, sub_dict in self.state_index.items()
-                         for state in sub_dict.keys()
-                         ]
+        if len(self)==1:
+            multi_columns = [(coordinates, state)
+                             for coordinates, sub_dict in self.state_index.items()
+                             for state in sub_dict.keys()
+                             ]
+        else:
+            multi_columns = [(','.join(coordinates), state)
+                             for coordinates, sub_dict in self.state_index.items()
+                             for state in sub_dict.keys()
+                             ]
         results_df = pd.DataFrame(results, index=t)
         results_df.columns = pd.MultiIndex.from_tuples(multi_columns)
         return results_df

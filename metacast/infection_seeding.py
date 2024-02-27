@@ -119,7 +119,8 @@ class MultnomialSeeder:
     ----------
     branch_info : nested dict
         First level keys are branches (str).
-            Second level keys are states (str or ints) and values are names of outflows for states (str).
+            Second level keys are states (str or ints) and values are the names of parameters controlling outflows for
+            those states (str).
 
     Attributes
     ----------

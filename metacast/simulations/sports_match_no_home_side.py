@@ -301,7 +301,7 @@ class SportMatchMGESimulation:
         event_info_dict['match day ends beta changes'] = {'type': 'change parameter',
                                                           'changing_parameters': beta_match_day,
                                                           'times': 4}
-        transmision_terms = [param for param in self.model.all_parameters if param.startswith('beta')]
+        transmision_terms = [param for param in self.model.parameter_names if param.startswith('beta')]
         event_info_dict['MGE ends'] = {'type': 'change parameter',
                                        'changing_parameters': transmision_terms,
                                        'value': 0,
@@ -507,7 +507,7 @@ class SportMatchMGESimulation:
 
         # Runninng mg_model
         parameters_needed_for_model = {key: value for key, value in parameters.items()
-                                       if key in self.model.all_parameters}
+                                       if key in self.model.parameter_names}
         self.model.parameters = parameters_needed_for_model
         solution, transfers_df = self.event_queue.run_simulation(model_object=self.model,
                                                                  run_attribute='integrate',

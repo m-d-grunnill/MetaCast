@@ -162,11 +162,11 @@ class MetaCaster:
         A list of infectious and symptomatic states.
     infectious_and_asymptomatic_states : list of stings
         A list of infectious and asymptomatic states.
-    num_state : int
+    num_states : int
         Total number of states in model.
     num_param : int
         Total number of parameters in model.
-    all_parameters : list of strings
+    parameter_names : list of strings
         A list of parameters sorted alpha numerically.
 
     Methods
@@ -191,10 +191,9 @@ class MetaCaster:
     symptomatic_states = infected_states
     observed_states = None
     transmission_term_prefix = 'beta'
-    population_denominator_in_foi = False
+    subpop_interaction_prefix = 'rho'
     population_term_prefix = 'N'
-    foi_population_focus = 'i'
-    transmission_subpop_specific = False
+    foi_population_focus = None
     asymptomatic_transmission_modifier = None
     universal_params = None
     subpops = []
@@ -224,14 +223,10 @@ class MetaCaster:
                     raise TypeError('Model attribute "' +
                                     model_attribute +
                                     '" should be a collection of unique strings.')
-        for model_attribute in ['transmission_subpop_specific', 'population_denominator_in_foi']:
-            if not isinstance(eval('self.' + model_attribute), bool):
-                raise TypeError('Model attribute "' +
-                                model_attribute +
-                                '" should be a bool value.')
-        if self.foi_population_focus not in ['i', 'j']:
-            raise ValueError('foi_population_focus attribute should be either "i" or "j". Value is ' +
-                             str(self.foi_population_focus))
+        if self.foi_population_focus is not None:
+            if self.foi_population_focus not in ['i', 'j']:
+                raise ValueError('foi_population_focus attribute should be either "i" or "j". Value is ' +
+                                 str(self.foi_population_focus))
 
     def _set_model_attributes(self,
                               model_attributes,
@@ -249,44 +244,64 @@ class MetaCaster:
         if subpop_model is not None:
             self.subpop_model = subpop_model
 
-
-
         if type(self) == MetaCaster and model_attributes is None and subpop_model is None:
             raise AssertionError('MetaCaster is not meant to run models without model_attributes and subpop_model.' +
                                  ' Child classes of MetaCaster can if coded with model_attributes and subpop_model.' +
                                  '\nIf unfamiliar with class inheritance look  up:\n' +
                                  ' https://www.w3schools.com/python/python_inheritance.asp.')
-        self.all_parameters = set(self.universal_params)
+
+        self.set_structure(scaffold)
+
+    def set_structure(self, scaffold, foi_population_focus=None):
+        """
+        Set metapopulation structure using scaffold.
+
+        Parameters
+        ----------
+        scaffold : list/tuple
+        pfoi_population_focus : bool (optional)
+
+        Returns
+        -------
+        None
+        """
+        if foi_population_focus is not None:
+            if foi_population_focus not in ['i', 'j']:
+                raise ('population_denominator_in_foi can only be change to "i" or "j".')
+            self.foi_population_focus = foi_population_focus
+
+        self.parameter_names = set(self.universal_params)
         if self.asymptomatic_transmission_modifier is not None:
-            self.all_parameters.add(self.asymptomatic_transmission_modifier)
+            self.parameter_names.add(self.asymptomatic_transmission_modifier)
         self._gen_structure(scaffold)
         self._sorting_states()
 
-        self.all_parameters.update([param + subpop_suffix
-                                    for param in self.subpop_params
-                                    for subpop_suffix in self.subpop_suffixes
-                                    ])
+        self.parameter_names.update([param + subpop_suffix
+                                     for param in self.subpop_params
+                                     for subpop_suffix in self.subpop_suffixes
+                                     ])
 
-        if self.transmission_subpop_specific:
-            self.transmission_terms = [
-                self.transmission_term_prefix + subpop_suffix_i + subpop_suffix_j
-                for subpop_suffix_i in self.subpop_suffixes
-                for subpop_suffix_j in self.subpop_suffixes]
-            if self.population_denominator_in_foi:
-                self.population_terms = [self.population_term_prefix + subpop_suffix
-                                         for subpop_suffix in self.subpop_suffixes]
-                self.all_parameters.update(self.population_terms)
-        else:
-            self.transmission_terms = [self.transmission_term_prefix]
-        self.all_parameters.update(self.transmission_terms)
+        self.transmission_terms = [
+            self.transmission_term_prefix + subpop_suffix
+            for subpop_suffix in self.subpop_suffixes]
+        self.subpop_interaction_terms = [
+            self.subpop_interaction_prefix + subpop_suffix_i + subpop_suffix_j
+            for subpop_suffix_i in self.subpop_suffixes
+            for subpop_suffix_j in self.subpop_suffixes
+        ]
+        self.parameter_names.update(self.subpop_interaction_terms)
+        if self.foi_population_focus is not None:
+            self.population_terms = [self.population_term_prefix + subpop_suffix
+                                     for subpop_suffix in self.subpop_suffixes]
+            self.parameter_names.update(self.population_terms)
 
+        self.parameter_names.update(self.transmission_terms)
         self.total_subpopulations = len(self.subpop_coordinates)
-        self.all_parameters = sorted(self.all_parameters)
-        non_piece_wise_params_names = set(self.all_parameters) - set(self.params_estimated_via_piecewise_method)
+        self.parameter_names = sorted(self.parameter_names)
+        non_piece_wise_params_names = set(self.parameter_names) - set(self.params_estimated_via_piecewise_method)
         self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
-
         self._parameters = None
-        self.num_param = len(self.all_parameters)
+        self.num_param = len(self.parameter_names)
         self.piecewise_est_param_values = None
 
     def _gen_structure(self, scaffold):
@@ -330,43 +345,37 @@ class MetaCaster:
         self.params_estimated_via_piecewise_method = []
         self.subpop_transfer_dict = {}
         self.subpop_transition_params_dict = {}
-
-        if isinstance(scaffold, int):
-            self.subpops += [[*range(int)]]
-        elif _is_set_like_of_strings(scaffold):
-            self.subpops += [list(scaffold)]
-        elif isinstance(scaffold, (list, tuple)) and all(isinstance(item, dict) for item in scaffold):
-            self.subpops += [set()]
+        if isinstance(scaffold, (list, tuple)) and all(isinstance(item, dict) for item in scaffold):
             for count, group_transfer in enumerate(scaffold):
                 if 'from_coordinates' not in group_transfer:
                     raise ValueError(
-                        'If scaffold is a list of group transfer dictionaries it must have a "from_coordinates"' +
-                        ' entry in every group transfer dictionary,' +
-                        ' check group transfer dictionary [' +
+                        'If scaffold is a list of subpopulation transfer dictionaries it must have a "from_coordinates"' +
+                        ' entry in every subpopulation transfer dictionary,' +
+                        ' check subpopulation transfer dictionary [' +
                         str(count) +
                         '] of scaffold.')
                 from_coordinates = group_transfer['from_coordinates']
                 if not isinstance(from_coordinates, (list, tuple)):
                     raise TypeError(
-                        'If scaffold is a list of group transfer dictionaries values for "from_coordinates"' +
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "from_coordinates"' +
                         '  entries should be a list or a tuple,' +
-                        ' check group transfer dictionary [' +
+                        ' check subpopulation transfer dictionary [' +
                         str(count) +
                         '] of scaffold.')
-                if not all(isinstance(coordinate, int) for coordinate in from_coordinates) or \
-                        not all(isinstance(coordinate, str) for coordinate in from_coordinates):
+                if not (all(isinstance(coordinate, int) for coordinate in from_coordinates) or
+                        all(isinstance(coordinate, str) for coordinate in from_coordinates)):
                     raise TypeError(
-                        'If scaffold is a list of group transfer dictionaries values for "from_coordinates"' +
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "from_coordinates"' +
                         '  entries should be a list or a tuple of only strings or integers,' +
-                        ' check group transfer dictionary [' +
+                        ' check subpopulation transfer dictionary [' +
                         str(count) +
                         '] of scaffold.')
                 if count == 0:
-                    self.subpops += [{coordinate} for coordinate in from_coordinates]
+                    self.subpops = [{coordinate} for coordinate in from_coordinates]
                 elif len(from_coordinates) != len(self):
                     raise ValueError('If scaffold is a list of dictionaries all "from_coordinates"' +
-                                     ' entries in group transfer dictionaries should be of the same length' +
-                                     ', check group transfer dictionary [' +
+                                     ' entries in subpopulation transfer dictionaries should be of the same length' +
+                                     ', check subpopulation transfer dictionary [' +
                                      str(count) +
                                      '] of scaffold.')
                 else:
@@ -379,32 +388,32 @@ class MetaCaster:
                 entry = {}
                 if 'to_coordinates' not in group_transfer:
                     raise ValueError(
-                        'If scaffold is a list of group transfer dictionaries it must have a "to_coordinates"' +
-                        ' entry in every group transfer dictionary,' +
-                        ' check group transfer dictionary [' +
+                        'If scaffold is a list of subpopulation transfer dictionaries it must have a "to_coordinates"' +
+                        ' entry in every subpopulation transfer dictionary,' +
+                        ' check subpopulation transfer dictionary [' +
                         str(count) +
                         '] of scaffold.')
                 to_coordinates = group_transfer['to_coordinates']
                 if not isinstance(to_coordinates, (list, tuple)):
                     raise TypeError(
-                        'If scaffold is a list of group transfer dictionaries values for "to_coordinates"' +
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "to_coordinates"' +
                         '  entries should be a list or a tuple,' +
-                        ' check group transfer dictionary [' +
+                        ' check subpopulation transfer dictionary [' +
                         str(count) +
                         '] of scaffold.')
-                if not all(isinstance(coordinate, int) for coordinate in to_coordinates) or \
-                        not all(isinstance(coordinate, str) for coordinate in to_coordinates):
+                if not (all(isinstance(coordinate, int) for coordinate in to_coordinates) or
+                        all(isinstance(coordinate, str) for coordinate in to_coordinates)):
                     raise TypeError(
-                        'If scaffold is a list of group transfer dictionaries values for "to_coordinates"' +
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "to_coordinates"' +
                         '  entries should be a list or a tuple of only strings or integers,' +
-                        ' check group transfer dictionary [' +
+                        ' check subpopulation transfer dictionary [' +
                         str(count) +
                         '] of scaffold.')
                 if len(to_coordinates) != len(self):
                     raise ValueError('If scaffold is a list of dictionaries all "to_coordinates" and' +
-                                     ' "from_coordinates" entries in group transfer dictionaries should be of the' +
+                                     ' "from_coordinates" entries in subpopulation transfer dictionaries should be of the' +
                                      ' same length' +
-                                     ', check "to_coordinates" group transfer dictionary [' +
+                                     ', check "to_coordinates" subpopulation transfer dictionary [' +
                                      str(count) +
                                      '] of scaffold.')
                 for axis, coordinate in enumerate(to_coordinates):
@@ -418,12 +427,12 @@ class MetaCaster:
                     if isinstance(states, str):
                         states = list(states)
                     if not _is_set_like_of_strings(states):
-                        raise ValueError('"states" entry in Group transfer dictionary [' +
+                        raise ValueError('"states" entry in Subpopulation transfer dictionary [' +
                                          str(count) +
                                          '] of scaffold is not a collection of unique items.')
                     for state in states:
                         if state not in self.states:
-                            raise ValueError('Group transfer dictionary [' +
+                            raise ValueError('Subpopulation transfer dictionary [' +
                                              str(count) +
                                              '] of scaffold has an unrecognised state (' + state + ').' +
                                              'All states in listed in a scaffold should be one of those listed in the' +
@@ -432,16 +441,15 @@ class MetaCaster:
 
                 parameter = group_transfer['parameter']
                 if not isinstance(parameter, str):
-                    raise TypeError('In group transfer dictionary [' + str(count) +
+                    raise TypeError('In subpopulation transfer dictionary [' + str(count) +
                                     '] of scaffold ' + str(parameter) + ' should be of type string.')
                 entry['parameter'] = parameter
                 if parameter not in self.subpop_transition_params_dict:
                     self.subpop_transition_params_dict[parameter] = []
-                entry = {key: value for key, value in
-                         group_transfer.items()
-                         if key != 'parameter'}
-                self.subpop_transition_params_dict[parameter].append(entry)
-                self.all_parameters.add(parameter)
+                self.subpop_transition_params_dict[parameter].append({key: value for key, value in
+                                                                      group_transfer.items()
+                                                                      if key != 'parameter'})
+                self.parameter_names.add(parameter)
                 if 'piecewise targets' in group_transfer:
                     self.params_estimated_via_piecewise_method.append(parameter)
                     if isinstance(group_transfer['piecewise targets'], pd.Series):
@@ -451,19 +459,24 @@ class MetaCaster:
                     elif isinstance(group_transfer['piecewise targets'], np.ndarray):
                         entry['piecewise targets'] = group_transfer['piecewise targets']
 
+                accepted_keys = list(entry.keys()) + ['from_coordinates']
                 for key in group_transfer.keys():
-                    if key not in entry:
-                        raise ValueError('Group transfer dictionary [' +
+                    if key not in accepted_keys:
+                        raise ValueError('Subpopulation transfer dictionary [' +
                                          str(count) +
                                          '] of scaffold has an unrecognised entry (' + key + ').')
 
                 self.subpop_transfer_dict[from_coordinates].append(entry)
+        elif isinstance(scaffold, int):
+            self.subpops = [set(*range(int))]
+        elif _is_set_like_of_strings(scaffold):
+            self.subpops = [set(scaffold)]
         elif (isinstance(scaffold, (list, tuple)) and
               all(isinstance(item, int) for item in scaffold)):
-            self.subpops += [[*range(num)] for num in scaffold]
+            self.subpops = [set(*range(num)) for num in scaffold]
         elif (isinstance(scaffold, (list, tuple)) and
               all(_is_set_like_of_strings(item) for item in scaffold)):
-            self.subpops += scaffold
+            self.subpops = [set(item) for item in scaffold]
         else:
             raise TypeError('scaffold is not supported.')
 
@@ -495,7 +508,7 @@ class MetaCaster:
             A list of infectious and symptomatic states.
         infectious_and_asymptomatic_states : list of stings
             A list of infectious and asymptomatic states.
-        num_state : int
+        num_states : int
             Total number of states in model.
 
         Returns
@@ -516,7 +529,7 @@ class MetaCaster:
         self.population_names = []
         self.subpop_coordinates = []
         self.subpop_suffixes = []
-        if len(self)==1:
+        if len(self) == 1:
             axis_equals_1 = True
         else:
             axis_equals_1 = False
@@ -524,7 +537,7 @@ class MetaCaster:
             subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
             self.subpop_suffixes.append(subpop_suffix)
             if axis_equals_1:
-                coordinates = coordinates[0] 
+                coordinates = coordinates[0]
             self.subpop_coordinates.append(coordinates)
             self.state_index[coordinates] = {}
             self.infectious_symptomatic_indexes[coordinates] = []
@@ -547,7 +560,7 @@ class MetaCaster:
             self.state_index['observed_states'][state] = index
             index += 1
 
-        self.num_state = index
+        self.num_states = index
         for transfer_info in self.subpop_transition_params_dict.values():
             for transfer_info_entry in transfer_info:
                 from_coordinates = transfer_info_entry['from_coordinates']
@@ -649,14 +662,11 @@ class MetaCaster:
         parameters = self._sorting_params(parameters)
         if self.infectious_states is not None:
             fois = self.calculate_fois(y, parameters, t)
-        y_deltas = np.zeros(self.num_state)
+        y_deltas = np.zeros(self.num_states)
         for coordinates in self.subpop_coordinates:
             y_deltas = self.subpop_transfer(y, y_deltas, t, coordinates, parameters)
             if self.infectious_states is not None:
-                if self.transmission_subpop_specific:
-                    foi = fois[coordinates]  # force of infection experienced by this specific cluster.
-                else:
-                    foi = fois
+                foi = fois[coordinates]  # force of infection experienced by this specific cluster.
 
             subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
             subpop_model_args = {'y': y,
@@ -697,12 +707,8 @@ class MetaCaster:
 
         Returns
         -------
-        If transmission is cluster specific:
-            fois : dictionary {tupple of strings or ints: values are numeric}
-                Dictionary of the FOIs experienced at each coordinate.
-        Else:
-            foi : Numeric
-                FOI experienced by all the population.
+        fois : dictionary {tupple of strings or ints: values are numeric}
+            Dictionary of the FOIs experienced at each coordinate.
 
         """
         if self.asymptomatic_transmission_modifier is not None:
@@ -710,71 +716,45 @@ class MetaCaster:
         else:
             asymptomatic_transmission_modifier = 1
 
-        if self.transmission_subpop_specific:
-            fois = {coordinates: 0 for coordinates in self.subpop_coordinates}
-            if not self.population_denominator_in_foi:
-                for coordinates_i in self.subpop_coordinates:
-                    contactable_population = 1
-                    for coordinates_j in self.subpop_coordinates:
-                        self._subpop_specific_foi(fois,
-                                                  y,
-                                                  coordinates_i,
-                                                  coordinates_j,
-                                                  parameters,
-                                                  contactable_population,
-                                                  asymptomatic_transmission_modifier)
-            elif self.foi_population_focus == 'i':
-                for coordinates_i in self.subpop_coordinates:
-                    contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
-                    if callable(contactable_population):
-                        contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
-                    for coordinates_j in self.subpop_coordinates:
-                        self._subpop_specific_foi(fois,
-                                                  y,
-                                                  coordinates_i,
-                                                  coordinates_j,
-                                                  parameters,
-                                                  contactable_population,
-                                                  asymptomatic_transmission_modifier)
-            elif self.foi_population_focus == 'j':
-                for coordinates_j in self.subpop_coordinates:
-                    contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_j + ']']
-                    if callable(contactable_population):
-                        contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
-                    for coordinates_i in self.subpop_coordinates:
-                        self._subpop_specific_foi(fois,
-                                                  y,
-                                                  coordinates_i,
-                                                  coordinates_j,
-                                                  parameters,
-                                                  contactable_population,
-                                                  asymptomatic_transmission_modifier)
+        fois = {coordinates: 0 for coordinates in self.subpop_coordinates}
+        for coordinates_i in self.subpop_coordinates:
+            subpop_prefix_i = self.coordinates_to_subpop_suffix(coordinates_i)
+            beta = parameters[self.transmission_term_prefix + subpop_prefix_i]
+            interactions_with_infectious = [self._subpop_infected_interaction(y,
+                                                                              coordinates_i,
+                                                                              coordinates_j,
+                                                                              parameters,
+                                                                              asymptomatic_transmission_modifier,
+                                                                              t)
+                                            for coordinates_j in self.subpop_coordinates]
 
-            return fois
-        else:
-            infectious_symptomatic_indexes = _unionise_dict_of_lists(self.infectious_symptomatic_indexes)
-            infectious_and_asymptomatic_indexes = _unionise_dict_of_lists(self.infectious_asymptomatic_indexes)
-            total_asymptomatic = asymptomatic_transmission_modifier * y[infectious_and_asymptomatic_indexes].sum()
-            total_symptomatic = y[infectious_symptomatic_indexes].sum()
-            full_contribution = sum([total_asymptomatic, total_symptomatic])
-            if self.population_denominator_in_foi:
-                foi = parameters[self.transmission_term_prefix] * full_contribution / parameters[
-                    self.population_term_prefix]
-            else:
-                foi = parameters[self.transmission_term_prefix] * full_contribution
-            return foi
+            interactions_with_infectious = sum(interactions_with_infectious)
+            fois[coordinates_i] += beta * interactions_with_infectious
 
-    def _subpop_specific_foi(self, fois, y, coordinates_i, coordinates_j, parameters, contactable_population,
-                             asymptomatic_transmission_modifier):
-        beta = parameters[
-            self.transmission_term_prefix + '_[' + coordinates_i + ']_[' + coordinates_j + ']']
-        if beta > 0:
-            total_asymptomatic = (asymptomatic_transmission_modifier *
-                                  y[self.infectious_asymptomatic_indexes[coordinates_j]].sum())
-            total_symptomatic = y[self.infectious_symptomatic_indexes[coordinates_j]].sum()
-            full_contribution = sum([total_asymptomatic, total_symptomatic])
+        return fois
 
-            fois[coordinates_i] += beta * full_contribution / contactable_population
+    def _subpop_infected_interaction(self, y, coordinates_i, coordinates_j, parameters,
+                                     asymptomatic_transmission_modifier, t):
+        total_asymptomatic = (asymptomatic_transmission_modifier *
+                              y[self.infectious_asymptomatic_indexes[coordinates_j]].sum())
+        total_symptomatic = y[self.infectious_symptomatic_indexes[coordinates_j]].sum()
+        subpop_prefix_i = self.coordinates_to_subpop_suffix(coordinates_i)
+        subpop_prefix_j = self.coordinates_to_subpop_suffix(coordinates_j)
+        contribution = parameters[self.subpop_interaction_prefix + subpop_prefix_i + subpop_prefix_j] \
+                       * sum([total_asymptomatic, total_symptomatic])
+        if self.foi_population_focus == 'i':
+            contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
+            if callable(contactable_population):
+                contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+            contribution = contribution / contactable_population
+
+        if self.foi_population_focus == 'j':
+            contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_j + ']']
+            if callable(contactable_population):
+                contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+            contribution = contribution / contactable_population
+
+        return contribution
 
     def get_state_indexes_of_coordinate(self, coordinate, axis=0):
         """
@@ -815,10 +795,10 @@ class MetaCaster:
         """
         selected_state_indexes = self.get_state_indexes_of_coordinate(self, coordinate, axis=0)
         return _nested_dict_values(selected_state_indexes)
-    
+
     @staticmethod
     def coordinates_to_subpop_suffix(coordinates):
-        if isinstance(coordinates, (list,tuple)):
+        if isinstance(coordinates, (list, tuple)):
             if all(isinstance(coordinate, int) for coordinate in coordinates):
                 coordinates = (str(coordinate) for coordinate in coordinates)
             if any(not isinstance(coordinate, str) for coordinate in coordinates):
@@ -880,7 +860,7 @@ class MetaCaster:
         expected_args = ['y', 'y_deltas', 'parameters', 'states_index', 'coordinates', 'subpop_suffix', 'foi', 't']
         for arg in subpop_model_arg_names:
             if arg not in expected_args:
-                raise ValueError(arg + ' in not a supported argument for the subpop_model function. '+
+                raise ValueError(arg + ' in not a supported argument for the subpop_model function. ' +
                                  'Supported arguments include ' + ', '.join(expected_args))
         self._subpop_model = subpop_model
 
@@ -915,7 +895,7 @@ class MetaCaster:
         # the value can be a single value or a distribution
 
         for param_name, value in parameters.items():
-            if param_name not in self.all_parameters:
+            if param_name not in self.parameter_names:
                 raise ValueError(param_name + ' is not a name given to a parameter for this model.')
             if param_name in self.params_estimated_via_piecewise_method:
                 raise AssertionError(param_name + ' was set as a parameter to be estimated via piecewise estimiation ' +
@@ -931,7 +911,7 @@ class MetaCaster:
                                      "'model', 'y', 'parameters' or 't'.")
             elif not isinstance(value, Number):
                 raise TypeError(param_name + ' should be a number type.')
-        params_not_given = [param for param in self.all_parameters
+        params_not_given = [param for param in self.parameter_names
                             if param not in
                             list(parameters.keys()) + self.params_estimated_via_piecewise_method]
         if params_not_given:
@@ -950,7 +930,7 @@ class MetaCaster:
         """
         check_list = (list(self.parameters.keys()) +
                       self.params_estimated_via_piecewise_method)
-        for param in self.all_parameters:
+        for param in self.parameter_names:
             if param not in check_list:
                 raise AssertionError(param +
                                      'has not been assigned a value or set up for piecewise estimation.')
@@ -1043,7 +1023,7 @@ class MetaCaster:
 
         """
         state_index = self.state_index
-        if len(self)==1:
+        if len(self) == 1:
             multi_columns = [(coordinates, state)
                              for coordinates, sub_dict in self.state_index.items()
                              for state in sub_dict.keys()
@@ -1052,7 +1032,11 @@ class MetaCaster:
             multi_columns = [(','.join(coordinates), state)
                              for coordinates, sub_dict in self.state_index.items()
                              for state in sub_dict.keys()
+                             if coordinates != 'observed_states'
                              ]
+            multi_columns += [('observed_states', state)
+                              for state in self.state_index['observed_states'].keys()
+                              ]
         results_df = pd.DataFrame(results, index=t)
         results_df.columns = pd.MultiIndex.from_tuples(multi_columns)
         return results_df

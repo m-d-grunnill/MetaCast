@@ -379,10 +379,20 @@ class _EventQueue:
         self._events = {}
         for event_name, event_information in event_information.items():
             event_information = copy.deepcopy(event_information) # We don't want to alter the original.
-            if isinstance(event_information['times'], Number):
+            if isinstance(event_information['times'], (float, int)):
                 times = set([event_information['times']])
-            else:
+            elif isinstance(event_information['times'], (list,tuple, set)):
+                if any(not isinstance(entry, (int,float)) for entry in  event_information['times']):
+                    raise TypeError('All entries in event_information "times" should be ints or floats.')
                 times = set(event_information['times'])
+            elif isinstance(event_information['times'], range):
+                times = set(event_information['times'])
+            elif isinstance(event_information, (np.ndarray,np.generic)):
+                times = set(event_information['times'].flatten())
+            else:
+                raise TypeError('All entries in event_information "times" type is not supported. ' +
+                                'Accepted types are ranges (including numpy), single ints/floats, ' +
+                                'or np.arrays, lists, tupples and sets of ints/floats.')
             del event_information['times']
             if event_information['type'] == 'transfer':
                 del event_information['type']

@@ -467,16 +467,18 @@ class MetaCaster:
                                          '] of scaffold has an unrecognised entry (' + key + ').')
 
                 self.subpop_transfer_dict[from_coordinates].append(entry)
-        elif isinstance(scaffold, int):
-            self.subpops = [set(*range(int))]
-        elif _is_set_like_of_strings(scaffold):
-            self.subpops = [set(scaffold)]
-        elif (isinstance(scaffold, (list, tuple)) and
-              all(isinstance(item, int) for item in scaffold)):
-            self.subpops = [set(*range(num)) for num in scaffold]
         elif (isinstance(scaffold, (list, tuple)) and
               all(_is_set_like_of_strings(item) for item in scaffold)):
             self.subpops = [set(item) for item in scaffold]
+        elif (isinstance(scaffold, (list, tuple)) and
+              all(isinstance(item, int) for item in scaffold)):
+            self.subpops = [set(*range(num)) for num in scaffold]
+        elif isinstance(scaffold, (list, tuple)) and _is_set_like_of_strings(scaffold):
+            self.subpops = [set(scaffold)]
+        elif isinstance(scaffold, set) and all(isinstance(item, str) for item in scaffold):
+            self.subpops = [scaffold]
+        elif isinstance(scaffold, int):
+            self.subpops = [set(*range(int))]
         else:
             raise TypeError('scaffold is not supported.')
 

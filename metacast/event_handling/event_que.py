@@ -66,8 +66,8 @@ class EventQueue:
 
     """
 
-    def __init__(self, event_info_dict):
-        self._event_queue = _EventQueue(event_info_dict)
+    def __init__(self, event_list):
+        self._event_queue = _EventQueue(event_list)
         self._master_event_queue = copy.deepcopy(self._event_queue)
         self._events = self._event_queue._events
 
@@ -247,7 +247,7 @@ class EventQueue:
         tranfers_list = []
         y = []
         current_time = start_time
-        solution_at_t = y0
+        solution_at_t = copy.deepcopy(y0)
         if full_output:
             run_method = getattr(model_object, run_attribute)
             function_args_inspection = inspect.getfullargspec(run_method)
@@ -373,49 +373,28 @@ class _EventQueue:
 
     """
 
-    def __init__(self, event_information):
+    def __init__(self, events):
         unordered_que = {}
         self.events_at_same_time = {}
         self._events = {}
-        for event_name, event_information in event_information.items():
-            event_information = copy.deepcopy(event_information) # We don't want to alter the original.
-            if isinstance(event_information['times'], (float, int)):
-                times = set([event_information['times']])
-            elif isinstance(event_information['times'], (list,tuple, set)):
-                if any(not isinstance(entry, (int,float)) for entry in  event_information['times']):
-                    raise TypeError('All entries in event_information "times" should be ints or floats.')
-                times = set(event_information['times'])
-            elif isinstance(event_information['times'], range):
-                times = set(event_information['times'])
-            elif isinstance(event_information, (np.ndarray,np.generic)):
-                times = set(event_information['times'].flatten())
-            else:
-                raise TypeError('All entries in event_information "times" type is not supported. ' +
-                                'Accepted types are ranges (including numpy), single ints/floats, ' +
-                                'or np.arrays, lists, tupples and sets of ints/floats.')
-            del event_information['times']
-            if event_information['type'] == 'transfer':
-                del event_information['type']
-                event = TransferEvent(event_name, **event_information)
-            elif event_information['type'] == 'change parameter':
-                del event_information['type']
-                event = ChangeParametersEvent(event_name, **event_information)
-            elif event_information['type'] == 'parameter equals subpopulation':
-                del event_information['type']
-                event = ParametersEqualSubPopEvent(event_name, **event_information)
-            else:
-                raise ValueError('Event type not known.')
-            self._events[event_name] = event
-            times_already_in_queue = set(unordered_que.keys()) & times
+        if isinstance(events, BaseEvent):
+            events = [events]
+        if not isinstance(events,(list,tuple,set)):
+            raise TypeError('Events should be either a single BaseEvent (or a subclass of BaseEvent) '+
+                            'or a list/tuple/set of BaseEvents (or a subclasses of BaseEvent).')
+        for event in events:
+            self._events[event.name] = event
+            times_already_in_queue = set(unordered_que.keys()) & event.times
             if times_already_in_queue:
                 for time in times_already_in_queue:
                     if isinstance(unordered_que[time], BaseEvent):
                         self.events_at_same_time[time] = [unordered_que[time].name, event.name]
                         unordered_que[time] = deque([unordered_que[time], event])
                     else:
-                        self.events_at_same_time[time].append(event_name)
+                        self.events_at_same_time[time].append(event.name)
                         unordered_que[time].append(event)
-                times -= times_already_in_queue
+
+            times = event.times - times_already_in_queue
             unordered_que.update({time: event for time in times})
         self.queue = OrderedDict(sorted(unordered_que.items()))
         # if self.events_at_same_time:

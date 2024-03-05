@@ -44,10 +44,24 @@ class BaseEvent:
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name, times):
         if not isinstance(name, str):
             raise TypeError('A name given to an event should be a string.')
         self.name = name
+        if isinstance(times, (float, int)):
+            self.times = set([times])
+        elif isinstance(times, (list, tuple, set)):
+            if any(not isinstance(entry, (int, float)) for entry in times):
+                raise TypeError('All entries in event_information "times" should be ints or floats.')
+            self.times = set(times)
+        elif isinstance(times, range):
+            self.times = set(times)
+        elif isinstance(times, (np.ndarray, np.generic)):
+            self.times = set(times)
+        else:
+            raise TypeError('"times" type is not supported. ' +
+                            'Accepted types are ranges (including numpy), single ints/floats, ' +
+                            'or np.arrays, lists, tupples and sets of ints/floats.')
         self._do_nothing = False
 
     def process(self):
@@ -93,7 +107,7 @@ class ValueFactorProportionChangeEvent(BaseEvent):
         Changes method from a do null event (do nothing event).
 
     """
-    def __init__(self, name, value=None, factor=None, proportion=None):
+    def __init__(self, name, times, value=None, factor=None, proportion=None):
         self._value = None
         self._factor = None
         self._proportion = None
@@ -112,7 +126,7 @@ class ValueFactorProportionChangeEvent(BaseEvent):
             self.value = value
         if proportion is not None:
             self.proportion = proportion
-        super().__init__(name=name)
+        super().__init__(name=name, times=times)
     @property
     def proportion(self):
         return self._proportion
@@ -193,9 +207,9 @@ class TransferEvent(ValueFactorProportionChangeEvent):
         Changes method into a do null event (do nothing event).
 
     """
-    def __init__(self, name, value=None, factor=None,  proportion=None,
+    def __init__(self, name, times, value=None, factor=None,  proportion=None,
                  from_index=None, to_index=None):
-        super().__init__(name=name, value=value, factor=factor, proportion=proportion)
+        super().__init__(name=name, times=times, value=value, factor=factor, proportion=proportion)
         if from_index is None and to_index is None:
             raise AssertionError('A container of ints must be given for from_index or to_index or both.')
         if from_index is not None:
@@ -285,8 +299,8 @@ class ChangeParametersEvent(ValueFactorProportionChangeEvent):
         Changes method into a do null event (do nothing event).
 
     """
-    def __init__(self, name, changing_parameters, value=None, factor=None, proportion=None):
-        super().__init__(name=name, value=value, factor=factor, proportion=proportion)
+    def __init__(self, name, times, changing_parameters, value=None, factor=None, proportion=None):
+        super().__init__(name=name, times=times, value=value, factor=factor, proportion=proportion)
         self.changing_parameters = changing_parameters
 
     def process(self, model_object, parameters_attribute, parameters):
@@ -349,8 +363,8 @@ class ParametersEqualSubPopEvent(BaseEvent):
         Changes method into a do null event (do nothing event).
 
     """
-    def __init__(self, name, changing_parameters, subpopulation_index):
-        super().__init__(name=name)
+    def __init__(self, name, times, changing_parameters, subpopulation_index):
+        super().__init__(name=name, times=times)
         self.changing_parameters = changing_parameters
         self.subpopulation_index = subpopulation_index
 

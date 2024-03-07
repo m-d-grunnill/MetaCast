@@ -6,6 +6,7 @@ Description:
     
 """
 from .events import (
+    BaseEvent,
     ValueFactorProportionChangeEvent,
     TransferEvent,
     ChangeParametersEvent,

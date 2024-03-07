@@ -73,9 +73,8 @@ def select_dict_items_in_list(dictionary, lst):
 
 class MetaCaster:
     """
-    Base class for setting up and simulating two-dimensional metapopulation models.
-    First dimension of metapopulation is to 0_pop.
-    Second dimension clusters are referred to vaccination groups.
+    Base class for setting up and simulating multidimensional metapopulation models.
+
 
     Parameters
     ----------
@@ -795,7 +794,7 @@ class MetaCaster:
         -------
         list of ints
         """
-        selected_state_indexes = self.get_state_indexes_of_coordinate(self, coordinate, axis=0)
+        selected_state_indexes = self.get_state_indexes_of_coordinate(self, coordinate, axis=axis)
         return _nested_dict_values(selected_state_indexes)
 
     @staticmethod

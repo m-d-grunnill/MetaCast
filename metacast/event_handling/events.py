@@ -17,6 +17,8 @@ class BaseEvent:
     -----------------------
     name : str
         Name given to event.
+    times : floats/ints, ranges or list/tuple/set of floats/ints
+        Times at which event occurs.
 
     Methods
     -------
@@ -90,6 +92,8 @@ class ValueFactorProportionChangeEvent(BaseEvent):
     -----------------------
     name : str
         Name given to event.
+    times : floats/ints, ranges or list/tuple/set of floats/ints
+        Times at which event occurs.
     value : foat/int, mutually exclusive with factor and proportion.
         Value that overrides original value(s).
     proportion : foat/int, mutually exclusive with value and factor.
@@ -187,6 +191,8 @@ class TransferEvent(ValueFactorProportionChangeEvent):
     -----------------------
     name : str
         Name given to event.
+    times : floats/ints, ranges or list/tuple/set of floats/ints
+        Times at which event occurs.
     value : foat/int, optional but mutually exclusive with factor and proportion.
         Value that overrides original parameter value(s).
     proportion : foat/int, optional but mutually exclusive with value and factor.
@@ -282,6 +288,8 @@ class ChangeParametersEvent(ValueFactorProportionChangeEvent):
     -----------------------
     name : str
         Name given to event.
+    times : floats/ints, ranges or list/tuple/set of floats/ints
+        Times at which event occurs.
     changing_parameters : list-like of strings
         Parameters whose values will be changed.
     value : foat/int, optional but mutually exclusive with factor and proportion.
@@ -349,6 +357,8 @@ class ParametersEqualSubPopEvent(BaseEvent):
     -----------------------
     name : str
         Name given to event.
+    times : floats/ints, ranges or list/tuple/set of floats/ints
+        Times at which event occurs.
     changing_parameters : list-like of strings
         Parameters whose values will be changed.
     subpopulation_index : list-like of ints

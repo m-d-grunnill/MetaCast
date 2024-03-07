@@ -29,17 +29,8 @@ class EventQueue:
 
     Parameters
     ----------
-    event_info_dict : Nested dictionary
-        Details information about events to go into event queue.
-        First level: keys are the event names (stirngs) values are another dictionary of key value paris:
-            times : single float/int or list of floats/ints.
-                Times that event occurs.
-            type : string
-                Type of event. Must be either
-                    - 'transfer' for events.TransferEvent
-                    - 'change parameter' for ChangeParametersEvent
-                    - 'parameter equals subpopulation' for ParametersEqualSubPopEvent.
-            All other key values pairs are passed to selected event type as kwargs when the event is initialised.
+    events : list(either event_handling.BaseEvent or subclass of event_handling.BaseEvent)
+        Events to go into event queue.
 
     Methods
     -------
@@ -66,8 +57,8 @@ class EventQueue:
 
     """
 
-    def __init__(self, event_list):
-        self._event_queue = _EventQueue(event_list)
+    def __init__(self, events):
+        self._event_queue = _EventQueue(events)
         self._master_event_queue = copy.deepcopy(self._event_queue)
         self._events = self._event_queue._events
 
@@ -336,17 +327,8 @@ class _EventQueue:
 
     Parameters
     ----------
-    event_information : Nested dictionary
-        Details information about events to go into event queue.
-        First level: keys are the event names (stirngs) values are another dictionary of key value paris:
-            times : single float/int or list of floats/ints.
-                Times that event occurs.
-            type : string
-                Type of event. Must be either
-                    - 'transfer' for events.TransferEvent
-                    - 'change parameter' for ChangeParametersEvent
-                    - 'parameter equals subpopulation' for ParametersEqualSubPopEvent.
-            All other key values pairs are passed to selected event type as kwargs when the event is initialised.
+    events : list(either event_handling.BaseEvent or subclass of event_handling.BaseEvent)
+        Events to go into event queue.
 
     Attributes
     ----------

@@ -6,5 +6,4 @@ Description:
     
 """
 from .metacaster import MetaCaster
-from .submodels import (FluDiagHosp, MassGatheringModel)
 from .infection_seeding import MultnomialSeeder

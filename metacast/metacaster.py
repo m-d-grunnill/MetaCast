@@ -3,14 +3,15 @@ Creation:
     Author: Martin Grunnill
     Date: 01/04/2022
 Description: 
-    Contains class for setting up and simulating two-dimensional metapopulation models.
+    Contains class for setting up and simulating multidimensional metapopulation models.
 
 Classes
 -------
-Base2DMetaPopModel
-    Base class for setting up and simulating two-dimensional metapopulation models.
-    First dimension members are referred to 0_pop.
-    Second dimension members are referred to 1_group.
+MetaCaster
+    Class for setting up and simulating multidimensional metapopulation models.
+
+    Can simulate models on its own if given model_attributes and subpop_model arguments at initialisation.
+    Alternatively these can be defined as attributes of MetaCaster subclass.
 """
 import copy
 from inspect import getfullargspec
@@ -73,8 +74,10 @@ def select_dict_items_in_list(dictionary, lst):
 
 class MetaCaster:
     """
-    Base class for setting up and simulating multidimensional metapopulation models.
+    Class for setting up and simulating multidimensional metapopulation models.
 
+    Can simulate models on its own if given model_attributes and subpop_model arguments at initialisation.
+    Alternatively these can be defined as attributes of MetaCaster subclass.
 
     Parameters
     ----------
@@ -109,86 +112,107 @@ class MetaCaster:
             piecewise targets: list, tuple, numpy.Array or pandas.Series
                 Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
                 between clusters and vaccine groups (see method group_transfer).
-    
-    
+    model_attributes : dictionary
+        Keys are names of attributes to be set. Alternatively these attributes can be set in a subclass of MetaCaster.
+    subpop_model : callable function/class method
+        Method used to model subpopulation:
+            Required arguments: 'y', 'y_deltas', 'parameters' and 'states_index'.
+            Possible additional arguments: 'coordinates', 'subpop_suffix', 'foi' or 't'.
+
     Attributes
     ----------
     states : list of strings
-        States used in model. Empty in base parent class.
+        States used in model.
     observed_states : list of strings
         Observed states. Useful for obtaining results or fitting (e.g. Cumulative incidence).
     infected_states : list of strings
-        Infected states (not necessarily infectious). Empty in base parent class.
+        Infected states (not necessarily infectious).
     infectious_states : list of strings
-        Infectious states. These states contribute to force of infection. Empty in base parent class.
+        Infectious states. These states contribute to force of infection. If None no force of infection is
+        caluculated when running model (within ode method).
     symptomatic_states : list of strings
         Symptomatic states. NOTE any state in the list self.infectious_states but NOT in this list has its transmission
-        modified by self.asymptomatic_transmission_modifier (see method calculate_fois). Empty in base parent class.
-    transmission_term_prefix : string
-        General transmission term used in calculating forces of infection, default term is 'beta' (see method
-        calculate_fois). If  attribute transmission_subpop_specific == False transmission terms are generate of the form
-        self.transmission_term + '_' cluster_i + '_' cluster_j.
-    population_term_prefix : string
-        General population term used as denominator in calculating force of infection, default term is 'N' (see method
-        calculate_fois). If  self.transmission_subpop_specific == False population terms are generate of the form
-        self.population_term + '_' + cluster_i + '_' + cluster_j
-    transmission_subpop_specific : bool
-        Default value is False. If false it is assumed that classes mix homogeneously. If true transmission
-        is assumed to be different between each class interaction.
+        modified by self.asymptomatic_transmission_modifier (see method calculate_fois).
+    transmission_term_prefix : string, default 'beta'
+        Prefix of subpopulation term used in calculating forces of infection, default term is 'beta' (see method
+        calculate_fois).
+    population_term_prefix : string, default 'N'
+        Prefix of subpopulation term used as denominator in calculating force of infection (see method calculate_fois).
+    subpop_interaction_prefix : string default is 'rho'
+        Prefix of subpopulation term used to denote level of interaction between subpopulations when calculating force
+         of infection (see method calculate_fois).
     asymptomatic_transmission_modifier : string or None
         Factor used to modify transmission from infectious but asymptomatic states. If None a factor of 1 is used in the
         asymptomatic_transmission_modifier's place when using method calculating_fois.
     universal_params : list of strings
         A list of all the parameters that are NOT:
         - directly to do with transmission
-        - cluster specific
-        - vaccine group specific
-        Empty in base parent class.
+        - subpopulation specific (sub_pop_params).
     subpop_params : list of strings, or if axis/dimensions > 1 a dictionary {int: lists of strings}
          A list of all the parameters that axis/dimensions specific but NOT directly to do with transmission.
+    parameter_names : list of strings
+        The names of all the parameters.
+    population_terms : list of strings
+        Subpopulation population terms used in calculating force of infection (see method calculate_fois).
+    transmission_terms :  list of strings
+        The transmission terms for each subpopulation (see method calculate_fois).
+    subpop_interaction_terms : list of strings
+        The terms for each interaction between subpopulations used when calculating force of infection
+        (see method calculate_fois).
+    total_subpops : int
+        Total number of subpopulations.
+    total_parameters : int
+        Total number of parameters in model.
+    dimensions : list of sets of ints/strings
+        Dimensions of metapopulation.
+    subpop_transfer_dict : dictionary {tuple of ints or strings: list of dictionaries}
+        Each entry outlines all the outflows from a subpopulation to other subpopulation. For use with
+        subpop_transfer method.
+    subpop_transition_params_dict : dictionary {string: list of dictionaries}
+        Each entry outlines parameters responsible for flows between subpopulations.
     all_states_index : dictionary
         Keys are all the states values are the associated indexes for use with numpy.arrays.
-    state_index : 3 level nested dictionary.
-        First level: keys are the cluster names values are another dictionary.
-            Second level: keys are the vaccine_group names and values are another dictionary.
-                Third level: keys are the states and values (ints) are the associated indexes for use with
-                             numpy.arrays.
+    state_index : dictionary {tuple of strings or ints: {string : int}}
+        First level: keys are the subpopulation coordinates are another dictionary.
+            Second level: keys are the states and values (ints) are the associated indexes for use with
+                          numpy.arrays.
     infected_states_index_list : list of ints
         A list of the indexes of infected states.
-    infectious_symptomatic_indexes : 2 level nested dictionary.
-        First level: keys are the cluster names values are another dictionary.
-            Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
-                          symptomatic states.
-    infectious_asymptomatic_indexes : 2 level nested dictionary.
-        First level: keys are the cluster names values are another dictionary.
-            Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
-                          asymptomatic states.
+    infectious_symptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+        Keys are the subpopulation coordinates are a list of indexes for infectious and symptomatic states.
+    infectious_asymptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+        Keys are the subpopulation coordinates are a list of indexes for infectious and asymptomatic states.
     infectious_and_symptomatic_states : list of stings
         A list of infectious and symptomatic states.
     infectious_and_asymptomatic_states : list of stings
         A list of infectious and asymptomatic states.
-    num_states : int
+    total_states : int
         Total number of states in model.
-    num_param : int
-        Total number of parameters in model.
-    parameter_names : list of strings
-        A list of parameters sorted alpha numerically.
+    subpop_coordinates : list [tuples of ints/strings]
+        Coordinates of all subpopulations.
+    subpop_suffixes : list of stings
+        Suffixes to appended to parameters specific to subpopulations.
+    foi_population_focus : string or None (default None)
+        If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
+        If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
+        i.e. its own population (the population that is being transmitted to).
+        If 'j' a subpopulations force of infection for each interacting subpopulation is divided by the total
+        population of subpopulation 'j', i.e. the subpopulation it is interacting with (the population that is being
+        transmitted from).
 
     Methods
     -------
-    ode: Evaluate the ODE given states (y), time (t) and parameters
-    group_transfer(y, y_deltas, t, from_0, from_1, parameters)
-        Calculates the transfers of people from population.
-    setup_child_ode_method(y, parameters)
-        Wrapper function for setting ode method in child classes.
-    get_pop_indexes(axis, subpop_name)
-        Returns a list of the indexes for all the states in a subpopulation.
-    calculate_fois(y, parameters)
-        Calculates the Forces of Infection (FOI) given variables in y and parameters.
-    integrate(x0, t, full_output=False, called_in_fitting=False, **kwargs_to_pass_to_odeint)
+    set_structure(self, scaffold, foi_population_focus=None)
+        Set metapopulation structure using scaffold.
+    ode(self, y, t, *parameters):
+        Evaluate the ODE given states (y), time (t) and parameters
+    integrate(x0, t, full_output=False, **kwargs_to_pass_to_odeint)
         Simulate model via integration using initial values x0 of time range t.
-        A wrapper on top of :mod:`odeint <scipy.integrate.odeint>`
-        Modified method from the pygom method `DeterministicOde <pygom.model.DeterministicOde>`.
+        A wrapper on top of :mod:`odeint <scipy.integrate.odeint>` giving ode method to odeint.
+    get_state_index_dict_of_coordinate(self, coordinate, axis=0):
+        Fetch state index dictionaries for given coordinate on an axis.
+    get_indexes_of_coordinate(self, coordinate, axis=0):
+        Fetch a list of indices for all states for given coordinate on axis.
     """
     states = None
     infected_states = None
@@ -201,7 +225,7 @@ class MetaCaster:
     foi_population_focus = None
     asymptomatic_transmission_modifier = None
     universal_params = None
-    subpops = []
+    dimensions = []
     subpop_params = None  # does not include transmission term beta.
     _subpop_model = None
     len = 0
@@ -294,8 +318,67 @@ class MetaCaster:
                 piecewise targets: list, tuple, numpy.Array or pandas.Series
                     Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
                     between clusters and vaccine groups (see method group_transfer).
-        pfoi_population_focus : bool (optional)
+        foi_population_focus : string or None (default None)
+            If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
+            If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
+            i.e. its own population (the population that is being transmitted to).
+            If 'j' a subpopulations force of infection for each interacting subpopulation is divided by the total
+            population of subpopulation 'j', i.e. the subpopulation it is interacting with (the population that is being
+            transmitted from).
+            
+        Attributes Created/Altered
+        --------------------------
+        foi_population_focus : string or None (default None)
+            If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
+            If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
+            i.e. its own population (the population that is being transmitted to).
+            If 'j' a subpopulations force of infection for each interacting subpopulation is divided by the total
+            population of subpopulation 'j', i.e. the subpopulation it is interacting with (the population that is being
+            transmitted from).
+        parameter_names : list of strings
+            The names of all the parameters.
+        population_terms : list of strings
+            Subpopulation population terms used in calculating force of infection (see method calculate_fois).
+        transmission_terms :  list of strings
+            The transmission terms for each subpopulation (see method calculate_fois).
+        subpop_interaction_terms : list of strings
+            The terms for each interaction between subpopulations used when calculating force of infection
+            (see method calculate_fois).
+        total_subpops : int
+            Total number of subpopulations.
+        total_parameters : int
+            Total number of parameters in model.
+        dimensions : list of sets of ints/strings
+            Dimensions of metapopulation.
+        subpop_transfer_dict : dictionary {tuple of ints or strings: list of dictionaries}
+            Each entry outlines all the outflows from a subpopulation to other subpopulation. For use with
+            subpop_transfer method.
+        subpop_transition_params_dict : dictionary {string: list of dictionaries}
+            Each entry outlines parameters responsible for flows between subpopulations.
+        all_states_index : dictionary
+            Keys are all the states values are the associated indexes for use with numpy.arrays.
+        state_index : dictionary {tuple of strings or ints: {string : int}}
+            First level: keys are the subpopulation coordinates are another dictionary.
+                Second level: keys are the states and values (ints) are the associated indexes for use with
+                              numpy.arrays.
+        infected_states_index_list : list of ints
+            A list of the indexes of infected states.
+        infectious_symptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+            Keys are the subpopulation coordinates are a list of indexes for infectious and symptomatic states.
+        infectious_asymptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+            Keys are the subpopulation coordinates are a list of indexes for infectious and asymptomatic states.
+        infectious_and_symptomatic_states : list of stings
+            A list of infectious and symptomatic states.
+        infectious_and_asymptomatic_states : list of stings
+            A list of infectious and asymptomatic states.
+        total_states : int
+            Total number of states in model.
+        subpop_coordinates : list [tuples of ints/strings]
+            Coordinates of all subpopulations.
+        subpop_suffixes : list of stings
+            Suffixes to appended to parameters specific to subpopulations.
 
+    
         Returns
         -------
         None
@@ -331,12 +414,12 @@ class MetaCaster:
             self.parameter_names.update(self.population_terms)
 
         self.parameter_names.update(self.transmission_terms)
-        self.total_subpopulations = len(self.subpop_coordinates)
+        self.total_subpops = len(self.subpop_coordinates)
         self.parameter_names = sorted(self.parameter_names)
         non_piece_wise_params_names = set(self.parameter_names) - set(self.params_estimated_via_piecewise_method)
         self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
         self._parameters = None
-        self.num_param = len(self.parameter_names)
+        self.total_parameters = len(self.parameter_names)
         self.piecewise_est_param_values = None
 
     def _gen_structure(self, scaffold):
@@ -377,6 +460,16 @@ class MetaCaster:
                     Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
                     between clusters and vaccine groups (see method group_transfer).
 
+        Attributes Created/Altered
+        --------------------------
+        dimensions : list of sets of ints/strings
+            Dimensions of metapopulation.
+        subpop_transfer_dict : dictionary {tuple of ints or strings: list of dictionaries}
+            Each entry outlines all the outflows from a subpopulation to other subpopulation. For use with
+            subpop_transfer method.
+        subpop_transition_params_dict : dictionary {string: list of dictionaries}
+            Each entry outlines parameters responsible for flows between subpopulations.
+
         Returns
         -------
         Nothing.
@@ -410,7 +503,7 @@ class MetaCaster:
                         str(count) +
                         '] of scaffold.')
                 if count == 0:
-                    self.subpops = [{coordinate} for coordinate in from_coordinates]
+                    self.dimensions = [{coordinate} for coordinate in from_coordinates]
                 elif len(from_coordinates) != len(self):
                     raise ValueError('If scaffold is a list of dictionaries all "from_coordinates"' +
                                      ' entries in subpopulation transfer dictionaries should be of the same length' +
@@ -419,7 +512,7 @@ class MetaCaster:
                                      '] of scaffold.')
                 else:
                     for axis, coordinate in enumerate(from_coordinates):
-                        self.subpops[axis].add(coordinate)
+                        self.dimensions[axis].add(coordinate)
 
                 if from_coordinates not in self.subpop_transfer_dict:
                     self.subpop_transfer_dict[from_coordinates] = []
@@ -456,7 +549,7 @@ class MetaCaster:
                                      str(count) +
                                      '] of scaffold.')
                 for axis, coordinate in enumerate(to_coordinates):
-                    self.subpops[axis].add(coordinate)
+                    self.dimensions[axis].add(coordinate)
 
                 entry['to_coordinates'] = to_coordinates
                 if group_transfer['states'] == 'all':
@@ -508,49 +601,47 @@ class MetaCaster:
                 self.subpop_transfer_dict[from_coordinates].append(entry)
         elif (isinstance(scaffold, (list, tuple)) and
               all(_is_set_like_of_strings(item) for item in scaffold)):
-            self.subpops = [set(item) for item in scaffold]
+            self.dimensions = [set(item) for item in scaffold]
         elif (isinstance(scaffold, (list, tuple)) and
               all(isinstance(item, int) for item in scaffold)):
-            self.subpops = [set(*range(num)) for num in scaffold]
+            self.dimensions = [set(*range(num)) for num in scaffold]
         elif isinstance(scaffold, (list, tuple)) and _is_set_like_of_strings(scaffold):
-            self.subpops = [set(scaffold)]
+            self.dimensions = [set(scaffold)]
         elif isinstance(scaffold, set) and all(isinstance(item, str) for item in scaffold):
-            self.subpops = [scaffold]
+            self.dimensions = [scaffold]
         elif isinstance(scaffold, int):
-            self.subpops = [set(*range(int))]
+            self.dimensions = [set(*range(int))]
         else:
             raise TypeError('scaffold is not supported.')
 
     def _sorting_states(self):
         """
-        Creates many instance attributes for dealing with the states when class is initialised.
+        Creates many instance attributes for dealing with the states when class is initialised or set_structure called.
 
-        Attributes Created
-        ------------------
+        Attributes Created/Altered
+        --------------------------
         all_states_index : dictionary
             Keys are all the states values are the associated indexes for use with numpy.arrays.
-        state_index : 3 level nested dictionary.
-            First level: keys are the cluster names values are another dictionary.
-                Second level: keys are the vaccine_group names and values are another dictionary.
-                    Third level: keys are the states and values (ints) are the associated indexes for use with
-                                 numpy.arrays.
+        state_index : dictionary {tuple of strings or ints: {string : int}}
+            First level: keys are the subpopulation coordinates are another dictionary.
+                Second level: keys are the states and values (ints) are the associated indexes for use with
+                              numpy.arrays.
         infected_states_index_list : list of ints
             A list of the indexes of infected states.
-        infectious_symptomatic_indexes : 2 level nested dictionary.
-            First level: keys are the cluster names values are another dictionary.
-                Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
-                              symptomatic states.
-        infectious_asymptomatic_indexes : : 2 level nested dictionary.
-            First level: keys are the cluster names values are another dictionary.
-                Second level: keys are the vaccine_group names and values is a list of indexes for infectious and
-                              asymptomatic states.
-
+        infectious_symptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+            Keys are the subpopulation coordinates are a list of indexes for infectious and symptomatic states.
+        infectious_asymptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+            Keys are the subpopulation coordinates are a list of indexes for infectious and asymptomatic states.
         infectious_and_symptomatic_states : list of stings
             A list of infectious and symptomatic states.
         infectious_and_asymptomatic_states : list of stings
             A list of infectious and asymptomatic states.
-        num_states : int
+        total_states : int
             Total number of states in model.
+        subpop_coordinates : list [tuples of ints/strings]
+            Coordinates of all subpopulations.
+        subpop_suffixes : list of stings
+            Suffixes to appended to parameters specific to subpopulations.
 
         Returns
         -------
@@ -567,14 +658,13 @@ class MetaCaster:
         self.infected_states_index_list = []
         # populating index dictionaries
         index = 0
-        self.population_names = []
         self.subpop_coordinates = []
         self.subpop_suffixes = []
         if len(self) == 1:
             axis_equals_1 = True
         else:
             axis_equals_1 = False
-        for coordinates in itertools.product(*self.subpops):
+        for coordinates in itertools.product(*self.dimensions):
             subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
             self.subpop_suffixes.append(subpop_suffix)
             if axis_equals_1:
@@ -601,7 +691,7 @@ class MetaCaster:
             self.state_index['observed_states'][state] = index
             index += 1
 
-        self.num_states = index
+        self.total_states = index
         for transfer_info in self.subpop_transition_params_dict.values():
             for transfer_info_entry in transfer_info:
                 from_coordinates = transfer_info_entry['from_coordinates']
@@ -618,14 +708,14 @@ class MetaCaster:
 
     def subpop_transfer(self, y, y_deltas, t, from_coordinates, parameters):
         """
-        Calculates the transfers of people between subpopulation.
+        Calculates the transfers of people from a subpopulation to all other subpopulations.
 
         Parameters
         ----------
         y : numpy.array
             Values of variables at time t.
         y_deltas : numpy.Array
-            Store of delta (derivative) of variables in y which this method adds/subtracts to.
+            Store of delta (derivative at t) of variables in y which this method adds/subtracts to.
         t : float
             Time t for which derivative is being calculated.
         from_coordinates : tuple or list of strings
@@ -645,9 +735,6 @@ class MetaCaster:
                 parameter = group_transfer['parameter']
                 if 'piecewise targets' in group_transfer:
                     # This section allows for the piecewise estimation of a people being transferred between groups.
-                    # For example say from_vaccine_group=unvaccinated, t=0 and 15 people of this cluster
-                    # got vaccinated on t=1. The code within this if statement calculate rate of change at t
-                    # to get 15 people being transfered to the vaccinated group.
                     if t in self.piecewise_est_param_values[parameter]:
                         param_val = self.piecewise_est_param_values[parameter][t]
                     else:
@@ -703,7 +790,7 @@ class MetaCaster:
         parameters = self._sorting_params(parameters)
         if self.infectious_states is not None:
             fois = self.calculate_fois(y, parameters, t)
-        y_deltas = np.zeros(self.num_states)
+        y_deltas = np.zeros(self.total_states)
         for coordinates in self.subpop_coordinates:
             y_deltas = self.subpop_transfer(y, y_deltas, t, coordinates, parameters)
             if self.infectious_states is not None:
@@ -735,7 +822,7 @@ class MetaCaster:
 
     def calculate_fois(self, y, parameters, t):
         """
-        Calculates the Forces of Infection (FOI) given variables in y and parameters.
+        Calculates the Forces of Infection (FOIs) experienced by each subpopulation.
 
         Parameters
         ----------
@@ -748,7 +835,7 @@ class MetaCaster:
 
         Returns
         -------
-        fois : dictionary {tupple of strings or ints: values are numeric}
+        fois : dictionary {tupple of strings or ints: float}
             Dictionary of the FOIs experienced at each coordinate.
 
         """
@@ -786,20 +873,28 @@ class MetaCaster:
         if self.foi_population_focus == 'i':
             contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
             if callable(contactable_population):
-                contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+                contactable_population = contactable_population(model=self,
+                                                                y=y,
+                                                                coordinates=coordinates_i,
+                                                                parameters=parameters,
+                                                                t=t)
             contribution = contribution / contactable_population
 
         if self.foi_population_focus == 'j':
             contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_j + ']']
             if callable(contactable_population):
-                contactable_population = contactable_population(model=self, y=y, parameters=parameters, t=t)
+                contactable_population = contactable_population(model=self,
+                                                                y=y,
+                                                                coordinates=coordinates_j,
+                                                                parameters=parameters,
+                                                                t=t)
             contribution = contribution / contactable_population
 
         return contribution
 
-    def get_state_indexes_of_coordinate(self, coordinate, axis=0):
+    def get_state_index_dict_of_coordinate(self, coordinate, axis=0):
         """
-        Fetch state index dict for given coordinate on axis.
+        Fetch state index dictionaries for given coordinate on an axis.
 
         Parameters
         ----------
@@ -834,11 +929,23 @@ class MetaCaster:
         -------
         list of ints
         """
-        selected_state_indexes = self.get_state_indexes_of_coordinate(self, coordinate, axis=axis)
+        selected_state_indexes = self.get_state_index_dict_of_coordinate(self, coordinate, axis=axis)
         return _nested_dict_values(selected_state_indexes)
 
     @staticmethod
     def coordinates_to_subpop_suffix(coordinates):
+        """
+        Transform coordinates to subpopulation suffix appended to subpopulation specific parameters.
+
+        Parameters
+        ----------
+        coordinates : list/tuple of ints or strings
+            Coordinate of subpopulation
+
+        Returns
+        -------
+        string
+        """
         if isinstance(coordinates, (list, tuple)):
             if all(isinstance(coordinate, int) for coordinate in coordinates):
                 coordinates = (str(coordinate) for coordinate in coordinates)
@@ -923,8 +1030,10 @@ class MetaCaster:
 
         Parameters
         ----------
-        parameters : dictionary
-            Parameter values.
+        parameters : dictionary {key: Numeric or callable}
+            Parameter values. In the case of population_terms these can be callable function/class methods
+            which calculate populations at a given time point. If so population_terms must have the arguments 'model',
+            'y', 'parameters', 'coordinates', 't'.
 
         Returns
         -------
@@ -946,10 +1055,10 @@ class MetaCaster:
                     raise ValueError(param_name + ' is a function but not a population_term.' +
                                      'Only population_terms are aloud to be functions, see attribute population_terms.')
                 function_arg_names = getfullargspec(value)[0]
-                if any(args not in ['model', 'y', 'parameters', 't'] for args in function_arg_names):
+                if any(args not in ['model', 'y', 'parameters', 'coordinates', 't'] for args in function_arg_names):
                     raise ValueError(param_name +
-                                     " is a function but not a population_term but does not have arguments " +
-                                     "'model', 'y', 'parameters' or 't'.")
+                                     " is a function but not a population_term but does not have all of the arguments" +
+                                     " 'model', 'y', 'parameters', 'coordinates' or 't'.")
             elif not isinstance(value, Number):
                 raise TypeError(param_name + ' should be a number type.')
         params_not_given = [param for param in self.parameter_names
@@ -991,11 +1100,11 @@ class MetaCaster:
         """
         return dict(zip(self.non_piece_wise_params_names, parameters))
 
-    def integrate(self, x0, t, full_output=False, called_in_fitting=False, **kwargs_to_pass_to_odeint):
+    def integrate(self, x0, t, full_output=False, **kwargs_to_pass_to_odeint):
         """
         Simulate model via integration using initial values x0 of time range t.
 
-        A wrapper on top of :mod:`odeint <scipy.integrate.odeint>`
+        A wrapper on top of :mod:`odeint <scipy.integrate.odeint>`, giving ode method to odeint.
         Modified method from the pygom method `DeterministicOde <pygom.model.DeterministicOde>`.
         
         Parameters
@@ -1006,8 +1115,6 @@ class MetaCaster:
             Timeframe over which model is to be simulated.
         full_output : bool, optional
             If additional information from the integration is required
-        called_in_fitting : bool, optional
-            If method is being called in fitting.
         kwargs_to_pass_to_odeint : dictionary
             Key word arguments to pass to scipy.integrate.odeint.
 
@@ -1016,9 +1123,6 @@ class MetaCaster:
         solution: pandas.DataFrame
             Multi-index columns are  clusters by vaccine groups by states.
         """
-        if not called_in_fitting:  # If fitting model these checks should be done in fitting method.
-            # This would avoid unnecessary error checks.
-            self._check_all_params_represented()
         self.piecewise_est_param_values = {param: {} for param in self.params_estimated_via_piecewise_method}
         # INTEGRATE!!! (shout it out loud, in Dalek voice)
         # determine the number of output we want
@@ -1084,10 +1188,21 @@ class MetaCaster:
 
     def __len__(self):
         """
-        Number of axis/dimensions of metapopulation model
+        Number of axis/dimensions of the metapopulation model.
 
         Returns
         -------
         int
         """
-        return len(self.subpops)
+        return len(self.dimensions)
+
+    @property
+    def shape(self):
+        """
+        Number of entries in each axis of the metapopulation model.
+
+        Returns
+        -------
+        tuple of ints
+        """
+        return (len(axis) for axis in self.dimensions)

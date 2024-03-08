@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment=".readthedocs.yaml changed some values to strings.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.readthedocs.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.readthedocs.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -192,7 +193,7 @@
       <workItem from="1709920690921" duration="1272000" />
       <workItem from="1709921987170" duration="2891000" />
       <workItem from="1709924906340" duration="4181000" />
-      <workItem from="1709930771899" duration="633000" />
+      <workItem from="1709930771899" duration="1188000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -355,7 +356,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709931402086</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary=".readthedocs.yaml changed some values to strings.">
+      <created>1709931411306</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1709931411306</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -159,3 +159,5 @@ def determine_lh_sample_size(parameters_df,
 
     return sample_size
 
+if __name__ == "__main__":
+    pass

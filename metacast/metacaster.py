@@ -1,7 +1,7 @@
 """
 Creation:
     Author: Martin Grunnill
-    Date: 01/04/2022
+    Date: 2024/03/08
 Description: 
     Contains class for setting up and simulating multidimensional metapopulation models.
 
@@ -12,6 +12,13 @@ MetaCaster
 
     Can simulate models on its own if given model_attributes and subpop_model arguments at initialisation.
     Alternatively these can be defined as attributes of MetaCaster subclass.
+
+Notes
+-----
+I have tried to use notation find in:
+    Keeling, M. J., & Rohani, P. (2008). Metapopulations. In Modeling Infectious Diseases in Humans and Animals
+    (pp. 237–240). Princeton University Press.
+
 """
 import copy
 from inspect import getfullargspec
@@ -213,6 +220,12 @@ class MetaCaster:
         Fetch state index dictionaries for given coordinate on an axis.
     get_indexes_of_coordinate(self, coordinate, axis=0):
         Fetch a list of indices for all states for given coordinate on axis.
+
+    Notes
+    -----
+    I have tried to use notation find in:
+        Keeling, M. J., & Rohani, P. (2008). Metapopulations. In Modeling Infectious Diseases in Humans and Animals
+        (pp. 237–240). Princeton University Press.
     """
     states = None
     infected_states = None
@@ -1206,3 +1219,7 @@ class MetaCaster:
         tuple of ints
         """
         return (len(axis) for axis in self.dimensions)
+
+
+if __name__ == "__main__":
+    pass

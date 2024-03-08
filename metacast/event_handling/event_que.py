@@ -1,7 +1,7 @@
 """
 Creation:
     Author: Martin Grunnill
-    Date: 10/08/2022
+    Date: 2024/03/08
 Description: Event que for simulating models between events.
     
 """
@@ -477,3 +477,7 @@ class _EventQueue:
 
     def __repr__(self):
         return f"Queue({self.data.items()})"
+
+
+if __name__ == "__main__":
+    pass

@@ -1,7 +1,7 @@
 """
 Creation:
     Author: Martin Grunnill
-    Date: 20/09/2022
+    Date: 2024/03/08
 Description: Events for use in class EventQueue.
 
 """
@@ -409,3 +409,5 @@ class ParametersEqualSubPopEvent(BaseEvent):
             return parameters
 
 
+if __name__ == "__main__":
+    pass

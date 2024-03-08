@@ -1,7 +1,7 @@
 """
 Creation:
     Author: Martin Grunnill
-    Date: 13/09/2022
+    Date: 2022/09/13
 Description: Classes for Multnomial random draw seeding of infections.
 
 Classes
@@ -225,6 +225,5 @@ class MultnomialSeeder:
         return infections_draw
 
 
-
-
-
+if __name__ == "__main__":
+    pass

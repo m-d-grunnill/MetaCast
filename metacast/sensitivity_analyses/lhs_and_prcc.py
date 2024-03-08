@@ -1,9 +1,12 @@
 """
 Creation:
     Author: Martin Grunnill
-    Date: 2022-10-05
+    Date: 2024-03-08
 Description: Generate Latin-Hypercube Sample (LHS), run simulations and calculate Partial
-Correlation Coefficients (PRCCs). For a description of LHS and PRCCs use in model sensitivity analyses see [1].
+Correlation Coefficients (PRCCs). For a description of LHS and PRCCs use in model sensitivity analyses see:
+    Marino, S., Hogue, I. B., Ray, C. J., & Kirschner, D. E. (2008). A methodology for performing global uncertainty and
+    sensitivity analysis in systems biology. In Journal of Theoretical Biology (Vol. 254, Issue 1, pp. 178–196).
+    https://doi.org/10.1016/j.jtbi.2008.04.011
 
 Notes
 -----
@@ -236,3 +239,7 @@ def run_samples_in_parallel(parameters_df, model_run_method, client, **kwargs):
 
     results = client.gather(futures)
     return results
+
+if __name__ == "__main__":
+    pass
+

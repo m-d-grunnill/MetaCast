@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Changed README.md back to md file.">
-      <change afterPath="$PROJECT_DIR$/.readthedocs.yaml" afterDir="false" />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Added .readthedocs.yaml">
+      <change afterPath="$PROJECT_DIR$/docs/source/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.readthedocs.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.readthedocs.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -193,7 +194,7 @@
       <workItem from="1709920690921" duration="1272000" />
       <workItem from="1709921987170" duration="2891000" />
       <workItem from="1709924906340" duration="4181000" />
-      <workItem from="1709930771899" duration="148000" />
+      <workItem from="1709930771899" duration="453000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -335,7 +336,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709929105326</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Added .readthedocs.yaml">
+      <created>1709930940603</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1709930940603</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -371,7 +379,8 @@
     <MESSAGE value="Finished documentation of metacaster.py." />
     <MESSAGE value="Generated documentation htmls cia sphinx using docstings." />
     <MESSAGE value="Changed README.md back to md file." />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed README.md back to md file." />
+    <MESSAGE value="Added .readthedocs.yaml" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added .readthedocs.yaml" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

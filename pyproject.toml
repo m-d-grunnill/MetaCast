@@ -34,3 +34,4 @@ license = {file = "LICENSE"}
 Homepage = "https://github.com/m-d-grunnill/MetaCast"
 Repository = "https://github.com/m-d-grunnill/MetaCast"
 Issues = "https://github.com/m-d-grunnill/MetaCast/issues"
+Documentaion = "https://metacast.readthedocs.io/en/latest/index.html"

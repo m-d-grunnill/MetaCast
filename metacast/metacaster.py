@@ -88,37 +88,38 @@ class MetaCaster:
 
     Parameters
     ----------
-    scaffold : int 
-        This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
-        (subpops).
-    scaffold : list/tuple/set of unique strings
-        This creates a one dimension metapopulation structure with entries used to label subpopulations
-         (subpops).
-    scaffold : list/tuple of ints
-         This creates a multidimensional metapopulation structure with range(each int entry) used to generate
-          labels on an axis of the subpopulations (subpops).
-    scaffold : list/tuple of list/tuple/set of unique strings
+    scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
+        If int :
+            This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
+            (subpops).
+        If list/tuple/set of unique strings:
+            This creates a one dimension metapopulation structure with entries used to label subpopulations
+             (subpops).
+        If list/tuple of ints:
+             This creates a multidimensional metapopulation structure with range(each int entry) used to generate
+              labels on an axis of the subpopulations (subpops).
+        If list/tuple of list/tuple/set of unique strings:
          This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
           labels on a subpopulations (subpops) axis.
-    scaffold : list/tuple of dictionaries (transfer dictionaries).
-        Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation. 
-        Each transfer dictionary must have the key values pairs:
-            from_coordinates: string/int or list/tuple of strings/ints
-                Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
-                 length.
-            to_coordinates: string/int or list/tuple of strings/ints
-                Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
-                 length and the same length as the from_coordinates entries.
-            states: list of strings or string
-                Host states which will transition between subpopulations. Single entry of 'all' value
-                means all the available model states transition between subpopulations (subpops).
-            parameter : string
-                Name given to parameter that is responsible for flow of hosts transferring between subpopulations
-                (subpops).
-        Optional key value pairs:
-            piecewise targets: list, tuple, numpy.Array or pandas.Series
-                Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                between clusters and vaccine groups (see method group_transfer).
+        If  list/tuple of dictionaries (transfer dictionaries):
+            Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
+            Each transfer dictionary must have the key values pairs:
+                from_coordinates: string/int or list/tuple of strings/ints
+                    Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
+                     length.
+                to_coordinates: string/int or list/tuple of strings/ints
+                    Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
+                     length and the same length as the from_coordinates entries.
+                states: list of strings or string
+                    Host states which will transition between subpopulations. Single entry of 'all' value
+                    means all the available model states transition between subpopulations (subpops).
+                parameter : string
+                    Name given to parameter that is responsible for flow of hosts transferring between subpopulations
+                    (subpops).
+            Optional key value pairs:
+                piecewise targets: list, tuple, numpy.Array or pandas.Series
+                    Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
+                    between clusters and vaccine groups (see method group_transfer).
     model_attributes : dictionary
         Keys are names of attributes to be set. Alternatively these attributes can be set in a subclass of MetaCaster.
     subpop_model : callable function/class method
@@ -300,37 +301,38 @@ class MetaCaster:
 
         Parameters
         ----------
-        scaffold : int 
-            This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
-             (subpops).
-        scaffold : list/tuple/set of unique strings
-            This creates a one dimension metapopulation structure with entries used to label subpopulations
-             (subpops).
-        scaffold : list/tuple of ints
-             This creates a multidimensional metapopulation structure with range(each int entry) used to generate
-              labels on an axis of the subpopulations (subpops).
-        scaffold : list/tuple of list/tuple/set of unique strings
+        scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
+            If int :
+                This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
+                (subpops).
+            If list/tuple/set of unique strings:
+                This creates a one dimension metapopulation structure with entries used to label subpopulations
+                 (subpops).
+            If list/tuple of ints:
+                 This creates a multidimensional metapopulation structure with range(each int entry) used to generate
+                  labels on an axis of the subpopulations (subpops).
+            If list/tuple of list/tuple/set of unique strings:
              This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
               labels on a subpopulations (subpops) axis.
-        scaffold : list/tuple of dictionaries (transfer dictionaries).
-            Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation. 
-            Each transfer dictionary must have the key values pairs:
-                from_coordinates: string/int or list/tuple of strings/ints
-                    Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
-                     length.
-                to_coordinates: string/int or list/tuple of strings/ints
-                    Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
-                     length and the same length as the from_coordinates entries.
-                states: list of strings or string
-                    Host states which will transition between subpopulations. Single entry of 'all' value
-                    means all the available model states transition between subpopulations (subpops).
-                parameter : string
-                    Name given to parameter that is responsible for flow of hosts transferring between subpopulations
-                    (subpops).
-            Optional key value pairs:
-                piecewise targets: list, tuple, numpy.Array or pandas.Series
-                    Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                    between clusters and vaccine groups (see method group_transfer).
+            If  list/tuple of dictionaries (transfer dictionaries):
+                Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
+                Each transfer dictionary must have the key values pairs:
+                    from_coordinates: string/int or list/tuple of strings/ints
+                        Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
+                         length.
+                    to_coordinates: string/int or list/tuple of strings/ints
+                        Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
+                         length and the same length as the from_coordinates entries.
+                    states: list of strings or string
+                        Host states which will transition between subpopulations. Single entry of 'all' value
+                        means all the available model states transition between subpopulations (subpops).
+                    parameter : string
+                        Name given to parameter that is responsible for flow of hosts transferring between subpopulations
+                        (subpops).
+                Optional key value pairs:
+                    piecewise targets: list, tuple, numpy.Array or pandas.Series
+                        Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
+                        between clusters and vaccine groups (see method group_transfer).
         foi_population_focus : string or None (default None)
             If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
             If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
@@ -441,37 +443,38 @@ class MetaCaster:
 
         Parameters
         ----------
-        scaffold : int 
-            This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
-             (subpops).
-        scaffold : list/tuple/set of unique strings
-            This creates a one dimension metapopulation structure with entries used to label subpopulations
-             (subpops).
-        scaffold : list/tuple of ints
-             This creates a multidimensional metapopulation structure with range(each int entry) used to generate
-              labels on an axis of the subpopulations (subpops).
-        scaffold : list/tuple of list/tuple/set of unique strings
+        scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
+            If int :
+                This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
+                (subpops).
+            If list/tuple/set of unique strings:
+                This creates a one dimension metapopulation structure with entries used to label subpopulations
+                 (subpops).
+            If list/tuple of ints:
+                 This creates a multidimensional metapopulation structure with range(each int entry) used to generate
+                  labels on an axis of the subpopulations (subpops).
+            If list/tuple of list/tuple/set of unique strings:
              This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
               labels on a subpopulations (subpops) axis.
-        scaffold : list/tuple of dictionaries (transfer dictionaries).
-            Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation. 
-            Each transfer dictionary must have the key values pairs:
-                from_coordinates: string/int or list/tuple of strings/ints
-                    Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
-                     length.
-                to_coordinates: string/int or list/tuple of strings/ints
-                    Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
-                     length and the same length as the from_coordinates entries.
-                states: list of strings or string
-                    Host states which will transition between subpopulations. Single entry of 'all' value
-                    means all the available model states transition between subpopulations (subpops).
-                parameter : string
-                    Name given to parameter that is responsible for flow of hosts transferring between subpopulations
-                    (subpops).
-            Optional key value pairs:
-                piecewise targets: list, tuple, numpy.Array or pandas.Series
-                    Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                    between clusters and vaccine groups (see method group_transfer).
+            If  list/tuple of dictionaries (transfer dictionaries):
+                Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
+                Each transfer dictionary must have the key values pairs:
+                    from_coordinates: string/int or list/tuple of strings/ints
+                        Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
+                         length.
+                    to_coordinates: string/int or list/tuple of strings/ints
+                        Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
+                         length and the same length as the from_coordinates entries.
+                    states: list of strings or string
+                        Host states which will transition between subpopulations. Single entry of 'all' value
+                        means all the available model states transition between subpopulations (subpops).
+                    parameter : string
+                        Name given to parameter that is responsible for flow of hosts transferring between subpopulations
+                        (subpops).
+                Optional key value pairs:
+                    piecewise targets: list, tuple, numpy.Array or pandas.Series
+                        Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
+                        between clusters and vaccine groups (see method group_transfer).
 
         Attributes Created/Altered
         --------------------------

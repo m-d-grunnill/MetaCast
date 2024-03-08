@@ -1,6 +1,7 @@
 sphinx==7.2.6
 sphinx-rtd-theme==2.0.0
 sphinxcontrib-applehelp==1.0.8
+sphinx-autoapi==3.0.0
 sphinxcontrib-devhelp==1.0.6
 sphinxcontrib-htmlhelp==2.0.5
 sphinxcontrib-jquery==4.1

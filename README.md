@@ -1,13 +1,13 @@
-MetaCast
-========
+# MetaCast
+
 
 A package for broad**CAST**ing epidemiological and ecological models over **META**-populations.
 
-Installation
-============
+## Installation
 
-Requirements
-------------
+
+### Requirements
+
 Python 3.10 and pip.
 Package requirements:
 * numpy >= 1.26.3
@@ -17,13 +17,11 @@ Package requirements:
 * tqdm >= 4.66.1
 * dask >= 2024.2.1"
 
-Installing via pip
-------------------
+### Installing via pip
 Note this should also install required packages.
 ```
 pip install metacast
 ```
 
-Usage
-=====
+## Usage
 See jupyter notebooks in demo directory.

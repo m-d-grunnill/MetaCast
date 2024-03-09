@@ -1,19 +1,23 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = [
+    "setuptools >= 61.0",
+    "wheel >= 0.38"
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "metacast"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
-    "numpy>=1.26.3",
-    "pandas>=2.1.4",
-    "scipy>=1.11.4",
-    "pingouin>=0.5.4",
-    "tqdm>=4.66.1",
-    "dask>=2024.2.1",
-    'seaborn>=0.13.2',
-    'jupyter>=1.0.0'
+    "numpy >= 1.26.3",
+    "pandas >= 2.1.4",
+    "scipy >= 1.11.4",
+    "pingouin >= 0.5.4",
+    "tqdm >= 4.66.1",
+    "dask >= 2024.2.1",
+    "distributed >= 2024.2.1",
+    'seaborn >= 0.13.2',
+    'jupyter >= 1.0.0'
 ]
 authors = [
   {name="Martin Grunnill", email="m.d.grunnill@gmail.com"},
@@ -25,11 +29,27 @@ description = "A package for broadcasting epidemiological and ecological models 
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
-    'Development Status :: 1 - Planning',
+    'Development Status :: 4 - Beta',
     "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Topic :: Scientific/Engineering",
+    "Intended Audience :: Science/Research",
 ]
+# keywords should contain search terms so users can
+# find our project
+keywords = [
+    "Epimediology",
+    "Ecology",
+    "Virology",
+    "Compartmental",
+    "Model",
+    'Metapopulations',
+    'Structured Populations'
+]
+
+
 license = {file = "LICENSE"}
 
 [project.urls]

@@ -137,7 +137,7 @@ def lhs_prcc(parameters_df,
     model_run_method : function
         Method of running model's simulations. Must accept parameters as a single dictionary. Must output dictionary of 
         input parameters and model results.      
-    client: dask.Client (default None)
+    client: dask.distributed.Client (default None)
         Dask client for running simulations in parallel. If not given simulations are run serially with a tqdm progress
          bar.
     lhs_obj : scipy.stats.qmc.LatinHypercube, optional
@@ -229,7 +229,7 @@ def run_samples_in_parallel(parameters_df, model_run_method, client, **kwargs):
     If return_focused_results is True a pandas DataFrame of results is returned.
     """
     if not isinstance(client, Client):
-        raise TypeError('client must be a Dask Client.')
+        raise TypeError('client must be a dask.distributed.Client.')
     ### FUTURE IMPROVEMENT ###
     # Add progress bar  below so users do not have to use the one on the dask client dashboard.
     futures = []

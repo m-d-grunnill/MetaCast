@@ -30,6 +30,15 @@ from numbers import Number
 import scipy
 
 
+def _check_string_in_list_strings(string, list_strings):
+    if not isinstance(string, str):
+        raise TypeError(str(string) + ' should be of type string.')
+
+    check_list = eval('self.' + list_strings)
+    if string not in check_list:
+        raise ValueError(string + ' is not one of the predefined model ' + list_strings + ': ' +
+                         ','.join(check_list[:-1]) + ' and ' + check_list[:-1] + '.')
+
 def _nested_dict_values(d):
     return [index for sub_d in d.values() for index in sub_d.values()]
 
@@ -91,41 +100,40 @@ class MetaCaster:
     scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
         If int :
             This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
-            (subpops).
+            in dimensions attribute.
         If list/tuple/set of unique strings:
             This creates a one dimension metapopulation structure with entries used to label subpopulations
-             (subpops).
+             in dimensions attribute.
         If list/tuple of ints:
              This creates a multidimensional metapopulation structure with range(each int entry) used to generate
-              labels on an axis of the subpopulations (subpops).
+              labels on an axis of the subpopulations in dimensions attribute.
         If list/tuple of list/tuple/set of unique strings:
          This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
-          labels on a subpopulations (subpops) axis.
+          labels in am axis of dimensions attribute.
         If  list/tuple of dictionaries (transfer dictionaries):
             Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
             Each transfer dictionary must have the key values pairs:
                 from_coordinates: string/int or list/tuple of strings/ints
-                    Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
+                    Subpopulation coordinates from which hosts are leaving. All of these entries should be of the same
                      length.
                 to_coordinates: string/int or list/tuple of strings/ints
-                    Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
+                    Subpopulation coordinates from which hosts are leaving.All of these entries should be of the same
                      length and the same length as the from_coordinates entries.
                 states: list of strings or string
                     Host states which will transition between subpopulations. Single entry of 'all' value
-                    means all the available model states transition between subpopulations (subpops).
+                    means all the available model states transition between subpopulations.
                 parameter : string
-                    Name given to parameter that is responsible for flow of hosts transferring between subpopulations
-                    (subpops).
+                    Name given to parameter that is responsible for flow of hosts transferring between subpopulations.
             Optional key value pairs:
                 piecewise targets: list, tuple, numpy.Array or pandas.Series
                     Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
                     between clusters and vaccine groups (see method group_transfer).
-    model_attributes : dictionary
-        Keys are names of attributes to be set. Alternatively these attributes can be set in a subclass of MetaCaster.
     subpop_model : callable function/class method
         Method used to model subpopulation:
             Required arguments: 'y', 'y_deltas', 'parameters' and 'states_index'.
             Possible additional arguments: 'coordinates', 'subpop_suffix', 'foi' or 't'.
+    other_model_attributes : kwargs
+        Named arguments are attributes to be set. Alternatively these attributes can be set in a subclass of MetaCaster.
 
     Attributes
     ----------
@@ -200,7 +208,7 @@ class MetaCaster:
         Coordinates of all subpopulations.
     subpop_suffixes : list of stings
         Suffixes to appended to parameters specific to subpopulations.
-    foi_population_focus : string or None (default None)
+    _foi_population_focus : string or None (default None)
         If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
         If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
         i.e. its own population (the population that is being transmitted to).
@@ -236,15 +244,21 @@ class MetaCaster:
     transmission_term_prefix = 'beta'
     subpop_interaction_prefix = 'rho'
     population_term_prefix = 'N'
-    foi_population_focus = None
+    _foi_population_focus = None
     asymptomatic_transmission_modifier = None
     universal_params = None
-    dimensions = []
+    _dimensions = []
     subpop_params = None  # does not include transmission term beta.
     _subpop_model = None
     len = 0
 
-    def _check_model_attributes(self):
+    def __init__(self, scaffold, subpop_model=None, **other_model_attributes):
+        if other_model_attributes:
+            for name, value in other_model_attributes.items():
+                if not hasattr(self, name):
+                    raise AssertionError(name + 'is not a model attribute.')
+                setattr(self, name, value)
+
         if self.states is None:
             raise AssertionError('Model attribute "states" needs to be defined at initialisation of MetaCaster,' +
                                  ' or given as an attribute of a child class of MetaCaster.')
@@ -266,461 +280,16 @@ class MetaCaster:
                     raise TypeError('Model attribute "' +
                                     model_attribute +
                                     '" should be a collection of unique strings.')
-        if self.foi_population_focus is not None:
-            if self.foi_population_focus not in ['i', 'j']:
-                raise ValueError('foi_population_focus attribute should be either "i" or "j". Value is ' +
-                                 str(self.foi_population_focus))
 
-    def _set_model_attributes(self,
-                              model_attributes,
-                              ):
-        for name, value in model_attributes.items():
-            if not hasattr(self, name):
-                raise AssertionError(name + 'is not a model attribute.')
-            setattr(self, name, value)
-
-    def __init__(self, scaffold, model_attributes=None, subpop_model=None):
-        if model_attributes is not None:
-            self._set_model_attributes(model_attributes)
-
-        self._check_model_attributes()
         if subpop_model is not None:
             self.subpop_model = subpop_model
 
-        if type(self) == MetaCaster and model_attributes is None and subpop_model is None:
-            raise AssertionError('MetaCaster is not meant to run models without model_attributes and subpop_model.' +
-                                 ' Child classes of MetaCaster can if coded with model_attributes and subpop_model.' +
+        if type(self) == MetaCaster and other_model_attributes==False and subpop_model is None:
+            raise AssertionError('MetaCaster is not meant to run models without other_model_attributes and subpop_model.' +
+                                 ' Child classes of MetaCaster can if coded with other_model_attributes and subpop_model.' +
                                  '\nIf unfamiliar with class inheritance look  up:\n' +
                                  ' https://www.w3schools.com/python/python_inheritance.asp.')
-
-        self.set_structure(scaffold)
-
-    def set_structure(self, scaffold, foi_population_focus=None):
-        """
-        Set metapopulation structure using scaffold.
-
-        Parameters
-        ----------
-        scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
-            If int :
-                This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
-                (subpops).
-            If list/tuple/set of unique strings:
-                This creates a one dimension metapopulation structure with entries used to label subpopulations
-                 (subpops).
-            If list/tuple of ints:
-                 This creates a multidimensional metapopulation structure with range(each int entry) used to generate
-                  labels on an axis of the subpopulations (subpops).
-            If list/tuple of list/tuple/set of unique strings:
-             This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
-              labels on a subpopulations (subpops) axis.
-            If  list/tuple of dictionaries (transfer dictionaries):
-                Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
-                Each transfer dictionary must have the key values pairs:
-                    from_coordinates: string/int or list/tuple of strings/ints
-                        Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
-                         length.
-                    to_coordinates: string/int or list/tuple of strings/ints
-                        Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
-                         length and the same length as the from_coordinates entries.
-                    states: list of strings or string
-                        Host states which will transition between subpopulations. Single entry of 'all' value
-                        means all the available model states transition between subpopulations (subpops).
-                    parameter : string
-                        Name given to parameter that is responsible for flow of hosts transferring between subpopulations
-                        (subpops).
-                Optional key value pairs:
-                    piecewise targets: list, tuple, numpy.Array or pandas.Series
-                        Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                        between clusters and vaccine groups (see method group_transfer).
-        foi_population_focus : string or None (default None)
-            If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
-            If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
-            i.e. its own population (the population that is being transmitted to).
-            If 'j' a subpopulations force of infection for each interacting subpopulation is divided by the total
-            population of subpopulation 'j', i.e. the subpopulation it is interacting with (the population that is being
-            transmitted from).
-            
-        Attributes Created/Altered
-        --------------------------
-        foi_population_focus : string or None (default None)
-            If None a subpopulations force of infection is not divided by  the total population of a subpopulation.
-            If 'i' a subpopulations force of infection is divided by the total population of subpopulation 'i',
-            i.e. its own population (the population that is being transmitted to).
-            If 'j' a subpopulations force of infection for each interacting subpopulation is divided by the total
-            population of subpopulation 'j', i.e. the subpopulation it is interacting with (the population that is being
-            transmitted from).
-        parameter_names : list of strings
-            The names of all the parameters.
-        population_terms : list of strings
-            Subpopulation population terms used in calculating force of infection (see method calculate_fois).
-        transmission_terms :  list of strings
-            The transmission terms for each subpopulation (see method calculate_fois).
-        subpop_interaction_terms : list of strings
-            The terms for each interaction between subpopulations used when calculating force of infection
-            (see method calculate_fois).
-        total_subpops : int
-            Total number of subpopulations.
-        total_parameters : int
-            Total number of parameters in model.
-        dimensions : list of sets of ints/strings
-            Dimensions of metapopulation.
-        subpop_transfer_dict : dictionary {tuple of ints or strings: list of dictionaries}
-            Each entry outlines all the outflows from a subpopulation to other subpopulation. For use with
-            subpop_transfer method.
-        subpop_transition_params_dict : dictionary {string: list of dictionaries}
-            Each entry outlines parameters responsible for flows between subpopulations.
-        all_states_index : dictionary
-            Keys are all the states values are the associated indexes for use with numpy.arrays.
-        state_index : dictionary {tuple of strings or ints: {string : int}}
-            First level: keys are the subpopulation coordinates are another dictionary.
-                Second level: keys are the states and values (ints) are the associated indexes for use with
-                              numpy.arrays.
-        infected_states_index_list : list of ints
-            A list of the indexes of infected states.
-        infectious_symptomatic_indexes : dictionary {tuple of strings or ints: [int]}
-            Keys are the subpopulation coordinates are a list of indexes for infectious and symptomatic states.
-        infectious_asymptomatic_indexes : dictionary {tuple of strings or ints: [int]}
-            Keys are the subpopulation coordinates are a list of indexes for infectious and asymptomatic states.
-        infectious_and_symptomatic_states : list of stings
-            A list of infectious and symptomatic states.
-        infectious_and_asymptomatic_states : list of stings
-            A list of infectious and asymptomatic states.
-        total_states : int
-            Total number of states in model.
-        subpop_coordinates : list [tuples of ints/strings]
-            Coordinates of all subpopulations.
-        subpop_suffixes : list of stings
-            Suffixes to appended to parameters specific to subpopulations.
-
-    
-        Returns
-        -------
-        None
-        """
-        if foi_population_focus is not None:
-            if foi_population_focus not in ['i', 'j']:
-                raise ('population_denominator_in_foi can only be change to "i" or "j".')
-            self.foi_population_focus = foi_population_focus
-
-        self.parameter_names = set(self.universal_params)
-        if self.asymptomatic_transmission_modifier is not None:
-            self.parameter_names.add(self.asymptomatic_transmission_modifier)
-        self._gen_structure(scaffold)
-        self._sorting_states()
-
-        self.parameter_names.update([param + subpop_suffix
-                                     for param in self.subpop_params
-                                     for subpop_suffix in self.subpop_suffixes
-                                     ])
-
-        self.transmission_terms = [
-            self.transmission_term_prefix + subpop_suffix
-            for subpop_suffix in self.subpop_suffixes]
-        self.subpop_interaction_terms = [
-            self.subpop_interaction_prefix + subpop_suffix_i + subpop_suffix_j
-            for subpop_suffix_i in self.subpop_suffixes
-            for subpop_suffix_j in self.subpop_suffixes
-        ]
-        self.parameter_names.update(self.subpop_interaction_terms)
-        if self.foi_population_focus is not None:
-            self.population_terms = [self.population_term_prefix + subpop_suffix
-                                     for subpop_suffix in self.subpop_suffixes]
-            self.parameter_names.update(self.population_terms)
-
-        self.parameter_names.update(self.transmission_terms)
-        self.total_subpops = len(self.subpop_coordinates)
-        self.parameter_names = sorted(self.parameter_names)
-        non_piece_wise_params_names = set(self.parameter_names) - set(self.params_estimated_via_piecewise_method)
-        self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
-        self._parameters = None
-        self.total_parameters = len(self.parameter_names)
-        self.piecewise_est_param_values = None
-
-    def _gen_structure(self, scaffold):
-        """
-        Sets up structure of flow between subpopulation models.
-
-        Parameters
-        ----------
-        scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
-            If int :
-                This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
-                (subpops).
-            If list/tuple/set of unique strings:
-                This creates a one dimension metapopulation structure with entries used to label subpopulations
-                 (subpops).
-            If list/tuple of ints:
-                 This creates a multidimensional metapopulation structure with range(each int entry) used to generate
-                  labels on an axis of the subpopulations (subpops).
-            If list/tuple of list/tuple/set of unique strings:
-             This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
-              labels on a subpopulations (subpops) axis.
-            If  list/tuple of dictionaries (transfer dictionaries):
-                Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
-                Each transfer dictionary must have the key values pairs:
-                    from_coordinates: string/int or list/tuple of strings/ints
-                        Subpopulation (subpops) from which hosts are leaving. All of these entries should be of the same
-                         length.
-                    to_coordinates: string/int or list/tuple of strings/ints
-                        Subpopulation (subpops) from which hosts are leaving.All of these entries should be of the same
-                         length and the same length as the from_coordinates entries.
-                    states: list of strings or string
-                        Host states which will transition between subpopulations. Single entry of 'all' value
-                        means all the available model states transition between subpopulations (subpops).
-                    parameter : string
-                        Name given to parameter that is responsible for flow of hosts transferring between subpopulations
-                        (subpops).
-                Optional key value pairs:
-                    piecewise targets: list, tuple, numpy.Array or pandas.Series
-                        Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                        between clusters and vaccine groups (see method group_transfer).
-
-        Attributes Created/Altered
-        --------------------------
-        dimensions : list of sets of ints/strings
-            Dimensions of metapopulation.
-        subpop_transfer_dict : dictionary {tuple of ints or strings: list of dictionaries}
-            Each entry outlines all the outflows from a subpopulation to other subpopulation. For use with
-            subpop_transfer method.
-        subpop_transition_params_dict : dictionary {string: list of dictionaries}
-            Each entry outlines parameters responsible for flows between subpopulations.
-
-        Returns
-        -------
-        Nothing.
-        """
-        self.params_estimated_via_piecewise_method = []
-        self.subpop_transfer_dict = {}
-        self.subpop_transition_params_dict = {}
-        if isinstance(scaffold, (list, tuple)) and all(isinstance(item, dict) for item in scaffold):
-            for count, group_transfer in enumerate(scaffold):
-                if 'from_coordinates' not in group_transfer:
-                    raise ValueError(
-                        'If scaffold is a list of subpopulation transfer dictionaries it must have a "from_coordinates"' +
-                        ' entry in every subpopulation transfer dictionary,' +
-                        ' check subpopulation transfer dictionary [' +
-                        str(count) +
-                        '] of scaffold.')
-                from_coordinates = group_transfer['from_coordinates']
-                if not isinstance(from_coordinates, (list, tuple)):
-                    raise TypeError(
-                        'If scaffold is a list of subpopulation transfer dictionaries values for "from_coordinates"' +
-                        '  entries should be a list or a tuple,' +
-                        ' check subpopulation transfer dictionary [' +
-                        str(count) +
-                        '] of scaffold.')
-                if not (all(isinstance(coordinate, int) for coordinate in from_coordinates) or
-                        all(isinstance(coordinate, str) for coordinate in from_coordinates)):
-                    raise TypeError(
-                        'If scaffold is a list of subpopulation transfer dictionaries values for "from_coordinates"' +
-                        '  entries should be a list or a tuple of only strings or integers,' +
-                        ' check subpopulation transfer dictionary [' +
-                        str(count) +
-                        '] of scaffold.')
-                if count == 0:
-                    self.dimensions = [{coordinate} for coordinate in from_coordinates]
-                elif len(from_coordinates) != len(self):
-                    raise ValueError('If scaffold is a list of dictionaries all "from_coordinates"' +
-                                     ' entries in subpopulation transfer dictionaries should be of the same length' +
-                                     ', check subpopulation transfer dictionary [' +
-                                     str(count) +
-                                     '] of scaffold.')
-                else:
-                    for axis, coordinate in enumerate(from_coordinates):
-                        self.dimensions[axis].add(coordinate)
-
-                if from_coordinates not in self.subpop_transfer_dict:
-                    self.subpop_transfer_dict[from_coordinates] = []
-
-                entry = {}
-                if 'to_coordinates' not in group_transfer:
-                    raise ValueError(
-                        'If scaffold is a list of subpopulation transfer dictionaries it must have a "to_coordinates"' +
-                        ' entry in every subpopulation transfer dictionary,' +
-                        ' check subpopulation transfer dictionary [' +
-                        str(count) +
-                        '] of scaffold.')
-                to_coordinates = group_transfer['to_coordinates']
-                if not isinstance(to_coordinates, (list, tuple)):
-                    raise TypeError(
-                        'If scaffold is a list of subpopulation transfer dictionaries values for "to_coordinates"' +
-                        '  entries should be a list or a tuple,' +
-                        ' check subpopulation transfer dictionary [' +
-                        str(count) +
-                        '] of scaffold.')
-                if not (all(isinstance(coordinate, int) for coordinate in to_coordinates) or
-                        all(isinstance(coordinate, str) for coordinate in to_coordinates)):
-                    raise TypeError(
-                        'If scaffold is a list of subpopulation transfer dictionaries values for "to_coordinates"' +
-                        '  entries should be a list or a tuple of only strings or integers,' +
-                        ' check subpopulation transfer dictionary [' +
-                        str(count) +
-                        '] of scaffold.')
-                if len(to_coordinates) != len(self):
-                    raise ValueError('If scaffold is a list of dictionaries all "to_coordinates" and' +
-                                     ' "from_coordinates" entries in subpopulation transfer dictionaries should be of the' +
-                                     ' same length' +
-                                     ', check "to_coordinates" subpopulation transfer dictionary [' +
-                                     str(count) +
-                                     '] of scaffold.')
-                for axis, coordinate in enumerate(to_coordinates):
-                    self.dimensions[axis].add(coordinate)
-
-                entry['to_coordinates'] = to_coordinates
-                if group_transfer['states'] == 'all':
-                    entry['states'] = self.states
-                else:
-                    states = copy.deepcopy(group_transfer['states'])
-                    if isinstance(states, str):
-                        states = list(states)
-                    if not _is_set_like_of_strings(states):
-                        raise ValueError('"states" entry in Subpopulation transfer dictionary [' +
-                                         str(count) +
-                                         '] of scaffold is not a collection of unique items.')
-                    for state in states:
-                        if state not in self.states:
-                            raise ValueError('Subpopulation transfer dictionary [' +
-                                             str(count) +
-                                             '] of scaffold has an unrecognised state (' + state + ').' +
-                                             'All states in listed in a scaffold should be one of those listed in the' +
-                                             ' subpopulation model.')
-                    entry['states'] = states
-
-                parameter = group_transfer['parameter']
-                if not isinstance(parameter, str):
-                    raise TypeError('In subpopulation transfer dictionary [' + str(count) +
-                                    '] of scaffold ' + str(parameter) + ' should be of type string.')
-                entry['parameter'] = parameter
-                if parameter not in self.subpop_transition_params_dict:
-                    self.subpop_transition_params_dict[parameter] = []
-                self.subpop_transition_params_dict[parameter].append({key: value for key, value in
-                                                                      group_transfer.items()
-                                                                      if key != 'parameter'})
-                self.parameter_names.add(parameter)
-                if 'piecewise targets' in group_transfer:
-                    self.params_estimated_via_piecewise_method.append(parameter)
-                    if isinstance(group_transfer['piecewise targets'], pd.Series):
-                        entry['piecewise targets'] = group_transfer['piecewise targets'].to_numpy()
-                    elif isinstance(group_transfer['piecewise targets'], (list, tuple)):
-                        entry['piecewise targets'] = np.array(group_transfer['piecewise targets'])
-                    elif isinstance(group_transfer['piecewise targets'], np.ndarray):
-                        entry['piecewise targets'] = group_transfer['piecewise targets']
-
-                accepted_keys = list(entry.keys()) + ['from_coordinates']
-                for key in group_transfer.keys():
-                    if key not in accepted_keys:
-                        raise ValueError('Subpopulation transfer dictionary [' +
-                                         str(count) +
-                                         '] of scaffold has an unrecognised entry (' + key + ').')
-
-                self.subpop_transfer_dict[from_coordinates].append(entry)
-        elif (isinstance(scaffold, (list, tuple)) and
-              all(_is_set_like_of_strings(item) for item in scaffold)):
-            self.dimensions = [set(item) for item in scaffold]
-        elif (isinstance(scaffold, (list, tuple)) and
-              all(isinstance(item, int) for item in scaffold)):
-            self.dimensions = [set(*range(num)) for num in scaffold]
-        elif isinstance(scaffold, (list, tuple)) and _is_set_like_of_strings(scaffold):
-            self.dimensions = [set(scaffold)]
-        elif isinstance(scaffold, set) and all(isinstance(item, str) for item in scaffold):
-            self.dimensions = [scaffold]
-        elif isinstance(scaffold, int):
-            self.dimensions = [set(*range(int))]
-        else:
-            raise TypeError('scaffold is not supported.')
-
-    def _sorting_states(self):
-        """
-        Creates many instance attributes for dealing with the states when class is initialised or set_structure called.
-
-        Attributes Created/Altered
-        --------------------------
-        all_states_index : dictionary
-            Keys are all the states values are the associated indexes for use with numpy.arrays.
-        state_index : dictionary {tuple of strings or ints: {string : int}}
-            First level: keys are the subpopulation coordinates are another dictionary.
-                Second level: keys are the states and values (ints) are the associated indexes for use with
-                              numpy.arrays.
-        infected_states_index_list : list of ints
-            A list of the indexes of infected states.
-        infectious_symptomatic_indexes : dictionary {tuple of strings or ints: [int]}
-            Keys are the subpopulation coordinates are a list of indexes for infectious and symptomatic states.
-        infectious_asymptomatic_indexes : dictionary {tuple of strings or ints: [int]}
-            Keys are the subpopulation coordinates are a list of indexes for infectious and asymptomatic states.
-        infectious_and_symptomatic_states : list of stings
-            A list of infectious and symptomatic states.
-        infectious_and_asymptomatic_states : list of stings
-            A list of infectious and asymptomatic states.
-        total_states : int
-            Total number of states in model.
-        subpop_coordinates : list [tuples of ints/strings]
-            Coordinates of all subpopulations.
-        subpop_suffixes : list of stings
-            Suffixes to appended to parameters specific to subpopulations.
-
-        Returns
-        -------
-        Nothing
-        """
-        self.infectious_and_symptomatic_states = [state for state in self.infectious_states
-                                                  if state in self.symptomatic_states]
-        self.infectious_and_asymptomatic_states = [state for state in self.infectious_states
-                                                   if state not in self.symptomatic_states]
-        self.all_states_index = {}
-        self.state_index = {}
-        self.infectious_symptomatic_indexes = {}
-        self.infectious_asymptomatic_indexes = {}
-        self.infected_states_index_list = []
-        # populating index dictionaries
-        index = 0
-        self.subpop_coordinates = []
-        self.subpop_suffixes = []
-        if len(self) == 1:
-            axis_equals_1 = True
-        else:
-            axis_equals_1 = False
-        for coordinates in itertools.product(*self.dimensions):
-            subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
-            self.subpop_suffixes.append(subpop_suffix)
-            if axis_equals_1:
-                coordinates = coordinates[0]
-            self.subpop_coordinates.append(coordinates)
-            self.state_index[coordinates] = {}
-            self.infectious_symptomatic_indexes[coordinates] = []
-            self.infectious_asymptomatic_indexes[coordinates] = []
-            for state in self.states:
-                all_state_index_key = state + subpop_suffix
-                self.all_states_index[all_state_index_key] = index
-                self.state_index[coordinates][state] = index
-                if state in self.infectious_and_symptomatic_states:
-                    self.infectious_symptomatic_indexes[coordinates].append(index)
-                if state in self.infectious_and_asymptomatic_states:
-                    self.infectious_asymptomatic_indexes[coordinates].append(index)
-                if state in self.infected_states:
-                    self.infected_states_index_list.append(index)
-                index += 1
-
-        self.state_index['observed_states'] = {}
-        for state in self.observed_states:
-            self.all_states_index[state] = index
-            self.state_index['observed_states'][state] = index
-            index += 1
-
-        self.total_states = index
-        for transfer_info in self.subpop_transition_params_dict.values():
-            for transfer_info_entry in transfer_info:
-                from_coordinates = transfer_info_entry['from_coordinates']
-                from_states_dict = self.state_index[from_coordinates]
-                to_coordinates = transfer_info_entry['to_coordinates']
-                to_states_dict = self.state_index[to_coordinates]
-                state_selection = transfer_info_entry['states']
-                if state_selection == 'all':
-                    transfer_info_entry['from_index'] = [from_states_dict.values()]
-                    transfer_info_entry['to_index'] = [to_states_dict.values()]
-                else:
-                    transfer_info_entry['from_index'] = [from_states_dict[state] for state in state_selection]
-                    transfer_info_entry['to_index'] = [to_states_dict[state] for state in state_selection]
+        self.dimensions = scaffold
 
     def subpop_transfer(self, y, y_deltas, t, from_coordinates, parameters):
         """
@@ -803,7 +372,7 @@ class MetaCaster:
 
         subpop_model = self.subpop_model
         subpop_model_arg_names = getfullargspec(subpop_model)[0]
-        parameters = self._sorting_params(parameters)
+        parameters = dict(zip(self.non_piece_wise_params_names, parameters))
         if self.infectious_states is not None:
             fois = self.calculate_fois(y, parameters, t)
         y_deltas = np.zeros(self.total_states)
@@ -826,15 +395,6 @@ class MetaCaster:
             y_deltas = subpop_model(**subpop_model_args)
 
         return y_deltas
-
-    def _check_string_in_list_strings(self, string, list_strings):
-        if not isinstance(string, str):
-            raise TypeError(str(string) + ' should be of type string.')
-
-        check_list = eval('self.' + list_strings)
-        if string not in check_list:
-            raise ValueError(string + ' is not one of the predefined model ' + list_strings + ': ' +
-                             ','.join(check_list[:-1]) + ' and ' + check_list[:-1] + '.')
 
     def calculate_fois(self, y, parameters, t):
         """
@@ -886,7 +446,7 @@ class MetaCaster:
         subpop_prefix_j = self.coordinates_to_subpop_suffix(coordinates_j)
         contribution = parameters[self.subpop_interaction_prefix + subpop_prefix_i + subpop_prefix_j] \
                        * sum([total_asymptomatic, total_symptomatic])
-        if self.foi_population_focus == 'i':
+        if self._foi_population_focus == 'i':
             contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_i + ']']
             if callable(contactable_population):
                 contactable_population = contactable_population(model=self,
@@ -896,7 +456,7 @@ class MetaCaster:
                                                                 t=t)
             contribution = contribution / contactable_population
 
-        if self.foi_population_focus == 'j':
+        if self._foi_population_focus == 'j':
             contactable_population = parameters[self.population_term_prefix + '_[' + coordinates_j + ']']
             if callable(contactable_population):
                 contactable_population = contactable_population(model=self,
@@ -1007,115 +567,6 @@ class MetaCaster:
             proportion_by_t = population_transitioning / population
             return -np.log(1 - proportion_by_t)
 
-    @property
-    def subpop_model(self):
-        return self._subpop_model
-
-    @subpop_model.setter
-    def subpop_model(self, subpop_model):
-        if not callable(subpop_model):
-            raise TypeError('subpop_model should be a callable function.')
-        subpop_model_arg_names = getfullargspec(subpop_model)[0]
-        required_args = ['y', 'y_deltas', 'parameters', 'states_index']
-        for arg in required_args:
-            if arg not in subpop_model_arg_names:
-                raise ValueError(arg + ' is missing from subpop_model function.')
-
-        expected_args = ['y', 'y_deltas', 'parameters', 'states_index', 'coordinates', 'subpop_suffix', 'foi', 't']
-        for arg in subpop_model_arg_names:
-            if arg not in expected_args:
-                raise ValueError(arg + ' in not a supported argument for the subpop_model function. ' +
-                                 'Supported arguments include ' + ', '.join(expected_args))
-        self._subpop_model = subpop_model
-
-    @property
-    def parameters(self):
-        """
-        Returns
-        -------
-        Dictionary
-            A dictionary of parameter values.
-
-        """
-        return self._parameters
-
-    @parameters.setter
-    def parameters(self, parameters):
-        """
-        Set parameter values for simulations.
-
-        Parameters
-        ----------
-        parameters : dictionary {key: Numeric or callable}
-            Parameter values. In the case of population_terms these can be callable function/class methods
-            which calculate populations at a given time point. If so population_terms must have the arguments 'model',
-            'y', 'parameters', 'coordinates', 't'.
-
-        Returns
-        -------
-        Nothing
-        """
-        if not isinstance(parameters, dict):
-            raise TypeError('Currently non non_piecewise_params must be entered as a dict.')
-        # we assume that the key of the dictionary is a string and
-        # the value can be a single value or a distribution
-
-        for param_name, value in parameters.items():
-            if param_name not in self.parameter_names:
-                raise ValueError(param_name + ' is not a name given to a parameter for this model.')
-            if param_name in self.params_estimated_via_piecewise_method:
-                raise AssertionError(param_name + ' was set as a parameter to be estimated via piecewise estimiation ' +
-                                     'at the initialization of this model.')
-            if callable(value):
-                if param_name not in self.population_terms:
-                    raise ValueError(param_name + ' is a function but not a population_term.' +
-                                     'Only population_terms are aloud to be functions, see attribute population_terms.')
-                function_arg_names = getfullargspec(value)[0]
-                if any(args not in ['model', 'y', 'parameters', 'coordinates', 't'] for args in function_arg_names):
-                    raise ValueError(param_name +
-                                     " is a function but not a population_term but does not have all of the arguments" +
-                                     " 'model', 'y', 'parameters', 'coordinates' or 't'.")
-            elif not isinstance(value, Number):
-                raise TypeError(param_name + ' should be a number type.')
-        params_not_given = [param for param in self.parameter_names
-                            if param not in
-                            list(parameters.keys()) + self.params_estimated_via_piecewise_method]
-        if params_not_given:
-            raise Exception(', '.join(params_not_given) +
-                            " are/is missing from parameters for model (see self.all_parameters).")
-        # this must be sorted alphanumerically.
-        self._parameters = {key: value for key, value in sorted(parameters.items())}
-
-    def _check_all_params_represented(self):
-        """
-        Checks all parameters have been given. Gives error if not.
-
-        Returns
-        -------
-        Nothing
-        """
-        check_list = (list(self.parameters.keys()) +
-                      self.params_estimated_via_piecewise_method)
-        for param in self.parameter_names:
-            if param not in check_list:
-                raise AssertionError(param +
-                                     'has not been assigned a value or set up for piecewise estimation.')
-
-    def _sorting_params(self, parameters):
-        """
-        Sorts parameters values given as list into a dictionary.
-
-        Parameters
-        ----------
-        parameters : list of Numeric types
-            List of parameter values.
-
-        Returns
-        -------
-        Dictionary keys are strings used in naming parameters values are the corresponding values.
-        """
-        return dict(zip(self.non_piece_wise_params_names, parameters))
-
     def integrate(self, x0, t, full_output=False, **kwargs_to_pass_to_odeint):
         """
         Simulate model via integration using initial values x0 of time range t.
@@ -1210,7 +661,424 @@ class MetaCaster:
         -------
         int
         """
-        return len(self.dimensions)
+        return len(self._dimensions)
+
+    @property
+    def dimensions(self):
+        return self._dimensions
+
+    @dimensions.setter
+    def dimensions(self, scaffold, foi_population_focus=None):
+        """
+        Set metapopulation structure using scaffold.
+
+        Parameters
+        ----------
+        scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
+            If int :
+                This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
+                in dimensions attribute.
+            If list/tuple/set of unique strings:
+                This creates a one dimension metapopulation structure with entries used to label subpopulations
+                 in dimensions attribute.
+            If list/tuple of ints:
+                 This creates a multidimensional metapopulation structure with range(each int entry) used to generate
+                  labels on an axis of the subpopulations in dimensions attribute.
+            If list/tuple of list/tuple/set of unique strings:
+             This creates a multidimensional metapopulation structure with each sub-list/tuple/set entries used as
+              labels in am axis of dimensions attribute.
+            If  list/tuple of dictionaries (transfer dictionaries):
+                Transfer dictionaries outlines the transfer of one subpopulation to another subpopulation.
+                Each transfer dictionary must have the key values pairs:
+                    from_coordinates: string/int or list/tuple of strings/ints
+                        Subpopulation coordinates from which hosts are leaving. All of these entries should be of the same
+                         length.
+                    to_coordinates: string/int or list/tuple of strings/ints
+                        Subpopulation coordinates from which hosts are leaving.All of these entries should be of the same
+                         length and the same length as the from_coordinates entries.
+                    states: list of strings or string
+                        Host states which will transition between subpopulations. Single entry of 'all' value
+                        means all the available model states transition between subpopulations.
+                    parameter : string
+                        Name given to parameter that is responsible for flow of hosts transferring between subpopulations.
+                Optional key value pairs:
+                    piecewise targets: list, tuple, numpy.Array or pandas.Series
+                        Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
+                        between clusters and vaccine groups (see method group_transfer).
+
+        Returns
+        -------
+        None
+
+        Notes: Attributes Altered
+        -------------------------
+        parameter_names : list of strings
+            The names of all the parameters.
+        population_terms : list of strings
+            Subpopulation population terms used in calculating force of infection (see method calculate_fois).
+        transmission_terms :  list of strings
+            The transmission terms for each subpopulation (see method calculate_fois).
+        subpop_interaction_terms : list of strings
+            The terms for each interaction between subpopulations used when calculating force of infection
+            (see method calculate_fois).
+        total_subpops : int
+            Total number of subpopulations.
+        total_parameters : int
+            Total number of parameters in model.
+        dimensions : list of sets of ints/strings
+            Dimensions of metapopulation.
+        subpop_transfer_dict : dictionary {tuple of ints or strings: list of dictionaries}
+            Each entry outlines all the outflows from a subpopulation to other subpopulation. For use with
+            subpop_transfer method.
+        subpop_transition_params_dict : dictionary {string: list of dictionaries}
+            Each entry outlines parameters responsible for flows between subpopulations.
+        all_states_index : dictionary
+            Keys are all the states values are the associated indexes for use with numpy.arrays.
+        state_index : dictionary {tuple of strings or ints: {string : int}}
+            First level: keys are the subpopulation coordinates are another dictionary.
+                Second level: keys are the states and values (ints) are the associated indexes for use with
+                              numpy.arrays.
+        infected_states_index_list : list of ints
+            A list of the indexes of infected states.
+        infectious_symptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+            Keys are the subpopulation coordinates are a list of indexes for infectious and symptomatic states.
+        infectious_asymptomatic_indexes : dictionary {tuple of strings or ints: [int]}
+            Keys are the subpopulation coordinates are a list of indexes for infectious and asymptomatic states.
+        infectious_and_symptomatic_states : list of stings
+            A list of infectious and symptomatic states.
+        infectious_and_asymptomatic_states : list of stings
+            A list of infectious and asymptomatic states.
+        total_states : int
+            Total number of states in model.
+        subpop_coordinates : list [tuples of ints/strings]
+            Coordinates of all subpopulations.
+        subpop_suffixes : list of stings
+            Suffixes to appended to parameters specific to subpopulations.
+        """
+        self.parameter_names = set(self.universal_params)
+        if self.asymptomatic_transmission_modifier is not None:
+            self.parameter_names.add(self.asymptomatic_transmission_modifier)
+
+        #### Using Scaffold to define dimensions ####
+        self.params_estimated_via_piecewise_method = []
+        self.subpop_transfer_dict = {}
+        self.subpop_transition_params_dict = {}
+        if isinstance(scaffold, (list, tuple)) and all(isinstance(item, dict) for item in scaffold):
+            for count, group_transfer in enumerate(scaffold):
+                if 'from_coordinates' not in group_transfer:
+                    raise ValueError(
+                        'If scaffold is a list of subpopulation transfer dictionaries it must have a "from_coordinates"' +
+                        ' entry in every subpopulation transfer dictionary,' +
+                        ' check subpopulation transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                from_coordinates = group_transfer['from_coordinates']
+                if not isinstance(from_coordinates, (list, tuple)):
+                    raise TypeError(
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "from_coordinates"' +
+                        '  entries should be a list or a tuple,' +
+                        ' check subpopulation transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if not (all(isinstance(coordinate, int) for coordinate in from_coordinates) or
+                        all(isinstance(coordinate, str) for coordinate in from_coordinates)):
+                    raise TypeError(
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "from_coordinates"' +
+                        '  entries should be a list or a tuple of only strings or integers,' +
+                        ' check subpopulation transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if count == 0:
+                    self._dimensions = [{coordinate} for coordinate in from_coordinates]
+                elif len(from_coordinates) != len(self):
+                    raise ValueError('If scaffold is a list of dictionaries all "from_coordinates"' +
+                                     ' entries in subpopulation transfer dictionaries should be of the same length' +
+                                     ', check subpopulation transfer dictionary [' +
+                                     str(count) +
+                                     '] of scaffold.')
+                else:
+                    for axis, coordinate in enumerate(from_coordinates):
+                        self._dimensions[axis].add(coordinate)
+
+                if from_coordinates not in self.subpop_transfer_dict:
+                    self.subpop_transfer_dict[from_coordinates] = []
+
+                entry = {}
+                if 'to_coordinates' not in group_transfer:
+                    raise ValueError(
+                        'If scaffold is a list of subpopulation transfer dictionaries it must have a "to_coordinates"' +
+                        ' entry in every subpopulation transfer dictionary,' +
+                        ' check subpopulation transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                to_coordinates = group_transfer['to_coordinates']
+                if not isinstance(to_coordinates, (list, tuple)):
+                    raise TypeError(
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "to_coordinates"' +
+                        '  entries should be a list or a tuple,' +
+                        ' check subpopulation transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if not (all(isinstance(coordinate, int) for coordinate in to_coordinates) or
+                        all(isinstance(coordinate, str) for coordinate in to_coordinates)):
+                    raise TypeError(
+                        'If scaffold is a list of subpopulation transfer dictionaries values for "to_coordinates"' +
+                        '  entries should be a list or a tuple of only strings or integers,' +
+                        ' check subpopulation transfer dictionary [' +
+                        str(count) +
+                        '] of scaffold.')
+                if len(to_coordinates) != len(self):
+                    raise ValueError('If scaffold is a list of dictionaries all "to_coordinates" and' +
+                                     ' "from_coordinates" entries in subpopulation transfer dictionaries should be of the' +
+                                     ' same length' +
+                                     ', check "to_coordinates" subpopulation transfer dictionary [' +
+                                     str(count) +
+                                     '] of scaffold.')
+                for axis, coordinate in enumerate(to_coordinates):
+                    self._dimensions[axis].add(coordinate)
+
+                entry['to_coordinates'] = to_coordinates
+                if group_transfer['states'] == 'all':
+                    entry['states'] = self.states
+                else:
+                    states = copy.deepcopy(group_transfer['states'])
+                    if isinstance(states, str):
+                        states = list(states)
+                    if not _is_set_like_of_strings(states):
+                        raise ValueError('"states" entry in Subpopulation transfer dictionary [' +
+                                         str(count) +
+                                         '] of scaffold is not a collection of unique items.')
+                    for state in states:
+                        if state not in self.states:
+                            raise ValueError('Subpopulation transfer dictionary [' +
+                                             str(count) +
+                                             '] of scaffold has an unrecognised state (' + state + ').' +
+                                             'All states in listed in a scaffold should be one of those listed in the' +
+                                             ' subpopulation model.')
+                    entry['states'] = states
+
+                parameter = group_transfer['parameter']
+                if not isinstance(parameter, str):
+                    raise TypeError('In subpopulation transfer dictionary [' + str(count) +
+                                    '] of scaffold ' + str(parameter) + ' should be of type string.')
+                entry['parameter'] = parameter
+                if parameter not in self.subpop_transition_params_dict:
+                    self.subpop_transition_params_dict[parameter] = []
+                self.subpop_transition_params_dict[parameter].append({key: value for key, value in
+                                                                      group_transfer.items()
+                                                                      if key != 'parameter'})
+                self.parameter_names.add(parameter)
+                if 'piecewise targets' in group_transfer:
+                    self.params_estimated_via_piecewise_method.append(parameter)
+                    if isinstance(group_transfer['piecewise targets'], pd.Series):
+                        entry['piecewise targets'] = group_transfer['piecewise targets'].to_numpy()
+                    elif isinstance(group_transfer['piecewise targets'], (list, tuple)):
+                        entry['piecewise targets'] = np.array(group_transfer['piecewise targets'])
+                    elif isinstance(group_transfer['piecewise targets'], np.ndarray):
+                        entry['piecewise targets'] = group_transfer['piecewise targets']
+
+                accepted_keys = list(entry.keys()) + ['from_coordinates']
+                for key in group_transfer.keys():
+                    if key not in accepted_keys:
+                        raise ValueError('Subpopulation transfer dictionary [' +
+                                         str(count) +
+                                         '] of scaffold has an unrecognised entry (' + key + ').')
+
+                self.subpop_transfer_dict[from_coordinates].append(entry)
+        elif (isinstance(scaffold, (list, tuple)) and
+              all(_is_set_like_of_strings(item) for item in scaffold)):
+            self._dimensions = [set(item) for item in scaffold]
+        elif (isinstance(scaffold, (list, tuple)) and
+              all(isinstance(item, int) for item in scaffold)):
+            self._dimensions = [set(*range(num)) for num in scaffold]
+        elif isinstance(scaffold, (list, tuple)) and _is_set_like_of_strings(scaffold):
+            self._dimensions = [set(scaffold)]
+        elif isinstance(scaffold, set) and all(isinstance(item, str) for item in scaffold):
+            self._dimensions = [scaffold]
+        elif isinstance(scaffold, int):
+            self._dimensions = [set(*range(int))]
+        else:
+            raise TypeError('scaffold is not supported.')
+
+        #### Definining States based on new Dimensions ####
+        self.infectious_and_symptomatic_states = [state for state in self.infectious_states
+                                                  if state in self.symptomatic_states]
+        self.infectious_and_asymptomatic_states = [state for state in self.infectious_states
+                                                   if state not in self.symptomatic_states]
+        self.all_states_index = {}
+        self.state_index = {}
+        self.infectious_symptomatic_indexes = {}
+        self.infectious_asymptomatic_indexes = {}
+        self.infected_states_index_list = []
+        # populating index dictionaries
+        index = 0
+        self.subpop_coordinates = []
+        self.subpop_suffixes = []
+        if len(self) == 1:
+            axis_equals_1 = True
+        else:
+            axis_equals_1 = False
+        for coordinates in itertools.product(*self._dimensions):
+            subpop_suffix = self.coordinates_to_subpop_suffix(coordinates)
+            self.subpop_suffixes.append(subpop_suffix)
+            if axis_equals_1:
+                coordinates = coordinates[0]
+            self.subpop_coordinates.append(coordinates)
+            self.state_index[coordinates] = {}
+            self.infectious_symptomatic_indexes[coordinates] = []
+            self.infectious_asymptomatic_indexes[coordinates] = []
+            for state in self.states:
+                all_state_index_key = state + subpop_suffix
+                self.all_states_index[all_state_index_key] = index
+                self.state_index[coordinates][state] = index
+                if state in self.infectious_and_symptomatic_states:
+                    self.infectious_symptomatic_indexes[coordinates].append(index)
+                if state in self.infectious_and_asymptomatic_states:
+                    self.infectious_asymptomatic_indexes[coordinates].append(index)
+                if state in self.infected_states:
+                    self.infected_states_index_list.append(index)
+                index += 1
+
+        self.state_index['observed_states'] = {}
+        for state in self.observed_states:
+            self.all_states_index[state] = index
+            self.state_index['observed_states'][state] = index
+            index += 1
+
+        self.total_states = index
+        for transfer_info in self.subpop_transition_params_dict.values():
+            for transfer_info_entry in transfer_info:
+                from_coordinates = transfer_info_entry['from_coordinates']
+                from_states_dict = self.state_index[from_coordinates]
+                to_coordinates = transfer_info_entry['to_coordinates']
+                to_states_dict = self.state_index[to_coordinates]
+                state_selection = transfer_info_entry['states']
+                if state_selection == 'all':
+                    transfer_info_entry['from_index'] = [from_states_dict.values()]
+                    transfer_info_entry['to_index'] = [to_states_dict.values()]
+                else:
+                    transfer_info_entry['from_index'] = [from_states_dict[state] for state in state_selection]
+                    transfer_info_entry['to_index'] = [to_states_dict[state] for state in state_selection]
+
+        #### Defining Parameters based on new Dimensions ####
+        self.parameter_names.update([param + subpop_suffix
+                                     for param in self.subpop_params
+                                     for subpop_suffix in self.subpop_suffixes
+                                     ])
+
+        self.transmission_terms = [
+            self.transmission_term_prefix + subpop_suffix
+            for subpop_suffix in self.subpop_suffixes]
+        self.subpop_interaction_terms = [
+            self.subpop_interaction_prefix + subpop_suffix_i + subpop_suffix_j
+            for subpop_suffix_i in self.subpop_suffixes
+            for subpop_suffix_j in self.subpop_suffixes
+        ]
+        self.parameter_names.update(self.subpop_interaction_terms)
+        if self._foi_population_focus is not None:
+            self.population_terms = [self.population_term_prefix + subpop_suffix
+                                     for subpop_suffix in self.subpop_suffixes]
+            self.parameter_names.update(self.population_terms)
+
+        self.parameter_names.update(self.transmission_terms)
+        self.total_subpops = len(self.subpop_coordinates)
+        self.parameter_names = sorted(self.parameter_names)
+        non_piece_wise_params_names = set(self.parameter_names) - set(self.params_estimated_via_piecewise_method)
+        self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
+        self._parameters = None
+        self.total_parameters = len(self.parameter_names)
+        self.piecewise_est_param_values = None
+
+    @property
+    def foi_population_focus(self):
+        return self._foi_population_focus
+
+    @foi_population_focus.setter
+    def foi_population_focus(self, foi_population_focus):
+        if foi_population_focus is not None:
+            if foi_population_focus not in ['i', 'j']:
+                raise ('population_denominator_in_foi can only be change to "i" or "j" or None.')
+
+        self._foi_population_focus = foi_population_focus
+
+    @property
+    def subpop_model(self):
+        return self._subpop_model
+
+    @subpop_model.setter
+    def subpop_model(self, subpop_model):
+        if not callable(subpop_model):
+            raise TypeError('subpop_model should be a callable function.')
+        subpop_model_arg_names = getfullargspec(subpop_model)[0]
+        required_args = ['y', 'y_deltas', 'parameters', 'states_index']
+        for arg in required_args:
+            if arg not in subpop_model_arg_names:
+                raise ValueError(arg + ' is missing from subpop_model function.')
+
+        expected_args = ['y', 'y_deltas', 'parameters', 'states_index', 'coordinates', 'subpop_suffix', 'foi', 't']
+        for arg in subpop_model_arg_names:
+            if arg not in expected_args:
+                raise ValueError(arg + ' in not a supported argument for the subpop_model function. ' +
+                                 'Supported arguments include ' + ', '.join(expected_args))
+        self._subpop_model = subpop_model
+
+    @property
+    def parameters(self):
+        """
+        Returns
+        -------
+        Dictionary
+            A dictionary of parameter values.
+
+        """
+        return self._parameters
+
+    @parameters.setter
+    def parameters(self, parameters):
+        """
+        Set parameter values for simulations.
+
+        Parameters
+        ----------
+        parameters : dictionary {key: Numeric or callable}
+            Parameter values. In the case of population_terms these can be callable function/class methods
+            which calculate populations at a given time point. If so population_terms must have the arguments 'model',
+            'y', 'parameters', 'coordinates', 't'.
+
+        Returns
+        -------
+        Nothing
+        """
+        if not isinstance(parameters, dict):
+            raise TypeError('Currently non non_piecewise_params must be entered as a dict.')
+        # we assume that the key of the dictionary is a string and
+        # the value can be a single value or a distribution
+
+        for param_name, value in parameters.items():
+            if param_name not in self.parameter_names:
+                raise ValueError(param_name + ' is not a name given to a parameter for this model.')
+            if param_name in self.params_estimated_via_piecewise_method:
+                raise AssertionError(param_name + ' was set as a parameter to be estimated via piecewise estimiation ' +
+                                     'at the initialization of this model.')
+            if callable(value):
+                if param_name not in self.population_terms:
+                    raise ValueError(param_name + ' is a function but not a population_term.' +
+                                     'Only population_terms are aloud to be functions, see attribute population_terms.')
+                function_arg_names = getfullargspec(value)[0]
+                if any(args not in ['model', 'y', 'parameters', 'coordinates', 't'] for args in function_arg_names):
+                    raise ValueError(param_name +
+                                     " is a function but not a population_term but does not have all of the arguments" +
+                                     " 'model', 'y', 'parameters', 'coordinates' or 't'.")
+            elif not isinstance(value, Number):
+                raise TypeError(param_name + ' should be a number type.')
+        params_not_given = [param for param in self.parameter_names
+                            if param not in
+                            list(parameters.keys()) + self.params_estimated_via_piecewise_method]
+        if params_not_given:
+            raise Exception(', '.join(params_not_given) +
+                            " are/is missing from parameters for model (see self.all_parameters).")
+        # this must be sorted alphanumerically.
+        self._parameters = {key: value for key, value in sorted(parameters.items())}
 
     @property
     def shape(self):
@@ -1221,7 +1089,7 @@ class MetaCaster:
         -------
         tuple of ints
         """
-        return (len(axis) for axis in self.dimensions)
+        return (len(axis) for axis in self._dimensions)
 
 
 if __name__ == "__main__":

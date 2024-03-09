@@ -24,7 +24,8 @@ pip install metacast
 ```
 
 ## Usage
-See jupyter notebooks in demo directory.
+See jupyter notebooks in demonstration directory of homepage:
+[https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations](https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations)
 
 ## Documentation
 [https://metacast.readthedocs.io/en/latest/index.html](https://metacast.readthedocs.io/en/latest/index.html)

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="In metacaster.py made setter and getter for dimensions.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Added seaborn as dependency.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
@@ -194,7 +194,7 @@
       <workItem from="1709921987170" duration="2891000" />
       <workItem from="1709924906340" duration="4181000" />
       <workItem from="1709930771899" duration="4845000" />
-      <workItem from="1709995147524" duration="3250000" />
+      <workItem from="1709995147524" duration="3424000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -413,7 +413,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709997783176</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="Added seaborn as dependency.">
+      <created>1709998445131</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1709998445131</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -431,7 +438,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="MetaCaster._gen_structure now supports &gt;2 dimensions." />
     <MESSAGE value="MetaCaster._sorting_states almost supports &gt;2 dimensions. &#10;NEED to rework MetaCaster._gen_structure for using from_cooridnates and to_coordinates." />
     <MESSAGE value="Finished recoding Metacaster for &gt;2D metapopulastions." />
     <MESSAGE value="Added following features to Metacaster:&#10;* foi_population_focus: changes contactable population focus between i and j when caluculating force of infection.&#10;* get_state_indexes_of_coordinate: Fetch state index dict for given coordinate on axis.&#10;* get_indexes_of_coordinate: Fetch a list of indices for all states for given coordinate on axis." />
@@ -456,7 +462,8 @@
     <MESSAGE value="Fixed some of the scaffold documentation." />
     <MESSAGE value="Added documentation hyperlinks." />
     <MESSAGE value="In metacaster.py made setter and getter for dimensions." />
-    <option name="LAST_COMMIT_MESSAGE" value="In metacaster.py made setter and getter for dimensions." />
+    <MESSAGE value="Added seaborn as dependency." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added seaborn as dependency." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

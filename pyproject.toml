@@ -12,7 +12,8 @@ dependencies = [
     "pingouin>=0.5.4",
     "tqdm>=4.66.1",
     "dask>=2024.2.1",
-    'seaborn>=0.13.2'
+    'seaborn>=0.13.2',
+    'jupyter>=1.0.0'
 ]
 authors = [
   {name="Martin Grunnill", email="m.d.grunnill@gmail.com"},

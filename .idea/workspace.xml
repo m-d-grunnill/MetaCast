@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Added documentation hyperlinks.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="In metacaster.py made setter and getter for dimensions.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/Basic_Demonstration.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demo/Basic_Demonstration.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metacast/metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/metacast/metacaster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -195,7 +194,7 @@
       <workItem from="1709921987170" duration="2891000" />
       <workItem from="1709924906340" duration="4181000" />
       <workItem from="1709930771899" duration="4845000" />
-      <workItem from="1709995147524" duration="2540000" />
+      <workItem from="1709995147524" duration="3250000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -407,7 +406,14 @@
       <option name="project" value="LOCAL" />
       <updated>1709935640843</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="In metacaster.py made setter and getter for dimensions.">
+      <created>1709997783176</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1709997783176</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -425,7 +431,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="MetaCaster can now run models if give sub_pop_model function and model_attributes.&#10;&#10;In process of updating MetaCaster 1 dimensional meta-populations. sub_pop_transfer method updating needs to finished." />
     <MESSAGE value="MetaCaster._gen_structure now supports &gt;2 dimensions." />
     <MESSAGE value="MetaCaster._sorting_states almost supports &gt;2 dimensions. &#10;NEED to rework MetaCaster._gen_structure for using from_cooridnates and to_coordinates." />
     <MESSAGE value="Finished recoding Metacaster for &gt;2D metapopulastions." />
@@ -450,7 +455,8 @@
     <MESSAGE value=".readthedocs.yaml changed so docs/source/requirements.txt installed first? Attempt 2." />
     <MESSAGE value="Fixed some of the scaffold documentation." />
     <MESSAGE value="Added documentation hyperlinks." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added documentation hyperlinks." />
+    <MESSAGE value="In metacaster.py made setter and getter for dimensions." />
+    <option name="LAST_COMMIT_MESSAGE" value="In metacaster.py made setter and getter for dimensions." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

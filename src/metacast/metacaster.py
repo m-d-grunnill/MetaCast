@@ -97,7 +97,7 @@ class MetaCaster:
 
     Parameters
     ----------
-    scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
+    dimensions : int, collection of unique strings, list/tuple of ints, list/tuple of collections of unique strings OR list/tuple of dictionaries (transfer dictionaries)
         If int :
             This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
             in dimensions attribute.
@@ -252,7 +252,7 @@ class MetaCaster:
     _subpop_model = None
     len = 0
 
-    def __init__(self, scaffold, subpop_model=None, **other_model_attributes):
+    def __init__(self, dimensions, subpop_model=None, **other_model_attributes):
         if other_model_attributes:
             for name, value in other_model_attributes.items():
                 if not hasattr(self, name):
@@ -289,7 +289,7 @@ class MetaCaster:
                                  ' Child classes of MetaCaster can if coded with other_model_attributes and subpop_model.' +
                                  '\nIf unfamiliar with class inheritance look  up:\n' +
                                  ' https://www.w3schools.com/python/python_inheritance.asp.')
-        self.dimensions = scaffold
+        self.dimensions = dimensions
 
     def subpop_transfer(self, y, y_deltas, t, from_coordinates, parameters):
         """
@@ -668,13 +668,13 @@ class MetaCaster:
         return self._dimensions
 
     @dimensions.setter
-    def dimensions(self, scaffold, foi_population_focus=None):
+    def dimensions(self, dimensions):
         """
         Set metapopulation structure using scaffold.
 
         Parameters
         ----------
-        scaffold : int, collection of unique strings, list/tuple of ints, list/tuple of list/tuple/set of unique strings OR list/tuple of dictionaries (transfer dictionaries)
+        dimensions : int, collection of unique strings, list/tuple of ints, list/tuple of collections of unique strings OR list/tuple of dictionaries (transfer dictionaries)
             If int :
                 This creates a one dimension metapopulation structure with range(scaffold) used to label subpopulations
                 in dimensions attribute.
@@ -763,8 +763,8 @@ class MetaCaster:
         self.params_estimated_via_piecewise_method = []
         self.subpop_transfer_dict = {}
         self.subpop_transition_params_dict = {}
-        if isinstance(scaffold, (list, tuple)) and all(isinstance(item, dict) for item in scaffold):
-            for count, group_transfer in enumerate(scaffold):
+        if isinstance(dimensions, (list, tuple)) and all(isinstance(item, dict) for item in dimensions):
+            for count, group_transfer in enumerate(dimensions):
                 if 'from_coordinates' not in group_transfer:
                     raise ValueError(
                         'If scaffold is a list of subpopulation transfer dictionaries it must have a "from_coordinates"' +
@@ -885,17 +885,17 @@ class MetaCaster:
                                          '] of scaffold has an unrecognised entry (' + key + ').')
 
                 self.subpop_transfer_dict[from_coordinates].append(entry)
-        elif (isinstance(scaffold, (list, tuple)) and
-              all(_is_set_like_of_strings(item) for item in scaffold)):
-            self._dimensions = [set(item) for item in scaffold]
-        elif (isinstance(scaffold, (list, tuple)) and
-              all(isinstance(item, int) for item in scaffold)):
-            self._dimensions = [set(*range(num)) for num in scaffold]
-        elif isinstance(scaffold, (list, tuple)) and _is_set_like_of_strings(scaffold):
-            self._dimensions = [set(scaffold)]
-        elif isinstance(scaffold, set) and all(isinstance(item, str) for item in scaffold):
-            self._dimensions = [scaffold]
-        elif isinstance(scaffold, int):
+        elif (isinstance(dimensions, (list, tuple)) and
+              all(_is_set_like_of_strings(item) for item in dimensions)):
+            self._dimensions = [set(item) for item in dimensions]
+        elif (isinstance(dimensions, (list, tuple)) and
+              all(isinstance(item, int) for item in dimensions)):
+            self._dimensions = [set(*range(num)) for num in dimensions]
+        elif isinstance(dimensions, (list, tuple)) and _is_set_like_of_strings(dimensions):
+            self._dimensions = [set(dimensions)]
+        elif isinstance(dimensions, set) and all(isinstance(item, str) for item in dimensions):
+            self._dimensions = [dimensions]
+        elif isinstance(dimensions, int):
             self._dimensions = [set(*range(int))]
         else:
             raise TypeError('scaffold is not supported.')
@@ -1061,9 +1061,6 @@ class MetaCaster:
                 raise AssertionError(param_name + ' was set as a parameter to be estimated via piecewise estimiation ' +
                                      'at the initialization of this model.')
             if callable(value):
-                if param_name not in self.population_terms:
-                    raise ValueError(param_name + ' is a function but not a population_term.' +
-                                     'Only population_terms are aloud to be functions, see attribute population_terms.')
                 function_arg_names = getfullargspec(value)[0]
                 if any(args not in ['model', 'y', 'parameters', 'coordinates', 't'] for args in function_arg_names):
                     raise ValueError(param_name +

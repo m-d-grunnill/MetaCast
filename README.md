@@ -15,10 +15,16 @@ Package requirements:
 * scipy >= 1.11.4
 * pingouin >= 0.5.4
 * tqdm >= 4.66.1
-* dask >= 2024.2.1"
+* dask >= 2024.2.1
+* distributed >= 2024.2.1
+
+For running [demonstration jupyter notebooks](https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations)
+* bokeh >= 3.3.4
+* seaborn >= 0.13.2
+* jupyter >= 1.0.0
 
 ### Installing via pip
-Note this should also install required packages.
+**Note** this should also install required packages.
 ```
 pip install metacast
 ```

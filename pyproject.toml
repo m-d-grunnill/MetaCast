@@ -50,7 +50,8 @@ keywords = [
     'Structured Populations',
     'Discrete Event',
     'Sensitivity Analyses',
-    'Latin Hypercube Sampling'
+    'Latin Hypercube Sampling',
+    'Scenario Analysis'
 ]
 
 

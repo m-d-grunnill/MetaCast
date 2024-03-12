@@ -4,13 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Changes made README.md.">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Finshed half of Markdown sections of Basic_Demonstration.ipynb.">
+      <change afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/metacaster.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -202,7 +200,8 @@
       <workItem from="1710000228704" duration="1355000" />
       <workItem from="1710001608565" duration="2857000" />
       <workItem from="1710006459288" duration="1086000" />
-      <workItem from="1710162211827" duration="20623000" />
+      <workItem from="1710162211827" duration="21331000" />
+      <workItem from="1710251001402" duration="4638000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -449,7 +448,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710006631575</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Finshed half of Markdown sections of Basic_Demonstration.ipynb.">
+      <created>1710190265162</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1710190265162</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -467,7 +473,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Started Basic_Demonstration.ipynb did some resulting debugging." />
     <MESSAGE value="Basic_Demonstration.ipynb finished sections on:&#10;* High low risk subpopulation simulations.&#10;* Infection seeder.&#10;&#10;As a result did some resulting debugging." />
     <MESSAGE value="Basic_Demonstration.ipynb finished sections on:&#10;* New Vaccine: Multi Dimension/Axis disease X model with flows between some subpopulations.&#10;&#10;As a result did some resulting debugging." />
     <MESSAGE value="Basic_Demonstration.ipynb finished sections on:&#10;* A Rapid Pathogen test: Discrete Event simulation within a 2 dimensional/axis disease X model.&#10;&#10;As a result did some resulting debugging." />
@@ -492,7 +497,8 @@
     <MESSAGE value="Added jupyter as dependency." />
     <MESSAGE value="Changes made for publication." />
     <MESSAGE value="Changes made README.md." />
-    <option name="LAST_COMMIT_MESSAGE" value="Changes made README.md." />
+    <MESSAGE value="Finshed half of Markdown sections of Basic_Demonstration.ipynb." />
+    <option name="LAST_COMMIT_MESSAGE" value="Finshed half of Markdown sections of Basic_Demonstration.ipynb." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

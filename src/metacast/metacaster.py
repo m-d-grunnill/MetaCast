@@ -121,7 +121,8 @@ class MetaCaster:
                      length and the same length as the from_coordinates entries.
                 states: list of strings or string
                     Host states which will transition between subpopulations. Single entry of 'all' value
-                    means all the available model states transition between subpopulations.
+                    means all the available model states transition between subpopulations. Alternatively a list of
+                    specific states can be given.
                 parameter : string
                     Name given to parameter that is responsible for flow of hosts transferring between subpopulations.
             Optional key value pairs:
@@ -698,7 +699,8 @@ class MetaCaster:
                          length and the same length as the from_coordinates entries.
                     states: list of strings or string
                         Host states which will transition between subpopulations. Single entry of 'all' value
-                        means all the available model states transition between subpopulations.
+                        means all the available model states transition between subpopulations. Alternatively a list of
+                        specific states can be given.
                     parameter : string
                         Name given to parameter that is responsible for flow of hosts transferring between subpopulations.
                 Optional key value pairs:

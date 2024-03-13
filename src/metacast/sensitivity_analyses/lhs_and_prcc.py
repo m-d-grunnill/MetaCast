@@ -131,7 +131,7 @@ def lhs_prcc(parameters_df,
     ----------
     parameters_df : pandas.DataFrame
         DataFrame outlining the boundaries for each parameter. Must contain fields 'Lower Bound' and
-        'Upper Bound'. Name of the parameters is assumed to be in the index of the DataFrame.
+        'Upper Bound'. The name of the parameters is assumed to be in the index of the DataFrame.
     sample_size : int
         Sample size of Latin Hypercube.
     model_run_method : function
@@ -219,8 +219,8 @@ def run_samples_in_parallel(parameters_df, model_run_method, client, **kwargs):
     parameters_df : pandas.Dataframe
         Parameter samples being run. Column fields are parameters.
     model_run_method : function
-        Method of running model's simulations. Must accept parameters as a single dictionary. Must output dictionary of 
-        input parameters and model results. 
+        Method of running model's simulations. Must accept parameters as a single dictionary in the first argument. Must
+         output dictionary of input parameters and model results.
     kwargs : 
         Key word arguments to pass to model_run_method.
 

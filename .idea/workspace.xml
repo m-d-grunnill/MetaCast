@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Finished section 4 of Basic_Demonstration.ipynb." />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Finished section 4 of Basic_Demonstration.ipynb.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/metacast/sensitivity_analyses/lhs_and_prcc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/sensitivity_analyses/lhs_and_prcc.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -196,7 +201,9 @@
       <workItem from="1710001608565" duration="2857000" />
       <workItem from="1710006459288" duration="1086000" />
       <workItem from="1710162211827" duration="21331000" />
-      <workItem from="1710251001402" duration="15028000" />
+      <workItem from="1710251001402" duration="15313000" />
+      <workItem from="1710339857496" duration="5714000" />
+      <workItem from="1710350328462" duration="661000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -464,7 +471,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710278573596</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="Finished section 4 of Basic_Demonstration.ipynb.">
+      <created>1710278853979</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1710278853979</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

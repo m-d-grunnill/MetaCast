@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Fixed citation compilations for read paper.md and paper.bib." />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Fixed citation compilations for read paper.md and paper.bib.">
+      <change afterPath="$PROJECT_DIR$/tests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_event_que.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_infection_seeding.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_metacaster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -203,14 +210,7 @@
       <workItem from="1710524469964" duration="6852000" />
       <workItem from="1710768051161" duration="2183000" />
       <workItem from="1710773998472" duration="14547000" />
-      <workItem from="1710855311479" duration="12264000" />
-    </task>
-    <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
-      <created>1707429806698</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1707429806698</updated>
+      <workItem from="1710855311479" duration="17580000" />
     </task>
     <task id="LOCAL-00002" summary="event_handling, infection_seeding.py, sensitivity_analyses and sports_match_no_home_side.py added.">
       <created>1707516153204</created>
@@ -548,7 +548,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710874189083</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="Fixed citation compilations for read paper.md and paper.bib.">
+      <created>1710874205187</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1710874205187</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

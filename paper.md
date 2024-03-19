@@ -1,5 +1,5 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'MetaCast: A package for broad**CAST**ing epidemiological and ecological models over **META**-populations.'
 tags:
   - Python
   - Epimediology
@@ -12,110 +12,117 @@ tags:
   - Discrete Event
   - Sensitivity Analyses
   - Latin Hypercube Sampling
-  - Scenario Analysis'
+  - Scenario Analysis
 authors:
   - name: Martin Grunnill
-    orcid: 0000-0000-0000-0000
-    equal-contrib: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
+    corresponding: true 
+    orcid: 0000-0002-4835-8007
+    affiliation: 1
+  - name: Julien Arino
+    orcid: 
     affiliation: 2
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 3
+  - name: Abbas Ghasemi
+    orcid:
+    affilation: "3, 4"
+  - name: Edward W. Thommes
+    orcid:
+    affiliation: "5, 6"
+  - name:  Jianhong Wu
+    orcid:
+    affiliation: "1, 7"
 affiliations:
- - name: 
+ - name: Laboratory of Industrial and Applied Mathematics (LIAM), York University, Toronto, Ontario, Canada
    index: 1
- - name: 
+ - name: Department of Mathematics, University of Manitoba, Winnipeg, Manitoba, Canada
    index: 2
- - name: 
+ - name: The Fluid Dynamics of Disease Transmission Laboratory, Massachusetts Institute of Technology, Cambridge, Massachusetts, United States of America
    index: 3
-date: 12 March 2024
+ - name: Mechanical and Industrial Engineering Department, Toronto Metropolitan University, Toronto, Ontario, Canada
+   index: 4
+ - name: Modeling, Epidemiology and Data Science (MEDS), Sanofi, Lyon, France
+   index: 5
+ - name: Department of Mathematics and Statistics, University of Guelph, Guelph, Ontario, Canada
+   index: 6
+ - name: York Emergency Mitigation, Response, Engagement and Governance Institute, York University, Toronto, Ontario, Canada
+   index: 7
+
+date: 19 March 2024
 bibliography: paper.bib
 
 ---
 
 # Summary
 
-`MetaCast` is a python package for broadcasting epidemiological and ecological ODE based models
-over metapopulations (structured populations). Users first define a function describing the
-subpopulation model. `MetaCast`'s users then define the dimensions of metapopulations that this
-subpopulation is broadcast over. These dimensions can be flexibly defined allowing for multiple
-dimensions and migration (flows) of populations between subpopulations. In addition to the 
-metapopulation suite `MetaCast` has several features. A multinomial seeder allows users to randomly
- select infected stages to place an infected population in based on the occupancy time of infected
-states. `MetaCast`'s event queue suite can handle discrete events within simulations, such as 
-movement of populations between compartments and changes in parameter values. Sensitivity 
-analysis can be done in `MetaCast` using parallelisable Latin Hypercube Sampling and Partial Rank Correlation Coefficient
-functions. All of this makes MetaCast an ideal package not only for modelling metapopulations but
-for wider scenario analysis.
+`MetaCast` is a Python package for broadcasting epidemiological and ecological ODE based models
+over metapopulations (structured populations). Users define a function describing the
+subpopulation model. `MetaCast`'s `MetaCaster` then broadcasts the subpopulation model function over dimensions
+of metapopulations. These dimensions can be defined and redefined flexibly allowing for comparisons
+of multidimensional metapopulation models, that can have migration (flows) of populations between
+subpopulations. In addition to the metapopulation suite `MetaCast` has several features. A
+multinomial seeder allows users to randomly select infected stages to place an infected
+population in based on the occupancy time of infected states. `MetaCast`'s event queue suite
+can handle discrete events within simulations, such as movement of populations between compartments and changes in 
+parameter values. Sensitivity analysis can be done in `MetaCast` using parallelisable Latin Hypercube Sampling and 
+Partial Rank Correlation Coefficient functions. All of this makes MetaCast an ideal package not only for modelling 
+metapopulations but for wider scenario analysis.
 
 # Statement of need
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
+`MetaCast` was developed from the code base used in a project modelling the spread of 
+COVID-19 at Mass Gathering Events (MGEs), such as the FIFA World 2022 [@Grunnill:2023a; @Grunnill:2024]. 
+During this project there were a number of MGEs that we considered as potential case studies
+before settling on FIFA World 2022. As such, even though our epidemiological model 
+was remaining much the same the resulting change in metapopulation structure with different potential case study
+meant we had to extensively recode the model. In order expedite this recoding due to changes in metapopulation
+structure we developed the code in @Grunnill:2023a. This code allowed us to broadcast our COVID-19 subpopulation model
+over different two-dimensional metapopulations, whilst calculating the force of infections for all subpopulations
+[@Keeling2008c]. The dimensions (groupings) being different cluster of people (subtypes of hosts or visitors) and 
+vaccination status [@Grunnill:2024]. `Metacast` builds upon the code in @Grunnill:2023a by allowing for more dimensions
+that don't have to be based on clusters or vaccination status. `Metacast` also includes more user-friendly versions 
+of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill:2023a 
+[@Grunnill:2024]. This makes MetaCast an ideal package for scenario analyses based around metapopulation models within 
+epidemiology or ecology.
 
-`Gala` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike.
+# State of Field
 
-# Mathematics
+There are a number of packages that can be used for epidemiological or ecological modelling accross a number of 
+platforms including Python. However, to our knowledge none bring together all the features for scenario analyses based 
+around ODE metapopulation models as described above.
 
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
+#### Ordinary Differential Equation (ODE) Modelling Packages
+R's `EpiMode` [@Jenness2018] has some pre-coded epidemiological ODE models (such as SIR and SIS) ODE models, as does
+ the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can perform a sensitivity analyses on these models. 
+`PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
+defining transitions between epidemiological compartments. Both `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] can 
+then simulate the ODE models deterministically or stochastically, with `PyGOM` having some extra stochastic methods. 
+`PyGOM` [@Tye2018] also has a suite maximum likelihood based and Approximate Bayesian Computation fitting procedures.
 
-Double dollars make self-standing equations:
+#### Individual Based Modelling (IBM) Packages
+The already mentioned `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
+modelling. R's `EpiMode` [@Jenness2018] also has agent based modelling based around contacts as discrete events or as a 
+static network. There are a number of other R epidemiological IBM packages that take spatial or network contact based
+approaches,  `individual` [@Charles2021], `hybridModels` [@Marques2020] and `EpiILMCT` [@Almutiry2021].
+The Python package `Eir` [@Jacob2021] has epidemiological models that incorporate the movements of people. 
+`Pathogen.jl` [@Angevaare2022] is a Julia for continues time simulation and inference of transmission network 
+individual level models (TN-ILMs). 
 
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
+# Acknowledgements and Funding
 
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
-
-# Acknowledgements
-
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+The authors of this manuscript and of the manuscript or the package `MetaCast` would like to thank the funders who made 
+this possible:
+* Martin Grunnill position was funded through the Fields Institute’s Mathematics for Public Health Next Generation program 
+[http://www.fields.utoronto.ca/activities/public-health](http://www.fields.utoronto.ca/activities/public-health), grant 
+number 72062654. 
+* Julian Arino is funded through the Discovery Grant program from the Natural Science and Engineering Research Council 
+of Canada (NSERC, [https://www.nserc-crsng.gc.ca/index_eng.asp](https://www.nserc-crsng.gc.ca/index_eng.asp)), grant 
+number RGPIN-2017-05466. 
+* Jianhong Wu's work is supported by the ADERSIM (Ontario Research Fund 33270), along with the Canada Research Chairs 
+program ([https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx](https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx)
+, 230720), and the Discovery Grant program from NSERC (105588).
+* Edward W. Thommes and this work was supported by the NSERC- Sanofi Industrial Research Chair program in Vaccine 
+Mathematics, Modelling, and Manufacturing (517504). 
+ 
+The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the 
+manuscript or the package `MetaCast`.
 
 # References

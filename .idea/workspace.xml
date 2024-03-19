@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Finished slight eidt of Basic_Demonstration.ipynb.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Made MetaCaster.__init__ arguments more explicit.">
+      <change afterPath="$PROJECT_DIR$/paper.bib" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/metacaster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demonstrations/Basic_Demonstration.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,27 +48,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/mdgru/.conda/envs/metacast_test/python.exe",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mdgru/OneDrive/Documents/GitHub/MetaCast&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast" />
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast" />
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast\simulation_classes\sports_match_no_home_side" />
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast\simulation_classes" />
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast\scafolds" />
-      <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast\structures" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\src" />
@@ -204,7 +205,10 @@
       <workItem from="1710339857496" duration="5714000" />
       <workItem from="1710350328462" duration="1095000" />
       <workItem from="1710352747861" duration="578000" />
-      <workItem from="1710524469964" duration="6445000" />
+      <workItem from="1710524469964" duration="6852000" />
+      <workItem from="1710768051161" duration="2183000" />
+      <workItem from="1710773998472" duration="14547000" />
+      <workItem from="1710855311479" duration="9078000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -493,7 +497,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710353323786</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="Made MetaCaster.__init__ arguments more explicit.">
+      <created>1710533342602</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1710533342602</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -511,7 +522,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Reworking lhs_and_prcc.py, Broken." />
     <MESSAGE value="lhs_and_prcc.py fixed.&#10;&#10;Need to finish documentation and flavour text of demo." />
     <MESSAGE value="Did some documentation of code." />
     <MESSAGE value="Finished documentation of metacaster.py." />
@@ -536,7 +546,8 @@
     <MESSAGE value="Finished section 4 of Basic_Demonstration.ipynb." />
     <MESSAGE value="Finished first full draft of Basic_Demonstration.ipynb." />
     <MESSAGE value="Finished slight eidt of Basic_Demonstration.ipynb." />
-    <option name="LAST_COMMIT_MESSAGE" value="Finished slight eidt of Basic_Demonstration.ipynb." />
+    <MESSAGE value="Made MetaCaster.__init__ arguments more explicit." />
+    <option name="LAST_COMMIT_MESSAGE" value="Made MetaCaster.__init__ arguments more explicit." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

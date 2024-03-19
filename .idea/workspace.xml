@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="First full draft of paper.md." />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Added .github/workflows/draft-pdf.yml.">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/draft-pdf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/draft-pdf.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -203,7 +206,7 @@
       <workItem from="1710524469964" duration="6852000" />
       <workItem from="1710768051161" duration="2183000" />
       <workItem from="1710773998472" duration="14547000" />
-      <workItem from="1710855311479" duration="9736000" />
+      <workItem from="1710855311479" duration="10152000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -506,7 +509,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710869137756</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="Added .github/workflows/draft-pdf.yml.">
+      <created>1710871281207</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1710871281207</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -524,7 +534,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Did some documentation of code." />
     <MESSAGE value="Finished documentation of metacaster.py." />
     <MESSAGE value="Generated documentation htmls cia sphinx using docstings." />
     <MESSAGE value="Changed README.md back to md file." />
@@ -549,7 +558,8 @@
     <MESSAGE value="Finished slight eidt of Basic_Demonstration.ipynb." />
     <MESSAGE value="Made MetaCaster.__init__ arguments more explicit." />
     <MESSAGE value="First full draft of paper.md." />
-    <option name="LAST_COMMIT_MESSAGE" value="First full draft of paper.md." />
+    <MESSAGE value="Added .github/workflows/draft-pdf.yml." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added .github/workflows/draft-pdf.yml." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

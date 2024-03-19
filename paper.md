@@ -69,18 +69,18 @@ metapopulations but for wider scenario analysis.
 # Statement of need
 
 `MetaCast` was developed from the code base used in a project modelling the spread of 
-COVID-19 at Mass Gathering Events (MGEs), such as the FIFA 2022 World Cup [@Grunnill:2023a; @Grunnill:2024]. 
+COVID-19 at Mass Gathering Events (MGEs), such as the FIFA 2022 World Cup [@Grunnill2023a; @Grunnill2024]. 
 During this project there were a number of MGEs that we considered as potential case studies
 before settling on the FIFA 2022 World Cup. As such, even though our epidemiological model 
 was remaining much the same, the resulting change in metapopulation structure between potential case study models
 meant we had to extensively recode the model. In order expedite this recoding due to changes in metapopulation
-structure we developed the code in @Grunnill:2023a. This code allowed us to broadcast our COVID-19 subpopulation model
+structure we developed the code in @Grunnill2023a. This code allowed us to broadcast our COVID-19 subpopulation model
 over different two-dimensional metapopulations, whilst calculating the force of infections for all subpopulations
 [@Keeling2008c]. The dimensions (groupings) being different cluster of people (subtypes of hosts or visitors) and 
-vaccination status [@Grunnill:2024]. `MetaCast` builds upon the code in @Grunnill:2023a by allowing for more than two 
+vaccination status [@Grunnill2024]. `MetaCast` builds upon the code in @Grunnill2023a by allowing for more than two 
 dimensions, that don't require a basis in clusters or vaccination status. `MetaCast` also includes more user-friendly versions 
-of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill:2023a 
-[@Grunnill:2024]. This makes MetaCast an ideal package for scenario analyses based around metapopulation models within 
+of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill2023a 
+[@Grunnill2024]. This makes MetaCast an ideal package for scenario analyses based around metapopulation models within 
 epidemiology or ecology.
 
 # State of Field

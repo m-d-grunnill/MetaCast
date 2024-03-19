@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Edited .github/workflows/draft-pdf.yml, to compile PDF.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Edited .github/workflows/draft-pdf.yml a 2nd time to compile PDF.">
       <change beforePath="$PROJECT_DIR$/.github/workflows/draft-pdf.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/draft-pdf.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -205,7 +205,7 @@
       <workItem from="1710524469964" duration="6852000" />
       <workItem from="1710768051161" duration="2183000" />
       <workItem from="1710773998472" duration="14547000" />
-      <workItem from="1710855311479" duration="10261000" />
+      <workItem from="1710855311479" duration="10505000" />
     </task>
     <task id="LOCAL-00001" summary="MataCaster, Populations and Scafolds added.">
       <created>1707429806698</created>
@@ -522,7 +522,14 @@
       <option name="project" value="LOCAL" />
       <updated>1710871442476</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="Edited .github/workflows/draft-pdf.yml a 2nd time to compile PDF.">
+      <created>1710871550734</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1710871550734</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -540,7 +547,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Generated documentation htmls cia sphinx using docstings." />
     <MESSAGE value="Changed README.md back to md file." />
     <MESSAGE value="Added .readthedocs.yaml" />
     <MESSAGE value="Added docs/source/requirements.txt" />
@@ -565,7 +571,8 @@
     <MESSAGE value="First full draft of paper.md." />
     <MESSAGE value="Added .github/workflows/draft-pdf.yml." />
     <MESSAGE value="Edited .github/workflows/draft-pdf.yml, to compile PDF." />
-    <option name="LAST_COMMIT_MESSAGE" value="Edited .github/workflows/draft-pdf.yml, to compile PDF." />
+    <MESSAGE value="Edited .github/workflows/draft-pdf.yml a 2nd time to compile PDF." />
+    <option name="LAST_COMMIT_MESSAGE" value="Edited .github/workflows/draft-pdf.yml a 2nd time to compile PDF." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

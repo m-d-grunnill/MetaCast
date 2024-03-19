@@ -69,16 +69,16 @@ metapopulations but for wider scenario analysis.
 # Statement of need
 
 `MetaCast` was developed from the code base used in a project modelling the spread of 
-COVID-19 at Mass Gathering Events (MGEs), such as the FIFA World 2022 [@Grunnill:2023a; @Grunnill:2024]. 
+COVID-19 at Mass Gathering Events (MGEs), such as the FIFA 2022 World Cup [@Grunnill:2023a; @Grunnill:2024]. 
 During this project there were a number of MGEs that we considered as potential case studies
-before settling on FIFA World 2022. As such, even though our epidemiological model 
-was remaining much the same the resulting change in metapopulation structure with different potential case study
+before settling on the FIFA 2022 World Cup. As such, even though our epidemiological model 
+was remaining much the same, the resulting change in metapopulation structure between potential case study models
 meant we had to extensively recode the model. In order expedite this recoding due to changes in metapopulation
 structure we developed the code in @Grunnill:2023a. This code allowed us to broadcast our COVID-19 subpopulation model
 over different two-dimensional metapopulations, whilst calculating the force of infections for all subpopulations
 [@Keeling2008c]. The dimensions (groupings) being different cluster of people (subtypes of hosts or visitors) and 
-vaccination status [@Grunnill:2024]. `Metacast` builds upon the code in @Grunnill:2023a by allowing for more dimensions
-that don't have to be based on clusters or vaccination status. `Metacast` also includes more user-friendly versions 
+vaccination status [@Grunnill:2024]. `MetaCast` builds upon the code in @Grunnill:2023a by allowing for more than two 
+dimensions, that don't require a basis in clusters or vaccination status. `MetaCast` also includes more user-friendly versions 
 of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill:2023a 
 [@Grunnill:2024]. This makes MetaCast an ideal package for scenario analyses based around metapopulation models within 
 epidemiology or ecology.
@@ -89,28 +89,27 @@ There are a number of packages that can be used for epidemiological or ecologica
 platforms including Python. However, to our knowledge none bring together all the features for scenario analyses based 
 around ODE metapopulation models as described above.
 
-#### Ordinary Differential Equation (ODE) Modelling Packages
-R's `EpiMode` [@Jenness2018] has some pre-coded epidemiological ODE models (such as SIR and SIS) ODE models, as does
- the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can perform a sensitivity analyses on these models. 
-`PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
+#### Ordinary Differential Equation (ODE) Modelling Packages for Epidemiology
+R's `EpiMode` [@Jenness2018] has some pre-coded epidemiological ODE models (such as SIR and SIS), as does
+ the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can also perform a sensitivity analyses on these pre-coded 
+models. `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
 defining transitions between epidemiological compartments. Both `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] can 
 then simulate the ODE models deterministically or stochastically, with `PyGOM` having some extra stochastic methods. 
-`PyGOM` [@Tye2018] also has a suite maximum likelihood based and Approximate Bayesian Computation fitting procedures.
+`PyGOM` [@Tye2018] also has a suite of maximum likelihood based and Approximate Bayesian Computation fitting procedures.
 
-#### Individual Based Modelling (IBM) Packages
-The already mentioned `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
-modelling. R's `EpiMode` [@Jenness2018] also has agent based modelling based around contacts as discrete events or as a 
+#### Individual Based Modelling (IBM) Packages for Epidemiology
+Python's `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
+modelling. R's `EpiMode` [@Jenness2018] has agent based modelling based around contacts as discrete events or as a 
 static network. There are a number of other R epidemiological IBM packages that take spatial or network contact based
 approaches,  `individual` [@Charles2021], `hybridModels` [@Marques2020] and `EpiILMCT` [@Almutiry2021].
 The Python package `Eir` [@Jacob2021] has epidemiological models that incorporate the movements of people. 
-`Pathogen.jl` [@Angevaare2022] is a Julia for continues time simulation and inference of transmission network 
+`Pathogen.jl` [@Angevaare2022] is a Julia package for continious time simulation and inference of transmission network 
 individual level models (TN-ILMs). 
 
 # Acknowledgements and Funding
 
-The authors of this manuscript and of the manuscript or the package `MetaCast` would like to thank the funders who made 
-this possible:
-* Martin Grunnill position was funded through the Fields Institute’s Mathematics for Public Health Next Generation program 
+The authors of this manuscript and of the package `MetaCast` would like to thank the funders who made this possible:
+* Martin Grunnill's position was funded through the Fields Institute’s Mathematics for Public Health Next Generation program 
 [http://www.fields.utoronto.ca/activities/public-health](http://www.fields.utoronto.ca/activities/public-health), grant 
 number 72062654. 
 * Julian Arino is funded through the Discovery Grant program from the Natural Science and Engineering Research Council 
@@ -119,10 +118,9 @@ number RGPIN-2017-05466.
 * Jianhong Wu's work is supported by the ADERSIM (Ontario Research Fund 33270), along with the Canada Research Chairs 
 program ([https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx](https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx)
 , 230720), and the Discovery Grant program from NSERC (105588).
-* Edward W. Thommes and this work was supported by the NSERC- Sanofi Industrial Research Chair program in Vaccine 
-Mathematics, Modelling, and Manufacturing (517504). 
+* Edward W. Thommes is supported by the NSERC- Sanofi Industrial Research Chair program in Vaccine Mathematics, Modelling,
+ and Manufacturing (517504). 
  
-The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the 
-manuscript or the package `MetaCast`.
+The funders had no role in the design, decision to publish, or preparation of the manuscript or the package `MetaCast`.
 
 # References

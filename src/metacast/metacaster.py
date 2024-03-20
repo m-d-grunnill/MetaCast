@@ -126,24 +126,21 @@ class MetaCaster:
                     specific states can be given.
                 parameter : string
                     Name given to parameter that is responsible for flow of hosts transferring between subpopulations.
-            Optional key value pairs:
-                piecewise targets: list, tuple, numpy.Array or pandas.Series
-                    Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                    between clusters and vaccine groups (see method group_transfer).
+
     subpop_model : callable function/class method
         Method used to model subpopulation:
             Required arguments: 'y', 'y_deltas', 'parameters' and 'states_index'.
             Possible additional arguments: 'coordinates', 'subpop_suffix', 'foi' or 't'.
     states : list of strings
         States used in model.
-    observed_states : list of strings
+    observed_states : string or list of strings , optional
         Observed states. Useful for obtaining results or fitting (e.g. Cumulative incidence).
     infected_states : list of strings , optional
         Infected states (not necessarily infectious).
-    infectious_states : list of strings, default infected_states
+    infectious_states : string or list of strings , optional if not given value(s) for infected_states used
         Infectious states. These states contribute to force of infection. If None no force of infection is
         caluculated when running model (within ode method).
-    symptomatic_states : list of strings, default infected_states
+    symptomatic_states : string or list of strings , optional if not given value(s) for infected_states used
         Symptomatic states. NOTE any state in the list self.infectious_states but NOT in this list has its transmission
         modified by self.asymptomatic_transmission_modifier (see method calculate_fois).
     transmission_term_prefix : string, default 'beta'
@@ -250,40 +247,50 @@ class MetaCaster:
                  infectious_states=None,
                  symptomatic_states=None,
                  observed_states=None,
+                 universal_params=None,
+                 subpop_params=None,
+                 foi_population_focus=None,
                  transmission_term_prefix='beta',
                  subpop_interaction_prefix='rho',
                  population_term_prefix='N',
-                 asymptomatic_transmission_modifier=None,
-                 universal_params=None,
-                 subpop_params=None,
-                 foi_population_focus=None):
+                 asymptomatic_transmission_modifier=None
+                 ):
         self.subpop_model = subpop_model
         self.foi_population_focus = foi_population_focus
         if not _is_set_like_of_strings(states):
             raise TypeError("states should be a collection of unique strings.")
         self.states = states
-        if infected_states is None:
+
+        if isinstance(infected_states,str):
+            self.infected_states = [infected_states]
+        elif infected_states is None:
             self.infected_states = []
         elif _is_set_like_of_strings(infected_states):
             self.infected_states = infected_states
         else:
             raise TypeError("If not None infected_states should be a collection of unique strings.")
 
-        if infectious_states is None:
+        if isinstance(infectious_states, str):
+            self.infectious_states = [infectious_states]
+        elif infectious_states is None:
             self.infectious_states = infected_states
         elif _is_set_like_of_strings(infectious_states):
             self.infectious_states = infectious_states
         else:
             raise TypeError("If not None infectious_states should be a collection of unique strings.")
 
-        if symptomatic_states is None:
+        if isinstance(symptomatic_states, str):
+            self.symptomatic_states = [symptomatic_states]
+        elif symptomatic_states is None:
             self.symptomatic_states = infected_states
         elif _is_set_like_of_strings(symptomatic_states):
             self.symptomatic_states = symptomatic_states
         else:
             raise TypeError("If not None symptomatic_states should be a collection of unique strings.")
 
-        if observed_states is None:
+        if isinstance(observed_states, str):
+            self.observed_states = [observed_states]
+        elif observed_states is None:
             self.observed_states = []
         elif _is_set_like_of_strings(observed_states):
             self.observed_states = observed_states
@@ -374,32 +381,12 @@ class MetaCaster:
         if from_coordinates in self.subpop_transfer_dict:
             from_state_index_dict = self.state_index[from_coordinates]
             for group_transfer in self.subpop_transfer_dict[from_coordinates]:
-                parameter = group_transfer['parameter']
-                if 'piecewise targets' in group_transfer:
-                    # This section allows for the piecewise estimation of a people being transferred between groups.
-                    if t in self.piecewise_est_param_values[parameter]:
-                        param_val = self.piecewise_est_param_values[parameter][t]
-                    else:
-                        index_of_t = int(t) + 1
-                        total_being_tranfered = group_transfer['piecewise targets'][index_of_t]
-                        if total_being_tranfered == 0:  # No point in calculations if no one is being vaccinated.
-                            param_val = 0
-                        else:
-                            from_states_index = [from_state_index_dict[state] for state in group_transfer['states']]
-                            total_avialable = y[from_states_index].sum()
-                            param_val = self._instantaneous_transfer(total_being_tranfered,
-                                                                     total_avialable, t)
-
-                        self.piecewise_est_param_values[parameter][t] = param_val
-                else:
-                    param_val = parameters[parameter]
-
                 to_coordinates = group_transfer['to_coordinates']
                 to_state_index_dict = self.state_index[to_coordinates]
                 for state in group_transfer['states']:
                     from_index = from_state_index_dict[state]
                     to_index = to_state_index_dict[state]
-                    transferring = param_val * y[from_index]
+                    transferring = parameters[group_transfer['parameter']] * y[from_index]
                     y_deltas[from_index] -= transferring
                     y_deltas[to_index] += transferring
 
@@ -409,7 +396,6 @@ class MetaCaster:
         """
         Evaluate the ODE given states (y), time (t) and parameters
 
-
         Parameters
         ----------
         y : numpy.array
@@ -417,7 +403,8 @@ class MetaCaster:
         t : float
             Time.
         parameters : floats
-            Parameter values.
+            Parameter values. **NOTE* these values must be given in the same order as the instance attribute
+            parameter_names.
 
         Returns
         -------
@@ -429,7 +416,7 @@ class MetaCaster:
 
         subpop_model = self.subpop_model
         subpop_model_arg_names = getfullargspec(subpop_model)[0]
-        parameters = dict(zip(self.non_piece_wise_params_names, parameters))
+        parameters = dict(zip(self.parameter_names, parameters))
         if self.infectious_states:
             fois = self.calculate_fois(y, parameters, t)
         y_deltas = np.zeros(self.total_states)
@@ -647,7 +634,6 @@ class MetaCaster:
         solution: pandas.DataFrame
             Multi-index columns are  clusters by vaccine groups by states.
         """
-        self.piecewise_est_param_values = {param: {} for param in self.params_estimated_via_piecewise_method}
         # INTEGRATE!!! (shout it out loud, in Dalek voice)
         # determine the number of output we want
         args = tuple(self.parameters.values())
@@ -759,10 +745,6 @@ class MetaCaster:
                         specific states can be given.
                     parameter : string
                         Name given to parameter that is responsible for flow of hosts transferring between subpopulations.
-                Optional key value pairs:
-                    piecewise targets: list, tuple, numpy.Array or pandas.Series
-                        Targets for piecewise estimation of parameter that is responsible for flow of hosts transitions
-                        between clusters and vaccine groups (see method group_transfer).
 
         Returns
         -------
@@ -820,7 +802,6 @@ class MetaCaster:
             self.parameter_names.add(self.asymptomatic_transmission_modifier)
 
         #### Using Scaffold to define dimensions ####
-        self.params_estimated_via_piecewise_method = []
         self.subpop_transfer_dict = {}
         self.subpop_transition_params_dict = {}
         if isinstance(dimensions, (list, tuple)) and all(isinstance(item, dict) for item in dimensions):
@@ -928,14 +909,6 @@ class MetaCaster:
                                                                       group_transfer.items()
                                                                       if key != 'parameter'})
                 self.parameter_names.add(parameter)
-                if 'piecewise targets' in group_transfer:
-                    self.params_estimated_via_piecewise_method.append(parameter)
-                    if isinstance(group_transfer['piecewise targets'], pd.Series):
-                        entry['piecewise targets'] = group_transfer['piecewise targets'].to_numpy()
-                    elif isinstance(group_transfer['piecewise targets'], (list, tuple)):
-                        entry['piecewise targets'] = np.array(group_transfer['piecewise targets'])
-                    elif isinstance(group_transfer['piecewise targets'], np.ndarray):
-                        entry['piecewise targets'] = group_transfer['piecewise targets']
 
                 accepted_keys = list(entry.keys()) + ['from_coordinates']
                 for key in group_transfer.keys():
@@ -1049,11 +1022,8 @@ class MetaCaster:
         self.parameter_names.update(self.transmission_terms)
         self.total_subpops = len(self.subpop_coordinates)
         self.parameter_names = sorted(self.parameter_names)
-        non_piece_wise_params_names = set(self.parameter_names) - set(self.params_estimated_via_piecewise_method)
-        self.non_piece_wise_params_names = sorted(list(non_piece_wise_params_names))
         self._parameters = None
         self.total_parameters = len(self.parameter_names)
-        self.piecewise_est_param_values = None
 
     @property
     def foi_population_focus(self):
@@ -1116,16 +1086,13 @@ class MetaCaster:
         Nothing
         """
         if not isinstance(parameters, dict):
-            raise TypeError('Currently non non_piecewise_params must be entered as a dict.')
+            raise TypeError('Currently parameters must be entered as a dict.')
         # we assume that the key of the dictionary is a string and
         # the value can be a single value or a distribution
 
         for param_name, value in parameters.items():
             if param_name not in self.parameter_names:
                 raise ValueError(param_name + ' is not a name given to a parameter for this model.')
-            if param_name in self.params_estimated_via_piecewise_method:
-                raise AssertionError(param_name + ' was set as a parameter to be estimated via piecewise estimiation ' +
-                                     'at the initialization of this model.')
             if callable(value):
                 function_arg_names = getfullargspec(value)[0]
                 if any(args not in ['model', 'y', 'parameters', 'coordinates', 't'] for args in function_arg_names):
@@ -1135,13 +1102,12 @@ class MetaCaster:
             elif not isinstance(value, Number):
                 raise TypeError(param_name + ' should be a number type.')
         params_not_given = [param for param in self.parameter_names
-                            if param not in
-                            list(parameters.keys()) + self.params_estimated_via_piecewise_method]
+                            if param not in parameters]
         if params_not_given:
             raise Exception(', '.join(params_not_given) +
                             " are/is missing from parameters for model (see self.all_parameters).")
-        # this must be sorted alphanumerically.
-        self._parameters = {key: value for key, value in sorted(parameters.items())}
+        # this must be sorted in the same order as parameter_names (i.e. alphanumerically).
+        self._parameters = {parameter: parameters[parameter] for parameter in self.parameter_names}
 
     @property
     def shape(self):

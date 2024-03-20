@@ -31,7 +31,7 @@ authors:
     orcid:
     affiliation: "1, 7"
 affiliations:
- - name: Laboratory of Industrial and Applied Mathematics (LIAM), York University, Toronto, Ontario, Canada
+ - name: Laboratory for Industrial and Applied Mathematics (LIAM), York University, Toronto, Ontario, Canada
    index: 1
  - name: Department of Mathematics, University of Manitoba, Winnipeg, Manitoba, Canada
    index: 2
@@ -85,14 +85,14 @@ epidemiology or ecology.
 
 # State of Field
 
-There are a number of packages that can be used for epidemiological or ecological modelling accross a number of 
+There are a number of packages that can be used for epidemiological or ecological modelling across a number of 
 platforms including Python. However, to our knowledge none bring together all the features for scenario analyses based 
 around ODE metapopulation models as described above.
 
 #### Ordinary Differential Equation (ODE) Modelling Packages for Epidemiology
 R's `EpiMode` [@Jenness2018] has some pre-coded epidemiological ODE models (such as SIR and SIS), as does
- the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can also perform a sensitivity analyses on these pre-coded 
-models. `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
+ the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can also perform a sensitivity analyses on these 
+pre-coded models. `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
 defining transitions between epidemiological compartments. Both `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] can 
 then simulate the ODE models deterministically or stochastically, with `PyGOM` having some extra stochastic methods. 
 `PyGOM` [@Tye2018] also has a suite of maximum likelihood based and Approximate Bayesian Computation fitting procedures.
@@ -103,7 +103,7 @@ modelling. R's `EpiMode` [@Jenness2018] has agent based modelling based around c
 static network. There are a number of other R epidemiological IBM packages that take spatial or network contact based
 approaches,  `individual` [@Charles2021], `hybridModels` [@Marques2020] and `EpiILMCT` [@Almutiry2021].
 The Python package `Eir` [@Jacob2021] has epidemiological models that incorporate the movements of people. 
-`Pathogen.jl` [@Angevaare2022] is a Julia package for continious time simulation and inference of transmission network 
+`Pathogen.jl` [@Angevaare2022] is a Julia package for continuous time simulation and inference of transmission network 
 individual level models (TN-ILMs). 
 
 # Acknowledgements and Funding

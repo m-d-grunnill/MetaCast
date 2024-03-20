@@ -5,12 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Fixed citation compilations for read paper.md and paper.bib.">
-      <change afterPath="$PROJECT_DIR$/tests/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_event_que.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_infection_seeding.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_metacaster.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/metacast/metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/metacaster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_event_que.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_event_que.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_infection_seeding.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_infection_seeding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_metacaster.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +83,7 @@
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast\lhs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.lhs_and_prcc">
+  <component name="RunManager" selected="Python tests.Python tests in test_metacaster.py">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="MetaCast" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -147,8 +150,24 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests in test_metacaster.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="MetaCast" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_metacaster.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Python tests in test_metacaster.py" />
         <item itemvalue="Python.lhs_and_prcc" />
         <item itemvalue="Python.error_checks" />
       </list>
@@ -211,6 +230,7 @@
       <workItem from="1710768051161" duration="2183000" />
       <workItem from="1710773998472" duration="14547000" />
       <workItem from="1710855311479" duration="17580000" />
+      <workItem from="1710939313820" duration="22844000" />
     </task>
     <task id="LOCAL-00002" summary="event_handling, infection_seeding.py, sensitivity_analyses and sports_match_no_home_side.py added.">
       <created>1707516153204</created>
@@ -600,7 +620,19 @@
     <MESSAGE value="Fixed citation compilations for read paper.md and paper.bib." />
     <option name="LAST_COMMIT_MESSAGE" value="Fixed citation compilations for read paper.md and paper.bib." />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/metacast/metacaster.py</url>
+          <line>651</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />
+    <SUITE FILE_PATH="coverage/MetaCast$.coverage" NAME=" Coverage Results" MODIFIED="1710968101493" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
   </component>
 </project>

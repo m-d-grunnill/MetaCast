@@ -43,7 +43,7 @@ pip install metacast
 ```
 
 ## Usage
-See jupyter notebooks in demonstration directory of homepage:
+See jupyter notebooks in demonstration directory of the projects GitGub repository:
 [https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations](https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations)
 
 ## Documentation

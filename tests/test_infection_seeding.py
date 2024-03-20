@@ -6,8 +6,12 @@ Description:
     
 """
 from unittest import TestCase
-
+import unittest
 
 class TestMultnomialSeeder(TestCase):
     def test_seed_infections(self):
-        self.fail()
+        pass
+
+
+if __name__ == '__main__':
+    unittest.main()

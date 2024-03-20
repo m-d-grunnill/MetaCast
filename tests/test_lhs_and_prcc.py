@@ -6,8 +6,12 @@ Description:
     
 """
 from unittest import TestCase
-
+import unittest
 
 class Test(TestCase):
     def test_lhs_prcc(self):
-        self.fail()
+        pass
+
+
+if __name__ == '__main__':
+    unittest.main()

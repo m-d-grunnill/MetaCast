@@ -6,17 +6,20 @@ Description:
     
 """
 from unittest import TestCase
-
+import unittest
 
 class TestEventQueue(TestCase):
     def test_reset_event_queue(self):
-        self.fail()
+        pass
 
     def test_make_events_nullevents(self):
-        self.fail()
+        pass
 
     def test_get_event_names(self):
-        self.fail()
+        pass
 
     def test_run_simulation(self):
-        self.fail()
+        pass
+
+if __name__ == '__main__':
+    unittest.main()

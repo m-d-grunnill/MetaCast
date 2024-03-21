@@ -6,9 +6,11 @@ Description:
     
 """
 from unittest import TestCase
+import copy
 import unittest
 
 class TestEventQueue(TestCase):
+
     def test_reset_event_queue(self):
         pass
 

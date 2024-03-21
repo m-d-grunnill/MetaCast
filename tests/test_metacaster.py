@@ -7,7 +7,7 @@ Description:
 """
 import unittest
 from unittest import TestCase
-from src.metacast.metacaster import MetaCaster
+from src.metacast import MetaCaster
 import copy
 import numpy as np
 
@@ -263,19 +263,44 @@ class TestMetaCaster(TestCase):
         self.assertEqual(y_deltas[-2], y_deltas_vaccination[-2])
 
     def test_integrate(self):
-        pass
+        self.metapop_model.parameters = self.parameters_low_high
+        results_low_high = self.metapop_model.integrate(self.y_low_high, self.t)
+        self.assertAlmostEqual(results_low_high.loc[90,('observed_states','H_cumulative')], 29297.017609, 5)
+        self.assertAlmostEqual(max(results_low_high.loc[:, ('observed_states', 'H')]), 2966.336876, 5)
+        metapop_model_vaccination, y_vaccination, parameters_vaccination = self.change_to_vaccination_dimensions()
+        metapop_model_vaccination.parameters = parameters_vaccination
+        results_vaccination = metapop_model_vaccination.integrate(y_vaccination, self.t)
+        self.assertAlmostEqual(results_vaccination.loc[90, ('observed_states', 'H_cumulative')], 20895.090581, 5)
+        self.assertAlmostEqual(max(results_vaccination.loc[:, ('observed_states', 'H')]), 2020.866274, 5)
 
     def test_get_state_index_dict_of_coordinate(self):
-        pass
+        high_state_dicts = self.metapop_model.get_state_index_dict_of_coordinate('high')
+        self.assertEqual(len(high_state_dicts), 1)
+        high_state_dict = high_state_dicts['high']
+        low_state_dicts = self.metapop_model.get_state_index_dict_of_coordinate('low')
+        self.assertEqual(len(low_state_dicts), 1)
+        low_state_dict = low_state_dicts['low']
+        for low_state_key, low_state_index in low_state_dict.items():
+            self.assertNotIn(low_state_index, list(high_state_dict.values()))
+            self.assertIn(low_state_key, self.metapop_model.states)
 
-    def test_get_indexes_of_coordinate(self):
-        pass
+        metapop_model_vaccination, y_vaccination, parameters_vaccination = self.change_to_vaccination_dimensions()
+        high_vaccine_state_dicts = metapop_model_vaccination.get_state_index_dict_of_coordinate('high')
+        self.assertEqual(len(high_vaccine_state_dicts), 3)
+        for key in high_vaccine_state_dicts.keys():
+            self.assertEqual(key[0], 'high')
 
     def test_coordinates_to_subpop_suffix(self):
-        pass
+        self.assertEqual('_[high]',self.metapop_model.coordinates_to_subpop_suffix('high'))
+        self.assertEqual('_[high,unvaccinated]',
+                         self.metapop_model.coordinates_to_subpop_suffix(['high', 'unvaccinated']))
 
     def test_shape(self):
-        pass
+        self.assertEqual(self.metapop_model.shape, (2,))
+        self.metapop_model.dimensions = [2, 5]
+        self.assertEqual(self.metapop_model.shape, (2, 5))
+        metapop_model_vaccination, y_vaccination, parameters_vaccination = self.change_to_vaccination_dimensions()
+        self.assertEqual(metapop_model_vaccination.shape, (2,3))
 
 
 if __name__ == '__main__':

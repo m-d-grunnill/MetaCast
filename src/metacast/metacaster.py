@@ -527,9 +527,15 @@ class MetaCaster:
         -------
         nested dict: {tuple of int/str: {str: int}}
         """
-        selected_coordinates = [coordinates
-                                for coordinates in self.subpop_coordinates
-                                if coordinates[axis] == coordinate]
+        if axis+1 > len(self):
+            raise ValueError('Axis is out of bounds, i.e. axis +1 is greater then this MetaCaster instance\'s length.')
+
+        if len(self) == 1:
+            selected_coordinates = coordinate
+        else:
+            selected_coordinates = [coordinates
+                                    for coordinates in self.subpop_coordinates
+                                    if coordinates[axis] == coordinate]
         return {coordinates: sub_dict
                 for coordinates, sub_dict in self.state_index.items()
                 if coordinates in selected_coordinates}
@@ -923,13 +929,13 @@ class MetaCaster:
             self._dimensions = [set(item) for item in dimensions]
         elif (isinstance(dimensions, (list, tuple)) and
               all(isinstance(item, int) for item in dimensions)):
-            self._dimensions = [set(*range(num)) for num in dimensions]
+            self._dimensions = [set(range(num)) for num in dimensions]
         elif isinstance(dimensions, (list, tuple)) and _is_set_like_of_strings(dimensions):
             self._dimensions = [set(dimensions)]
         elif isinstance(dimensions, set) and all(isinstance(item, str) for item in dimensions):
             self._dimensions = [dimensions]
         elif isinstance(dimensions, int):
-            self._dimensions = [set(*range(int))]
+            self._dimensions = [set(range(int))]
         else:
             raise TypeError('scaffold is not supported.')
 
@@ -1118,7 +1124,7 @@ class MetaCaster:
         -------
         tuple of ints
         """
-        return (len(axis) for axis in self._dimensions)
+        return tuple(len(axis) for axis in self._dimensions)
 
 
 if __name__ == "__main__":

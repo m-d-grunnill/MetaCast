@@ -45,18 +45,18 @@ def _nested_dict_values(d):
 
 
 def _unionise_dict_of_lists(dict_of_lists):
-    """
-    Merge dictionary value lists into a list of unique values.
-
-    Parameters
-    ----------
-    dict_of_lists : dictionay of lists
-
-    Returns
-    -------
-    list
-        Merged unique list values.
-    """
+    # """
+    # Merge dictionary value lists into a list of unique values.
+    #
+    # Parameters
+    # ----------
+    # dict_of_lists : dictionay of lists
+    #
+    # Returns
+    # -------
+    # list
+    #     Merged unique list values.
+    # """
     return list(set().union(*dict_of_lists.values()))
 
 
@@ -586,23 +586,23 @@ class MetaCaster:
             raise TypeError('All coordinates must be either string or integers, or lists/tuples of those types.')
 
     def _instantaneous_transfer(self, population_transitioning, population, t=None):
-        """
-        Calculate instantaneous rate needed to reduce population by population transitioning to another compartment.
-
-        Parameters
-        ----------
-        population_transitioning : float
-            Population moving between compartments.
-        population : float
-            Population from which transition is taking place.
-        t : float
-            Time at t. Used in generating an error specific to simulating models using this class.
-
-        Returns
-        -------
-        float
-            Instantaneous rate of change for the time t.
-        """
+        # """
+        # Calculate instantaneous rate needed to reduce population by population transitioning to another compartment.
+        #
+        # Parameters
+        # ----------
+        # population_transitioning : float
+        #     Population moving between compartments.
+        # population : float
+        #     Population from which transition is taking place.
+        # t : float
+        #     Time at t. Used in generating an error specific to simulating models using this class.
+        #
+        # Returns
+        # -------
+        # float
+        #     Instantaneous rate of change for the time t.
+        # """
         if population_transitioning > population:
             error_msg = "population_transitioning (" + str(
                 population_transitioning) + ") is greater than population (" + str(population)

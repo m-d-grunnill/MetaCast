@@ -76,12 +76,6 @@ class BaseEvent:
         """
         pass
 
-    def make_event_a_nullevent(self):
-        self._do_nothing = True
-
-    def undo_make_event_a_nullevent(self):
-        self._do_nothing = False
-
 
 
 class ValueFactorProportionChangeEvent(BaseEvent):

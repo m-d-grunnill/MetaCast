@@ -15,25 +15,25 @@ import numpy as np
 import math
 
 class _InfectionBranch:
-    """
-    Makes multinomial draws for selecting which stage of an infection pathway to place infected hosts.
-    Calculates normalised weighting of an infection branch's states, based on inverse outflow for states.
-
-    Parameters & Attributes
-    -----------------------
-    name : string
-        Name of branch.
-    outflows: dictionary {str or ints: string}
-        Keys are name or number given to state. Values are name given to parameter.
-
-    Methods
-    -------
-    calculate_weighting(parameters)
-        Calculate normalised weighting for each state.
-    seed_infections(self, n, parameters)
-        Make multinomial draw to select infectious stages of this branch to seed infection into.
-
-    """
+    # """
+    # Makes multinomial draws for selecting which stage of an infection pathway to place infected hosts.
+    # Calculates normalised weighting of an infection branch's states, based on inverse outflow for states.
+    #
+    # Parameters & Attributes
+    # -----------------------
+    # name : string
+    #     Name of branch.
+    # outflows: dictionary {str or ints: string}
+    #     Keys are name or number given to state. Values are name given to parameter.
+    #
+    # Methods
+    # -------
+    # calculate_weighting(parameters)
+    #     Calculate normalised weighting for each state.
+    # seed_infections(self, n, parameters)
+    #     Make multinomial draw to select infectious stages of this branch to seed infection into.
+    #
+    # """
     def __init__(self, name, outflows):
         if not isinstance(name, str):
             raise TypeError('name argument should be a string.')
@@ -160,21 +160,21 @@ class MultnomialSeeder:
         self.rng = np.random.default_rng(seed)
 
     def _seed_branches(self, n, branch_probability):
-        """
-        Make multinomial draw for which infection branch to place a host.
-
-        Parameters
-        ----------
-        n : int
-            Number of infections to seed.
-        branch_probability : dict {string, float}
-            Probability of being on each infection branch.
-
-        Returns
-        -------
-        draw_dict : dict {str: int}
-            Keys are branches values are number of infections on branch.
-        """
+        # """
+        # Make multinomial draw for which infection branch to place a host.
+        #
+        # Parameters
+        # ----------
+        # n : int
+        #     Number of infections to seed.
+        # branch_probability : dict {string, float}
+        #     Probability of being on each infection branch.
+        #
+        # Returns
+        # -------
+        # draw_dict : dict {str: int}
+        #     Keys are branches values are number of infections on branch.
+        # """
         if self.rng is None:
             rng = np.random.default_rng()
         else:

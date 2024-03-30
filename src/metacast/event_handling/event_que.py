@@ -164,7 +164,7 @@ class EventQueue:
         event_names = self._event_names_checker(event_names)
         for event_name in event_names:
             event = self._events[event_name]
-            event.make_event_a_nullevent()
+            event._do_nothing = True
 
     def get_event_names(self):
         """

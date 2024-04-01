@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Submission draft of paper.">
-      <change afterPath="$PROJECT_DIR$/conf.py" afterDir="false" />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Version 0.1.5.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/source/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/source/conf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -247,14 +245,7 @@
       <workItem from="1711034932628" duration="10225000" />
       <workItem from="1711113311037" duration="5012000" />
       <workItem from="1711829387742" duration="5608000" />
-      <workItem from="1711981570801" duration="3179000" />
-    </task>
-    <task id="LOCAL-00006" summary="MetaCaster._sorting_states almost supports &gt;2 dimensions. &#10;NEED to rework MetaCaster._gen_structure for using from_cooridnates and to_coordinates.">
-      <created>1708553247186</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1708553247186</updated>
+      <workItem from="1711981570801" duration="3634000" />
     </task>
     <task id="LOCAL-00007" summary="MetaCaster._sorting_states almost supports &gt;2 dimensions. &#10;NEED to rework MetaCaster._gen_structure for using from_cooridnates and to_coordinates.">
       <created>1708553263384</created>
@@ -592,7 +583,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711984199060</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="Version 0.1.5.">
+      <created>1711985747792</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1711985747792</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -610,7 +608,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=".readthedocs.yaml changed so docs/source/requirements.txt installed first? Attempt 2." />
     <MESSAGE value="Fixed some of the scaffold documentation." />
     <MESSAGE value="Added documentation hyperlinks." />
     <MESSAGE value="In metacaster.py made setter and getter for dimensions." />
@@ -635,7 +632,8 @@
     <MESSAGE value="Completed unit tests for MetaCaster and MultnomialSeeder." />
     <MESSAGE value="Unit tests for main classes and functions completed." />
     <MESSAGE value="Submission draft of paper." />
-    <option name="LAST_COMMIT_MESSAGE" value="Submission draft of paper." />
+    <MESSAGE value="Version 0.1.5." />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 0.1.5." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

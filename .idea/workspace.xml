@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Unit tests for main classes and functions completed.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Submission draft of paper.">
+      <change afterPath="$PROJECT_DIR$/conf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper.bib" beforeDir="false" afterPath="$PROJECT_DIR$/paper.bib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -246,14 +247,7 @@
       <workItem from="1711034932628" duration="10225000" />
       <workItem from="1711113311037" duration="5012000" />
       <workItem from="1711829387742" duration="5608000" />
-      <workItem from="1711981570801" duration="1617000" />
-    </task>
-    <task id="LOCAL-00005" summary="MetaCaster._gen_structure now supports &gt;2 dimensions.">
-      <created>1708467426996</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1708467426996</updated>
+      <workItem from="1711981570801" duration="3179000" />
     </task>
     <task id="LOCAL-00006" summary="MetaCaster._sorting_states almost supports &gt;2 dimensions. &#10;NEED to rework MetaCaster._gen_structure for using from_cooridnates and to_coordinates.">
       <created>1708553247186</created>
@@ -591,7 +585,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711834600690</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="Submission draft of paper.">
+      <created>1711984199060</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1711984199060</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -609,7 +610,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=".readthedocs.yaml changed so docs/source/requirements.txt installed first?&#10;.readthedocs.yaml changed so docs/source/requirements.txt installed first?" />
     <MESSAGE value=".readthedocs.yaml changed so docs/source/requirements.txt installed first? Attempt 2." />
     <MESSAGE value="Fixed some of the scaffold documentation." />
     <MESSAGE value="Added documentation hyperlinks." />
@@ -634,7 +634,8 @@
     <MESSAGE value="Wrote some unit tests for MetaCaster." />
     <MESSAGE value="Completed unit tests for MetaCaster and MultnomialSeeder." />
     <MESSAGE value="Unit tests for main classes and functions completed." />
-    <option name="LAST_COMMIT_MESSAGE" value="Unit tests for main classes and functions completed." />
+    <MESSAGE value="Submission draft of paper." />
+    <option name="LAST_COMMIT_MESSAGE" value="Submission draft of paper." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

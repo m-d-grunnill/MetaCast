@@ -4,17 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Completed unit tests for MetaCaster and MultnomialSeeder.">
-      <change afterPath="$PROJECT_DIR$/tests/setuptests.py" afterDir="false" />
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Unit tests for main classes and functions completed.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/event_handling/event_que.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/event_handling/event_que.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/event_handling/events.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/event_handling/events.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/infection_seeding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/infection_seeding.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/metacaster.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_event_que.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_event_que.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_metacaster.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_metacaster.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper.bib" beforeDir="false" afterPath="$PROJECT_DIR$/paper.bib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -252,14 +245,8 @@
       <workItem from="1710939313820" duration="22929000" />
       <workItem from="1711034932628" duration="10225000" />
       <workItem from="1711113311037" duration="5012000" />
-      <workItem from="1711829387742" duration="5119000" />
-    </task>
-    <task id="LOCAL-00004" summary="MetaCaster._gen_structure now supports &gt;2 dimensions.">
-      <created>1708467210904</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1708467210904</updated>
+      <workItem from="1711829387742" duration="5608000" />
+      <workItem from="1711981570801" duration="1617000" />
     </task>
     <task id="LOCAL-00005" summary="MetaCaster._gen_structure now supports &gt;2 dimensions.">
       <created>1708467426996</created>
@@ -597,7 +584,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711053490201</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="Unit tests for main classes and functions completed.">
+      <created>1711834600690</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1711834600690</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -615,7 +609,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=".readthedocs.yaml changed again ubuntu-22.04." />
     <MESSAGE value=".readthedocs.yaml changed so docs/source/requirements.txt installed first?&#10;.readthedocs.yaml changed so docs/source/requirements.txt installed first?" />
     <MESSAGE value=".readthedocs.yaml changed so docs/source/requirements.txt installed first? Attempt 2." />
     <MESSAGE value="Fixed some of the scaffold documentation." />
@@ -640,7 +633,8 @@
     <MESSAGE value="Fixed citation compilations for read paper.md and paper.bib." />
     <MESSAGE value="Wrote some unit tests for MetaCaster." />
     <MESSAGE value="Completed unit tests for MetaCaster and MultnomialSeeder." />
-    <option name="LAST_COMMIT_MESSAGE" value="Completed unit tests for MetaCaster and MultnomialSeeder." />
+    <MESSAGE value="Unit tests for main classes and functions completed." />
+    <option name="LAST_COMMIT_MESSAGE" value="Unit tests for main classes and functions completed." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

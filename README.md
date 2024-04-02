@@ -42,9 +42,14 @@ For running [demonstration jupyter notebooks](https://github.com/m-d-grunnill/Me
 pip install metacast
 ```
 
+
+
 ## Usage
 See jupyter notebooks in demonstration directory of the projects GitGub repository:
 [https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations](https://github.com/m-d-grunnill/MetaCast/tree/main/demonstrations)
 
 ## Documentation
 [https://metacast.readthedocs.io/en/latest/index.html](https://metacast.readthedocs.io/en/latest/index.html)
+
+## Contributing
+If you wish to contribute to this project please see the [CONTRIBUTING.md](https://github.com/m-d-grunnill/MetaCast/blob/main/CONTRIBUTING.md) file.

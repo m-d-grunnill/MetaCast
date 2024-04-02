@@ -21,15 +21,17 @@ All types of contributions are encouraged and valued. See the [Table of Contents
   - [Suggesting Enhancements](#suggesting-enhancements)
   - [Your First Code Contribution](#your-first-code-contribution)
   - [Improving The Documentation](#improving-the-documentation)
+    - [Documentation of Code Styleguide](#documentation-of-code-styleguide)
 - [Styleguides](#styleguides)
   - [Commit Messages](#commit-messages)
+  - [Documentation of Code](#documentation of-code)
 - [Join The Project Team](#join-the-project-team)
 
 
 ## Code of Conduct
 
 This project and everyone participating in it is governed by the
-[MetaCast Code of Conduct](https://github.com/m-d-grunnill/MetaCastblob/master/CODE_OF_CONDUCT.md).
+[MetaCast Code of Conduct](https://github.com/m-d-grunnill/MetaCast/blob/main/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior
 to <m.d.grunnill@gmail.com>.
 
@@ -136,13 +138,13 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/m-d-gr
 
 ### Your First Code Contribution
 If you wish to contribute to code please create a separate branch to work on your contribution.
-When finished please contact Martin Grunnill via his github profile m-d-grunnill to discuss 
+When finished please contact Martin Grunnill via <m.d.grunnill@gmail.com> to discuss 
 merging the changes.
 
 
 ### Improving The Documentation
 
-### Documentation of Code (Docstrings, etc)
+#### Documentation of Code Styleguide
 Please use numpy/scipy style (numpydoc) for documenting code. See 
 [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) for a style guide. 
 
@@ -151,13 +153,13 @@ Please use numpy/scipy style (numpydoc) for documenting code. See
 ### Commit Messages
 Start with a one line summary outlining the changes. If the changes are to code please list the files changed.
 
-### Documentation of Code (Docstrings, etc)
+### Documentation of Code
 Please use numpy/scipy style (numpydoc) for documenting code. See 
 [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) for a style guide. 
 
 
 ## Join The Project Team
-Please message Martin Grunnill via his github profile m-d-grunnill if you wish to join the project
+Please message Martin Grunnill via <m.d.grunnill@gmail.com> if you wish to join the project
 team.
 
 <!-- omit in toc -->

@@ -75,9 +75,10 @@ structure we developed the code in @Grunnill2024. This code allowed us to broadc
 over different two-dimensional metapopulations, whilst calculating the force of infections for all subpopulations
 [@Keeling2008c]. The dimensions (groupings) being different cluster of people (subtypes of hosts or visitors) and 
 vaccination status [@Grunnill2024]. `MetaCast` builds upon the code in @Grunnill2024 by allowing for more than two 
-dimensions, that don't require a basis in clusters or vaccination status. `MetaCast` also includes more user-friendly versions of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill2024 
-[@Grunnill2024]. This makes MetaCast an ideal package for scenario analyses based around metapopulation models within 
-epidemiology or ecology.
+dimensions, that don't require a basis in clusters or vaccination status. `MetaCast` also includes more user-friendly
+versions of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill2024. 
+This makes MetaCast an ideal package for scenario analyses based around metapopulation models within epidemiology or
+ecology.
 
 # State of Field
 

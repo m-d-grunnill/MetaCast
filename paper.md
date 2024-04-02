@@ -23,7 +23,7 @@ authors:
     affiliation: 2
   - name: Abbas Ghasemi
     orcid: 0000-0003-2442-5962
-    affilation: 3
+    affiliation: 3
   - name: Edward W. Thommes
     orcid: 0000-0001-6800-2000
     affiliation: "4, 5"
@@ -66,16 +66,16 @@ metapopulations but for wider scenario analysis.
 # Statement of need
 
 `MetaCast` was developed from the code base used in a project modelling the spread of 
-COVID-19 at Mass Gathering Events (MGEs), such as the FIFA 2022 World Cup [@Grunnill2023a; @Grunnill2024]. 
+COVID-19 at Mass Gathering Events (MGEs), such as the FIFA 2022 World Cup [@Grunnill2024]. 
 During this project there were a number of MGEs that we considered as potential case studies
 before settling on the FIFA 2022 World Cup. As such, even though our epidemiological model 
 was remaining much the same, the resulting change in metapopulation structure between potential case study models
 meant we had to extensively recode the model. In order expedite this recoding due to changes in metapopulation
-structure we developed the code in @Grunnill2023a. This code allowed us to broadcast our COVID-19 subpopulation model
+structure we developed the code in @Grunnill2024. This code allowed us to broadcast our COVID-19 subpopulation model
 over different two-dimensional metapopulations, whilst calculating the force of infections for all subpopulations
 [@Keeling2008c]. The dimensions (groupings) being different cluster of people (subtypes of hosts or visitors) and 
-vaccination status [@Grunnill2024]. `MetaCast` builds upon the code in @Grunnill2023a by allowing for more than two 
-dimensions, that don't require a basis in clusters or vaccination status. `MetaCast` also includes more user-friendly versions of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill2023a 
+vaccination status [@Grunnill2024]. `MetaCast` builds upon the code in @Grunnill2024 by allowing for more than two 
+dimensions, that don't require a basis in clusters or vaccination status. `MetaCast` also includes more user-friendly versions of the discrete event, sensitivity analyses and infectious population seeding features from @Grunnill2024 
 [@Grunnill2024]. This makes MetaCast an ideal package for scenario analyses based around metapopulation models within 
 epidemiology or ecology.
 
@@ -95,7 +95,7 @@ then simulate the ODE models deterministically or stochastically, with `PyGOM` h
 
 #### Individual Based Modelling (IBM) Packages for Epidemiology
 Python's `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
-modelling. The Python open-source package Covasim (COVID-19 Agent-based Simulator) [@kerr2021covasim] provides a detailed demographic data tailored to specific countries, encompassing age distributions and population sizes, offering sophisticated transmission networks for various social settings (households, schools, workplaces, long-term care facilities, etc). It also incorporates age-specific disease outcomes, viral load dynamics, and a wide array of intervention strategies. R's `EpiMode` [@Jenness2018] has agent based modelling based around contacts as discrete events or as a 
+modelling. The Python open-source package Covasim (COVID-19 Agent-based Simulator) [@Kerr2021] provides a detailed demographic data tailored to specific countries, encompassing age distributions and population sizes, offering sophisticated transmission networks for various social settings (households, schools, workplaces, long-term care facilities, etc). It also incorporates age-specific disease outcomes, viral load dynamics, and a wide array of intervention strategies. R's `EpiMode` [@Jenness2018] has agent based modelling based around contacts as discrete events or as a 
 static network model. There are a number of other R epidemiological IBM packages that take spatial or network contact based
 approaches,  `individual` [@Charles2021], `hybridModels` [@Marques2020] and `EpiILMCT` [@Almutiry2021].
 The Python package `Eir` [@Jacob2021] has epidemiological models that incorporate the movements of people. 

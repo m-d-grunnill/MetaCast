@@ -4,9 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="For paper updated:&#10;* DOIs&#10;* Fixed Abbas Ghasami affiliation.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Fixed grammar in paper.md and typos/mispelling elsewhere.">
+      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/metacast/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/metacast/event_handling/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/event_handling/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/metacast/event_handling/event_que.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/event_handling/event_queue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/metacast/infection_seeding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/infection_seeding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_infection_seeding.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_infection_seeding.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,33 +40,56 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;m-d-grunnill&quot;
+  }
+}</component>
   <component name="GitToolBoxStore">
     <option name="projectConfigVersion" value="5" />
   </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/m-d-grunnill/MetaCast.git&quot;,
+    &quot;accountId&quot;: &quot;da5eaec5-4314-4b63-81fc-be93e0371376&quot;
+  }
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="2c0JmjKhEDbdP1rZyb6SPR7lTNP" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/mdgru/OneDrive/Documents/GitHub/MetaCast&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "joss__edits",
+    "last_opened_file_path": "C:/Users/user5029715/PycharmProjects/MetaCast",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast" />
@@ -79,6 +109,7 @@
   <component name="RunManager" selected="Python tests.Python tests in test_event_que.py">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="MetaCast" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -101,6 +132,7 @@
     </configuration>
     <configuration name="Python tests for test_event_que.TestEventQueue.test_make_events_nullevents" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="MetaCast" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -116,6 +148,7 @@
     </configuration>
     <configuration name="Python tests in test_event_que.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="MetaCast" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -131,6 +164,7 @@
     </configuration>
     <configuration name="Python tests in test_infection_seeding.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="MetaCast" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -146,6 +180,7 @@
     </configuration>
     <configuration name="Python tests in test_lhs_and_prcc.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="MetaCast" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -161,6 +196,7 @@
     </configuration>
     <configuration name="Python tests in test_metacaster.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="MetaCast" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -183,6 +219,14 @@
         <item itemvalue="Python tests.Python tests for test_event_que.TestEventQueue.test_make_events_nullevents" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-PY-241.15989.155" />
+        <option value="bundled-python-sdk-babbdf50b680-7c6932dee5e4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.15989.155" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -247,6 +291,13 @@
       <workItem from="1711829387742" duration="5608000" />
       <workItem from="1711981570801" duration="5761000" />
       <workItem from="1712066459405" duration="2435000" />
+      <workItem from="1716583666835" duration="324000" />
+      <workItem from="1716584004086" duration="17000" />
+      <workItem from="1716584033694" duration="1025000" />
+      <workItem from="1716832598158" duration="165000" />
+      <workItem from="1717600966295" duration="436000" />
+      <workItem from="1717601415170" duration="78000" />
+      <workItem from="1719943417345" duration="7339000" />
     </task>
     <task id="LOCAL-00012" summary="Basic_Demonstration.ipynb finished sections on:&#10;* New Vaccine: Multi Dimension/Axis disease X model with flows between some subpopulations.&#10;&#10;As a result did some resulting debugging.">
       <created>1709154556923</created>
@@ -609,7 +660,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Changes made for publication." />
     <MESSAGE value="Changes made README.md." />
     <MESSAGE value="Finshed half of Markdown sections of Basic_Demonstration.ipynb." />
     <MESSAGE value="Added summary to README.md and started editing Journal of Open Source Software paper.md." />
@@ -634,7 +684,8 @@
     <MESSAGE value="Changed line 30 of docs/source/conf.py to `autoapi_dirs = ['src']`." />
     <MESSAGE value="Changed line 30 of docs/source/conf.py to `autoapi_dirs = ['../../src']` and silenced lines 5-7." />
     <MESSAGE value="For paper updated:&#10;* DOIs&#10;* Fixed Abbas Ghasami affiliation." />
-    <option name="LAST_COMMIT_MESSAGE" value="For paper updated:&#10;* DOIs&#10;* Fixed Abbas Ghasami affiliation." />
+    <MESSAGE value="Fixed grammar in paper.md and typos/mispelling elsewhere." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed grammar in paper.md and typos/mispelling elsewhere." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />

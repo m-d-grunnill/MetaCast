@@ -12,4 +12,4 @@ from .events import (
     ChangeParametersEvent,
     ParametersEqualSubPopEvent,
     )
-from .event_que import EventQueue
+from .event_queue import EventQueue

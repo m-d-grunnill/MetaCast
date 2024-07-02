@@ -6,7 +6,7 @@ Description:
     
 """
 from unittest import TestCase
-from src.metacast import MultnomialSeeder
+from src.metacast import MultinomialSeeder
 import copy
 import unittest
 
@@ -17,7 +17,7 @@ class TestMultnomialSeeder(TestCase):
         seeding_info = {'unhospitalised': {'E': 'sigma', 'I': 'gamma'},
                         'hospitalised': {'E': 'sigma', 'I': 'gamma', 'H': 'eta'},
                         }
-        cls._seeder = MultnomialSeeder(seeding_info)
+        cls._seeder = MultinomialSeeder(seeding_info)
         cls._seeder.set_seed(42)
         cls.parameters = {'eta': 0.2,
                           'gamma': 0.14285714285714285,

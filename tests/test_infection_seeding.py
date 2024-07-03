@@ -6,7 +6,7 @@ Description:
     
 """
 from unittest import TestCase
-from src.metacast import MultinomialSeeder
+from metacast import MultinomialSeeder
 import copy
 import unittest
 

@@ -5,15 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Fixed grammar in paper.md and typos/mispelling elsewhere.">
-      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.github/workflows/nox_automation.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/noxfile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/MetaCast.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MetaCast.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/demonstrations/Metacast_Disease_X_Demo.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/event_handling/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/event_handling/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/event_handling/event_que.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/event_handling/event_queue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/metacast/infection_seeding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/metacast/infection_seeding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/setuptests.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/setuptests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_event_que.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_event_que.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_infection_seeding.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_infection_seeding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_lhs_and_prcc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,12 +58,12 @@
   <component name="GitToolBoxStore">
     <option name="projectConfigVersion" value="5" />
   </component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/m-d-grunnill/MetaCast.git&quot;,
-    &quot;accountId&quot;: &quot;da5eaec5-4314-4b63-81fc-be93e0371376&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/m-d-grunnill/MetaCast.git",
+    "accountId": "fea58d8b-382f-4fa7-83ce-8e3f4b2d8406"
   }
-}</component>
+}]]></component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -75,6 +77,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.noxfile.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
@@ -86,7 +89,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -106,7 +109,7 @@
       <recent name="C:\Users\mdgru\OneDrive\Documents\GitHub\MetaCast\metacast\lhs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests in test_event_que.py">
+  <component name="RunManager" selected="Python.noxfile">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="MetaCast" />
       <option name="ENV_FILES" value="" />
@@ -130,20 +133,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_event_que.TestEventQueue.test_make_events_nullevents" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="noxfile" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MetaCast" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_event_que.TestEventQueue.test_make_events_nullevents&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/noxfile.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="Python tests in test_event_que.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
@@ -212,19 +222,19 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.noxfile" />
         <item itemvalue="Python tests.Python tests in test_event_que.py" />
         <item itemvalue="Python tests.Python tests in test_infection_seeding.py" />
         <item itemvalue="Python tests.Python tests in test_metacaster.py" />
         <item itemvalue="Python tests.Python tests in test_lhs_and_prcc.py" />
-        <item itemvalue="Python tests.Python tests for test_event_que.TestEventQueue.test_make_events_nullevents" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-PY-241.15989.155" />
-        <option value="bundled-python-sdk-babbdf50b680-7c6932dee5e4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.15989.155" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.18034.82" />
+        <option value="bundled-python-sdk-975db3bf15a3-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.18034.82" />
       </set>
     </attachedChunks>
   </component>
@@ -297,7 +307,9 @@
       <workItem from="1716832598158" duration="165000" />
       <workItem from="1717600966295" duration="436000" />
       <workItem from="1717601415170" duration="78000" />
-      <workItem from="1719943417345" duration="7339000" />
+      <workItem from="1719943417345" duration="7535000" />
+      <workItem from="1720013664987" duration="488000" />
+      <workItem from="1720014276862" duration="11648000" />
     </task>
     <task id="LOCAL-00012" summary="Basic_Demonstration.ipynb finished sections on:&#10;* New Vaccine: Multi Dimension/Axis disease X model with flows between some subpopulations.&#10;&#10;As a result did some resulting debugging.">
       <created>1709154556923</created>
@@ -642,7 +654,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712068192821</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -688,7 +700,8 @@
     <option name="LAST_COMMIT_MESSAGE" value="Fixed grammar in paper.md and typos/mispelling elsewhere." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />
     <SUITE FILE_PATH="coverage/MetaCast$.coverage" NAME=" Coverage Results" MODIFIED="1711834539741" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/MetaCast$error_checks.coverage" NAME="error_checks Coverage Results" MODIFIED="1707496008844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/metacast/scafolds" />
+    <SUITE FILE_PATH="coverage/MetaCast$noxfile.coverage" NAME="noxfile Coverage Results" MODIFIED="1720021836266" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

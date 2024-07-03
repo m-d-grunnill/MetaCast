@@ -1,0 +1,23 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11",  "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install nox and any other packages
+        run: pip install nox
+      - name: Run nox
+        # Run nox using the version of Python in `PATH`
+        run: nox

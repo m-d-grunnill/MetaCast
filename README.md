@@ -51,5 +51,8 @@ See jupyter notebooks in demonstration directory of the projects GitGub reposito
 ## Documentation
 [https://metacast.readthedocs.io/en/latest/index.html](https://metacast.readthedocs.io/en/latest/index.html)
 
+## Notes
+Currently, MetaCast's lhs_and_prcc function only support latin hypercube sampling with uniform distributions.
+
 ## Contributing
 If you wish to contribute to this project please see the [CONTRIBUTING.md](https://github.com/m-d-grunnill/MetaCast/blob/main/CONTRIBUTING.md) file.

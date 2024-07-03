@@ -111,7 +111,7 @@ class _InfectionBranch:
         return draw_dict
 
 
-class MultnomialSeeder:
+class MultinomialSeeder:
     """
     Makes multinomial draws selecting an infectious hosts branch and then state.
 

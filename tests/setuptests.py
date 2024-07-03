@@ -6,7 +6,7 @@ Description:
     
 """
 from unittest import TestCase
-from src.metacast import MetaCaster
+from metacast import MetaCaster
 import copy
 import numpy as np
 

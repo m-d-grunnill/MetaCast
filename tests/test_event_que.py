@@ -6,8 +6,8 @@ Description:
     
 """
 from unittest import TestCase
-from src.metacast import MetaCaster
-from src.metacast.event_handling import EventQueue, TransferEvent
+from metacast import MetaCaster
+from metacast.event_handling import EventQueue, TransferEvent
 import numpy as np
 import copy
 import unittest

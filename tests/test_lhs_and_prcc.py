@@ -9,7 +9,7 @@ from unittest import TestCase
 import unittest
 from setuptests import SetUpOfTests, vaccination_parameters_setup, prob_over_many_days_to_prob_on_a_day
 import pandas as pd
-from src.metacast.sensitivity_analyses.lhs_and_prcc import lhs_prcc
+from metacast.sensitivity_analyses.lhs_and_prcc import lhs_prcc
 import os
 import dask
 

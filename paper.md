@@ -57,7 +57,7 @@ of metapopulations. These dimensions can be defined and redefined flexibly, allo
 of multidimensional metapopulation models that can have migration (flows) of populations between
 subpopulations. In addition to the metapopulation suite `MetaCast` has several features. A
 multinomial seeder allows users to randomly select infected stages to place an infected
-population in based on the occupancy time of infected states. `MetaCast`'s event queue suite
+population in, based on the occupancy time of infected states. `MetaCast`'s event queue suite
 can handle discrete events within simulations, such as movement of populations between compartments and changes in 
 parameter values. Sensitivity analysis can be done in `MetaCast` using parallelisable Latin Hypercube Sampling and 
 Partial Rank Correlation Coefficient functions. All of this makes MetaCast an ideal package not only for modelling 
@@ -72,7 +72,7 @@ before settling on the FIFA 2022 World Cup. As such, even though our epidemiolog
 was remaining much the same, the resulting change in metapopulation structure between potential case study models
 meant we had to extensively recode the model. In order to expedite this recoding due to changes in metapopulation
 structure we developed the code in @Grunnill2024. This code allowed us to broadcast our COVID-19 subpopulation model
-over different two-dimensional metapopulations (based on a clusters of people and their vaccination status [@Grunnill2024]), 
+over different two-dimensional metapopulations (based on clusters of people and their vaccination status [@Grunnill2024]), 
 whilst calculating the force of infections for all subpopulations [@Keeling2008c]. 
 `MetaCast` builds upon and improves the code used in @Grunnill2024. These improvements mean that metapopulations are no 
 longer limited to two dimensions. Furthermore, metapopulation dimensions don't have to be based on clusters of people and their 

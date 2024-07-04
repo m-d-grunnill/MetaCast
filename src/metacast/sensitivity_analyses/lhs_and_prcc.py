@@ -13,6 +13,7 @@ Notes
 Serial processing of LHS can be slow. but parallel processing of LHS can take up a lot of computing resources.
 
 """
+import numpy as np
 import pandas as pd
 import pingouin as pg
 from dask.distributed import Client
@@ -28,9 +29,10 @@ def _format_sample(parameters_df, LH_samples, other_samples_to_repeat=None):
 
     Parameters
     ----------
-    parameters_df : pd.DataFrame
+    parameters_df : pd.DataFrame or dictionary
         DataFrame outlining the boundaries for each parameter. Must contain fields 'Lower Bound' and
         'Upper Bound'. Name of the parameters is assumed to be in the index.
+        Alternatively, may be a dictionary that maps parameter names to percentage-point (inverse-CDF) functions.
     LH_samples : numpy.array
         Output from scipy.stats.qmc.LatinHypercube.
     other_samples_to_repeat : pandas.DataFrame
@@ -45,10 +47,17 @@ def _format_sample(parameters_df, LH_samples, other_samples_to_repeat=None):
     """
     # if any(~parameters_df['Distribution'].isin(['boolean','uniform'])):
     #     raise ValueError('Only Boolean and Uniform distributions currently supported.')
-    samples_df = pd.DataFrame(qmc.scale(LH_samples,
-                                        parameters_df['Lower Bound'],
-                                        parameters_df['Upper Bound']),
-                              columns=parameters_df.index)
+    if isinstance(parameters_df, pd.DataFrame):
+        samples_df = pd.DataFrame(qmc.scale(LH_samples,
+                                            parameters_df['Lower Bound'],
+                                            parameters_df['Upper Bound']),
+                                  columns=parameters_df.index)
+    else:
+        samples_mat = np.zeros(LH_samples.shape)
+        for ix, ppf in enumerate(parameters_df.values()):
+            samples_mat[:, ix] = ppf(LH_samples[:, ix])
+        index = pd.Index(parameters_df.keys(), name='parameter')
+        samples_df = pd.DataFrame(samples_mat, columns=index)
     if other_samples_to_repeat is not None:
         multiple = len(samples_df) / len(other_samples_to_repeat)
         if not multiple.is_integer():
@@ -129,9 +138,10 @@ def lhs_prcc(parameters_df,
 
     Parameters
     ----------
-    parameters_df : pandas.DataFrame
+    parameters_df : pandas.DataFrame or dictionary
         DataFrame outlining the boundaries for each parameter. Must contain fields 'Lower Bound' and
         'Upper Bound'. The name of the parameters is assumed to be in the index of the DataFrame.
+        Alternatively, may be a dictionary that maps parameter names to percentage-point (inverse-CDF) functions.
     sample_size : int
         Sample size of Latin Hypercube.
     model_run_method : function
@@ -160,8 +170,9 @@ def lhs_prcc(parameters_df,
         and sensitivity analysis in systems biology. In Journal of Theoretical Biology (Vol. 254, Issue 1, pp. 178–196).
         https://doi.org/10.1016/j.jtbi.2008.04.011
     """
-    if not pd.api.types.is_object_dtype(parameters_df.index):
-        raise TypeError('Index of parameters_df should be the models parameters. Therefore, they should be strings.')
+    if isinstance(parameters_df, pd.DataFrame):
+        if not pd.api.types.is_object_dtype(parameters_df.index):
+            raise TypeError('Index of parameters_df should be the models parameters. Therefore, they should be strings.')
     if lhs_obj is None:
         num_LH_parameters_sampled = len(parameters_df)
         lhs_obj = qmc.LatinHypercube(num_LH_parameters_sampled)

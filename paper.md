@@ -1,5 +1,5 @@
 ---
-title: 'MetaCast: A package for broad**CAST**ing epidemiological and ecological models over **META**-populations.'
+title: 'MetaCast: A package for broadCASTing epidemiological and ecological models over META-populations.'
 tags:
   - Python
   - Epimediology
@@ -86,7 +86,7 @@ There are a number of packages that can be used for epidemiological or ecologica
 platforms including Python. However, to our knowledge, none bring together all the features for scenario analyses based 
 around ODE metapopulation models as described above.
 
-#### Ordinary Differential Equation (ODE) Modelling Packages for Epidemiology and Ecology
+## Ordinary Differential Equation (ODE) Modelling Packages for Epidemiology and Ecology
 R's `EpiMode` [@Jenness2018] has some pre-coded epidemiological ODE models (such as SIR and SIS), as does
  the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can also perform sensitivity analyses on these pre-coded 
 models. `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
@@ -94,7 +94,7 @@ a list of transitions defining the flow between epidemiological compartments. Bo
 then simulate the ODE models deterministically or stochastically, with `PyGOM` having some extra stochastic methods. 
 `PyGOM` [@Tye2018] also has a suite of maximum likelihood based and Approximate Bayesian Computation fitting procedures.
 
-#### Individual Based Modelling (IBM) Packages for Epidemiology and Ecology
+## Individual Based Modelling (IBM) Packages for Epidemiology and Ecology
 Python's `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
 modelling. The Python open-source package `Covasim` [COVID-19 Agent-based Simulator, @Kerr2021] provides detailed
 demographic data tailored to specific countries, encompassing age distributions and population sizes, offering 

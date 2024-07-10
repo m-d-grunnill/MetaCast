@@ -111,19 +111,13 @@ individual level models (TN-ILMs).
 
 The authors of this manuscript and of the package `MetaCast` would like to thank the funders who made this possible:
 
-* Martin Grunnill's position was funded through the Fields Institute’s Mathematics for Public Health Next Generation program 
-[http://www.fields.utoronto.ca/activities/public-health](http://www.fields.utoronto.ca/activities/public-health), grant 
-number 72062654. 
+* Martin Grunnill's position was funded through the [Fields Institute’s Mathematics for Public Health](http://www.fields.utoronto.ca/activities/public-health) Next Generation program, grant number 72062654.
 
-* Julian Arino is funded through the Discovery Grant program from the Natural Science and Engineering Research Council 
-of Canada (NSERC, [https://www.nserc-crsng.gc.ca/index_eng.asp](https://www.nserc-crsng.gc.ca/index_eng.asp)), grant 
-number RGPIN-2017-05466. 
+* Julian Arino is funded through the Discovery Grant program from the [Natural Science and Engineering Research Council of Canada](https://www.nserc-crsng.gc.ca/index_eng.asp) (NSERC), grant number RGPIN-2017-05466.
 
-* Jianhong Wu's work is supported by the ADERSIM (Ontario Research Fund 33270), along with the Canada Research Chairs 
-program ([https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx](https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx)
-, 230720), and the Discovery Grant program from NSERC (105588).
+* Jianhong Wu's work is supported by the ADERSIM (Ontario Research Fund 33270), along with the [Canada Research Chairs](https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx) program (230720), and the Discovery Grant program from NSERC (105588).
 
-* This work is supported by the NSERC- Sanofi Alliance program in Vaccine Mathematics, Modelling, and Manufacturing (517504). 
+* This work is supported by the NSERC-Sanofi Alliance program in Vaccine Mathematics, Modelling, and Manufacturing (517504).
  
 The funders had no role in the design, decision to publish, or preparation of the manuscript or the package `MetaCast`.
 

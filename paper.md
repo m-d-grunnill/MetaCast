@@ -72,7 +72,7 @@ before settling on the FIFA 2022 World Cup. As such, even though our epidemiolog
 was remaining much the same, the resulting change in metapopulation structure between potential case study models
 meant we had to extensively recode the model. In order to expedite this recoding due to changes in metapopulation
 structure, we developed the code in @Grunnill2024. This code allowed us to broadcast our COVID-19 subpopulation model
-over different two-dimensional metapopulations (based on clusters of people and their vaccination status [@Grunnill2024]), 
+over different two-dimensional metapopulations [based on clusters of people and their vaccination status, @Grunnill2024],
 whilst calculating the force of infections for all subpopulations [@Keeling2008c]. 
 `MetaCast` builds upon and improves the code used in @Grunnill2024. These improvements mean that metapopulations are no 
 longer limited to two dimensions. Furthermore, metapopulation dimensions do not have to be based on clusters of people and their 
@@ -96,7 +96,7 @@ then simulate the ODE models deterministically or stochastically, with `PyGOM` h
 
 #### Individual Based Modelling (IBM) Packages for Epidemiology and Ecology
 Python's `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
-modelling. The Python open-source package `Covasim` (COVID-19 Agent-based Simulator) [@Kerr2021] provides detailed 
+modelling. The Python open-source package `Covasim` [COVID-19 Agent-based Simulator, @Kerr2021] provides detailed
 demographic data tailored to specific countries, encompassing age distributions and population sizes, offering 
 sophisticated transmission networks for various social settings (households, schools, workplaces, long-term care 
 facilities, etc). It also incorporates age-specific disease outcomes, viral load dynamics, and a wide array of 

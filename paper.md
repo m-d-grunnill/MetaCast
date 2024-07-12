@@ -28,6 +28,7 @@ authors:
     orcid: 0000-0001-6800-2000
     affiliation: "4, 5"
   - name:  Jianhong Wu
+    orcid: 0000-0003-0052-5336
     affiliation: "1, 6"
 affiliations:
  - name: Laboratory of Industrial and Applied Mathematics (LIAM), York University, Toronto, Ontario, Canada

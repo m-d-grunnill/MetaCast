@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Added nox automation for unit tests.">
+    <list default="true" id="bc162891-95af-4a7f-b140-87cf4fb3bb28" name="Changes" comment="Updated versing number in confy.py">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/conf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/paper.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -304,6 +304,8 @@
       <workItem from="1720036463258" duration="2077000" />
       <workItem from="1720192500565" duration="5000" />
       <workItem from="1720533664115" duration="1644000" />
+      <workItem from="1720537838735" duration="91000" />
+      <workItem from="1720809121984" duration="326000" />
     </task>
     <task id="LOCAL-00012" summary="Basic_Demonstration.ipynb finished sections on:&#10;* New Vaccine: Multi Dimension/Axis disease X model with flows between some subpopulations.&#10;&#10;As a result did some resulting debugging.">
       <created>1709154556923</created>
@@ -648,7 +650,7 @@
       <option name="project" value="LOCAL" />
       <updated>1712068192821</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -666,7 +668,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Finshed half of Markdown sections of Basic_Demonstration.ipynb." />
     <MESSAGE value="Added summary to README.md and started editing Journal of Open Source Software paper.md." />
     <MESSAGE value="Finished section 4 of Basic_Demonstration.ipynb." />
     <MESSAGE value="Finished first full draft of Basic_Demonstration.ipynb." />
@@ -691,7 +692,8 @@
     <MESSAGE value="For paper updated:&#10;* DOIs&#10;* Fixed Abbas Ghasami affiliation." />
     <MESSAGE value="Fixed grammar in paper.md and typos/mispelling elsewhere." />
     <MESSAGE value="Added nox automation for unit tests." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added nox automation for unit tests." />
+    <MESSAGE value="Updated versing number in confy.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated versing number in confy.py" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MetaCast$.coverage" NAME=" Coverage Results" MODIFIED="1711834539741" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />

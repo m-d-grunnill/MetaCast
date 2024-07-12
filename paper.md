@@ -1,5 +1,5 @@
 ---
-title: 'MetaCast: A package for broad**CAST**ing epidemiological and ecological models over **META**-populations.'
+title: 'MetaCast: A package for broadCASTing epidemiological and ecological models over META-populations.'
 tags:
   - Python
   - Epimediology
@@ -55,7 +55,7 @@ based models over metapopulations (structured populations). Users define a funct
 subpopulation model. `MetaCast`'s `MetaCaster` then broadcasts the subpopulation model function over dimensions
 of metapopulations. These dimensions can be defined and redefined flexibly, allowing for comparisons
 of multidimensional metapopulation models that can have migration (flows) of populations between
-subpopulations. In addition to the metapopulation suite `MetaCast` has several features. A
+subpopulations. In addition to the metapopulation suite, `MetaCast` has several features. A
 multinomial seeder allows users to randomly select infected stages to place an infected
 population in, based on the occupancy time of infected states. `MetaCast`'s event queue suite
 can handle discrete events within simulations, such as movement of populations between compartments and changes in 
@@ -71,13 +71,13 @@ During this project there were a number of MGEs that we considered as potential 
 before settling on the FIFA 2022 World Cup. As such, even though our epidemiological model 
 was remaining much the same, the resulting change in metapopulation structure between potential case study models
 meant we had to extensively recode the model. In order to expedite this recoding due to changes in metapopulation
-structure we developed the code in @Grunnill2024. This code allowed us to broadcast our COVID-19 subpopulation model
-over different two-dimensional metapopulations (based on clusters of people and their vaccination status [@Grunnill2024]), 
+structure, we developed the code in @Grunnill2024. This code allowed us to broadcast our COVID-19 subpopulation model
+over different two-dimensional metapopulations [based on clusters of people and their vaccination status, @Grunnill2024],
 whilst calculating the force of infections for all subpopulations [@Keeling2008c]. 
 `MetaCast` builds upon and improves the code used in @Grunnill2024. These improvements mean that metapopulations are no 
-longer limited to two dimensions. Furthermore, metapopulation dimensions don't have to be based on clusters of people and their 
+longer limited to two dimensions. Furthermore, metapopulation dimensions do not have to be based on clusters of people and their 
 vaccination status. `MetaCast` also includes more user-friendly versions of the discrete event, sensitivity analyses and
-infectious population seeding features from @Grunnill2024. Making MetaCast an ideal package for scenario analyses
+infectious population seeding features from @Grunnill2024. These features make MetaCast an ideal package for scenario analyses
 based around metapopulation models within epidemiology or ecology.
 
 # State of Field
@@ -86,7 +86,7 @@ There are a number of packages that can be used for epidemiological or ecologica
 platforms including Python. However, to our knowledge, none bring together all the features for scenario analyses based 
 around ODE metapopulation models as described above.
 
-#### Ordinary Differential Equation (ODE) Modelling Packages for Epidemiology and Ecology
+## Ordinary Differential Equation (ODE) Modelling Packages for Epidemiology and Ecology
 R's `EpiMode` [@Jenness2018] has some pre-coded epidemiological ODE models (such as SIR and SIS), as does
  the Python package `Eir` [@Jacob2021]. `EpiMode` [@Jenness2018] can also perform sensitivity analyses on these pre-coded 
 models. `PyGOM` [@Tye2018] and `Epipack` [@Maier2021] are Python packages that can produce ODE models from 
@@ -94,13 +94,13 @@ a list of transitions defining the flow between epidemiological compartments. Bo
 then simulate the ODE models deterministically or stochastically, with `PyGOM` having some extra stochastic methods. 
 `PyGOM` [@Tye2018] also has a suite of maximum likelihood based and Approximate Bayesian Computation fitting procedures.
 
-#### Individual Based Modelling (IBM) Packages for Epidemiology and Ecology
+## Individual Based Modelling (IBM) Packages for Epidemiology and Ecology
 Python's `Epipack` [@Maier2021] has modules for defining transitions between states for nodes in network 
-modelling. The Python open-source package `Covasim` (COVID-19 Agent-based Simulator) [@Kerr2021] provides detailed 
+modelling. The Python open-source package `Covasim` [COVID-19 Agent-based Simulator, @Kerr2021] provides detailed
 demographic data tailored to specific countries, encompassing age distributions and population sizes, offering 
 sophisticated transmission networks for various social settings (households, schools, workplaces, long-term care 
 facilities, etc). It also incorporates age-specific disease outcomes, viral load dynamics, and a wide array of 
-intervention strategies. R's `EpiMode` [@Jenness2018] implements agent based modelling based around contacts as 
+intervention strategies. R's `EpiMode` [@Jenness2018] implements agent-based modelling based around contacts as 
 discrete events or as a static network model. There are a number of other R epidemiological IBM packages that take 
 spatial or network contact based approaches: `individual` [@Charles2021], `hybridModels` [@Marques2020] and `EpiILMCT` 
 [@Almutiry2021]. The Python package `Eir` [@Jacob2021] provides epidemiological models that incorporate the movements of people. 
@@ -111,19 +111,13 @@ individual level models (TN-ILMs).
 
 The authors of this manuscript and of the package `MetaCast` would like to thank the funders who made this possible:
 
-* Martin Grunnill's position was funded through the Fields Institute’s Mathematics for Public Health Next Generation program 
-[http://www.fields.utoronto.ca/activities/public-health](http://www.fields.utoronto.ca/activities/public-health), grant 
-number 72062654. 
+* Martin Grunnill's position was funded through the [Fields Institute’s Mathematics for Public Health](http://www.fields.utoronto.ca/activities/public-health) Next Generation program, grant number 72062654.
 
-* Julian Arino is funded through the Discovery Grant program from the Natural Science and Engineering Research Council 
-of Canada (NSERC, [https://www.nserc-crsng.gc.ca/index_eng.asp](https://www.nserc-crsng.gc.ca/index_eng.asp)), grant 
-number RGPIN-2017-05466. 
+* Julian Arino is funded through the Discovery Grant program from the [Natural Science and Engineering Research Council of Canada](https://www.nserc-crsng.gc.ca/index_eng.asp) (NSERC), grant number RGPIN-2017-05466.
 
-* Jianhong Wu's work is supported by the ADERSIM (Ontario Research Fund 33270), along with the Canada Research Chairs 
-program ([https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx](https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx)
-, 230720), and the Discovery Grant program from NSERC (105588).
+* Jianhong Wu's work is supported by the ADERSIM (Ontario Research Fund 33270), along with the [Canada Research Chairs](https://www.chairs-chaires.gc.ca/home-accueil-eng.aspx) program (230720), and the Discovery Grant program from NSERC (105588).
 
-* This work is supported by the NSERC- Sanofi Alliance program in Vaccine Mathematics, Modelling, and Manufacturing (517504). 
+* This work is supported by the NSERC-Sanofi Alliance program in Vaccine Mathematics, Modelling, and Manufacturing (517504).
  
 The funders had no role in the design, decision to publish, or preparation of the manuscript or the package `MetaCast`.
 

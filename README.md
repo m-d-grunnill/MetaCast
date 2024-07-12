@@ -3,6 +3,8 @@
 
 A package for broad**CAST**ing epidemiological and ecological models over **META**-populations.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12735031.svg)](https://doi.org/10.5281/zenodo.12735031)
+
 ## Summary
 
 `MetaCast` is a python package for broadcasting epidemiological and ecological ODE based models

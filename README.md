@@ -3,7 +3,8 @@
 
 A package for broad**CAST**ing epidemiological and ecological models over **META**-populations.
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12735031.svg)](https://doi.org/10.5281/zenodo.12735031)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12735031.svg)](https://doi.org/10.5281/zenodo.12735031) [![DOI](https://joss.theoj.org/papers/10.21105/joss.06851/status.svg)](https://doi.org/10.21105/joss.06851)
+
 
 ## Summary
 

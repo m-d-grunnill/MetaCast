@@ -57,8 +57,5 @@ See jupyter notebooks in demonstration directory of the projects GitGub reposito
 ## Citation & Paper
 Grunnill et al., (2024). MetaCast: A package for broadCASTing epidemiological and ecological models over META-populations.. Journal of Open Source Software, 9(99), 6851, [https://doi.org/10.21105/joss.06851](https://doi.org/10.21105/joss.06851)
 
-## Notes
-Currently, MetaCast's lhs_and_prcc function only support latin hypercube sampling with uniform distributions.
-
 ## Contributing
 If you wish to contribute to this project please see the [CONTRIBUTING.md](https://github.com/m-d-grunnill/MetaCast/blob/main/CONTRIBUTING.md) file.

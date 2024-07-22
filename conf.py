@@ -9,7 +9,7 @@
 project = 'MetaCast'
 copyright = '2024, Martin Grunnill'
 author = 'Martin Grunnill'
-release = '0.1.6'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
